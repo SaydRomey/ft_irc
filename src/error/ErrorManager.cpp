@@ -1,23 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parsing.hpp                                        :+:      :+:    :+:   */
+/*   ErrorManager.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 20:04:58 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/14 20:14:44 by cdumais          ###   ########.fr       */
+/*   Created: 2024/11/15 13:49:03 by cdumais           #+#    #+#             */
+/*   Updated: 2024/11/15 14:11:10 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PARSING_HPP
-# define PARSING_HPP
+#include "ErrorManager.hpp"
 
-# include <string>
-# include <iostream>
+ErrorManager::ErrorManager(void)
+{
+	initializeErrorCodes();
+}
 
-# define SPACE ' ' // 0x20
-# define CR '\r' // 0x0D
-# define LF '\n' // 0x0A
-
-#endif // PARSING_HPP
+// void	ErrorManager::initErrorCodes(void)
+// {
+// 	_errorMsg["ERR_NICKNAMEINUSE"] = 
+// }

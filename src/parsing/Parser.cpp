@@ -1,14 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parsing_test.cpp                                   :+:      :+:    :+:   */
+/*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 20:03:13 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/14 20:14:51 by cdumais          ###   ########.fr       */
+/*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
+/*   Updated: 2024/11/15 13:32:07 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "Parser.hpp"
+
+Parser::Parser(void) {}
+
+Message	Parser::parse(const std::string &rawInput)
+{
+	std::vector<std::string>	tokens = _tokenizer.tokenize(rawInput);
+	std::map<std::string, std::string>	parsedCommand = _commandParser.parseCommand(tokens);
+	
+	if (!_validator.isValidCommand(parsedCommand))
+	{
+		throw (std::invalid_argument("Invalid command in input"));
+	}
+	if (!_validator.isValidNickname(parsedCommand["params"]))
+	{
+		throw (std::invalid_argument("Invalid nickname format"));
+	}
+	return (Message(parsedCommand));
+}
 
 /*
 2.3.1 Message format in Augmented BNF

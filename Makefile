@@ -10,7 +10,11 @@ STD		:= -std=c++98
 # Header files
 INC_DIR	:= inc
 INCS	:= $(wildcard $(INC_DIR)/*hpp)
+INCS	+= $(wildcard $(INC_DIR)/*/*hpp) #
 HEADERS	:= -I$(INC_DIR)
+# TODO: make headerfiles sub-folder inclusion more dynammic instead of hardcoding...
+HEADERS	+= -I$(INC_DIR)/parsing
+HEADERS	+= -I$(INC_DIR)/testing
 
 # Template files
 TMPLT_DIR	:= $(INC_DIR)/templates
@@ -20,19 +24,11 @@ IPPS	:= $(wildcard $(TMPLT_DIR)/*ipp)
 # Source code files
 SRC_DIR	:= src
 SRCS	:= $(wildcard $(SRC_DIR)/*.cpp)
+SRCS	+= $(wildcard $(SRC_DIR)/*/*.cpp)
 
 # Object files
 OBJ_DIR	:= obj
 OBJS	:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-
-# Configuration files
-CFG_DIR	:= config
-WEE_MK	:= $(CFG_DIR)/Docker/weechat.mk
-
-# Imports for additional make targets
-# ifneq (,$(filter weechat-%, $(MAKECMDGOALS)))
-# include $(CFG_DIR)/Docker/weechat.mk
-# endif
 
 # Utility variables
 REMOVE	:= rm -rf
@@ -42,7 +38,7 @@ OS		:= $(shell uname)
 USER	:= $(shell whoami)
 TIME	:= $(shell date "+%H:%M:%S")
 
-.DEFAULT_GOAL	:= help
+.DEFAULT_GOAL	:= all
 
 .DEFAULT: ## Handle invalid targets
 	$(info make: *** No rule to make target '$(MAKECMDGOALS)'.  Stop.)
@@ -60,8 +56,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCS) $(TPPS) $(IPPS) | $(OBJ_DIR)
 	@$(COMPILE) $(C_FLAGS) $(STD) $(HEADERS) -c $< -o $@
 	@printf "$(UP)$(ERASE_LINE)"
 
+# TODO: make this more dynamic instead of hardcoding each sub-folders
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(OBJ_DIR)/parsing
+	@mkdir -p $(OBJ_DIR)/testing
+# @mkdir -p $(OBJ_DIR)/...
 
 clean: ## Remove folder containing object files
 	@if [ -n "$(wildcard $(OBJ_DIR))" ]; then \
@@ -92,14 +92,10 @@ re: fclean all ## 'fclean' + 'all' (Recompile the project)
 weechat: ## Starts the weechat docker container
 	docker run -it weechat/weechat
 
-# setup_weechat: ## Calls weechat.mk to build and run the Weechat Docker container
-# 	@$(MAKE) -f $(WEE_MK) weechat-all $(NPD)
-
-# cleanup_weechat: ## Calls weechat.mk to stop and clean up the Weechat Docker container
-# 	@$(MAKE) -f $(WEE_MK) weechat-clean $(NPD)
+# TODO: automate opening docker desktop, running the weechat container
+# TODO:maybe: automate connection through server with prompt-based script for ease of use
 
 .PHONY: weechat
-# .PHONY: setup_weechat cleanup_weechat
 # **************************************************************************** #
 # ---------------------------------- UTILS ----------------------------------- #
 # **************************************************************************** #
@@ -113,12 +109,14 @@ help: ## Display available targets
 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 		}' $(MAKEFILE_LIST)
 
+# TODO: add guide for IRC commands (cheetsheet style)
+
 ARG_PORT	:= 6667
 ARG_PSWD	:= 
 
 run: all ## Compile and run the executable with default arguments
-	@echo "$(GRAYTALIC)./$(NAME) \"$(ARG)\"$(RESET)"
-	@./$(NAME) "$(ARG)"
+	@echo "$(GRAYTALIC)./$(NAME) \"$(ARG_PORT)\" \"$(ARG_PSWD)\"$(RESET)"
+	@./$(NAME) $(ARG_PORT) $(ARG_PSWD)
 
 $(TMP_DIR):
 	@mkdir -p $(TMP_DIR)
@@ -137,6 +135,7 @@ ffclean: fclean ## 'fclean' + Remove temporary files and folders
 # **************************************************************************** #
 # ---------------------------------- PDF ------------------------------------- #
 # **************************************************************************** #
+# TODO:maybe: add prompt option for french or english version of the pdf
 PDF		:= ft_irc_eng.pdf
 GIT_URL	:= https://github.com/SaydRomey/42_ressources
 PDF_URL	= $(GIT_URL)/blob/main/pdf/$(PDF)?raw=true

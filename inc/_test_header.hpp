@@ -1,21 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   _test_header.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 14:11:02 by cdumais          ###   ########.fr       */
+/*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
+/*   Updated: 2024/11/15 13:22:32 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "_test_header.hpp"
+#ifndef TEST_HEADER_HPP
+# define TEST_HEADER_HPP
 
-int	main(void)
-{
-	// test_server();
-	test_parser();
+# include "Parser.hpp"
 
-	return (0);
-}
+int test_server(void);
+int	test_parser(void);
+
+#endif // TEST_HEADER_HPP

@@ -1,27 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   testing.hpp                                        :+:      :+:    :+:   */
+/*   Parser.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 15:16:28 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/14 16:03:24 by cdumais          ###   ########.fr       */
+/*   Created: 2024/11/15 13:08:44 by cdumais           #+#    #+#             */
+/*   Updated: 2024/11/15 13:26:05 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TESTING_HPP
-# define TESTING_HPP
+#ifndef PARSER_HPP
+# define PARSER_HPP
 
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <unistd.h>
-# include <iostream>
-# include <cstring>
+# include "Tokenizer.hpp"
+# include "CommandParser.hpp"
+# include "MessageValidator.hpp"
+# include "Message.hpp"
+# include <string>
+# include <stdexcept>
 
-# define IRC_PORT 6667 // Default IRC port
+class Parser
+{
+	public:
+		Parser(void);
+		Message	parse(const std::string &rawInput);
+	
+	private:
+		Tokenizer			_tokenizer;
+		CommandParser		_commandParser;
+		MessageValidator	_validator;
+};
 
-int test_server(void);
-
-#endif // TESTING_HPP
+#endif // PARSER_HPP

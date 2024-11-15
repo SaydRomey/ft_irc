@@ -1,21 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   CommandParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 14:11:02 by cdumais          ###   ########.fr       */
+/*   Created: 2024/11/15 12:38:15 by cdumais           #+#    #+#             */
+/*   Updated: 2024/11/15 12:56:29 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "_test_header.hpp"
+#ifndef COMMANDPARSER_HPP
+# define COMMANDPARSER_HPP
 
-int	main(void)
+# include "Tokenizer.hpp"
+# include <string>
+# include <vector>
+# include <map>
+
+class CommandParser
 {
-	// test_server();
-	test_parser();
+	public:
+		CommandParser(void);
+		std::map<std::string, std::string>	parseCommand(const std::vector<std::string> &tokens);
+	
+	private:
+		std::string	_parsePrefix(const std::string &token);
+};
 
-	return (0);
-}
+#endif // COMMANDPARSER_HPP

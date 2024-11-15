@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/14 16:03:45 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/15 13:28:15 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,15 @@
 https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
 */
 
-#include "testing.hpp"
+#include "_test_header.hpp"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <iostream>
+#include <cstring>
+
+#define IRC_PORT 6697
 
 int test_server(void)
 {
