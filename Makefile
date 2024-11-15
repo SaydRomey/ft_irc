@@ -30,9 +30,9 @@ CFG_DIR	:= config
 WEE_MK	:= $(CFG_DIR)/Docker/weechat.mk
 
 # Imports for additional make targets
-ifneq (,$(filter weechat-%, $(MAKECMDGOALS)))
-include $(CFG_DIR)/Docker/weechat.mk
-endif
+# ifneq (,$(filter weechat-%, $(MAKECMDGOALS)))
+# include $(CFG_DIR)/Docker/weechat.mk
+# endif
 
 # Utility variables
 REMOVE	:= rm -rf
@@ -89,13 +89,17 @@ re: fclean all ## 'fclean' + 'all' (Recompile the project)
 # **************************************************************************** #
 # ---------------------------------- SETUP ----------------------------------- #
 # **************************************************************************** #
-setup_weechat: ## Calls weechat.mk to build and run the Weechat Docker container
-	@$(MAKE) -f $(WEE_MK) weechat-all $(NPD)
+weechat: ## Starts the weechat docker container
+	docker run -it weechat/weechat
 
-cleanup_weechat: ## Calls weechat.mk to stop and clean up the Weechat Docker container
-	@$(MAKE) -f $(WEE_MK) weechat-clean $(NPD)
+# setup_weechat: ## Calls weechat.mk to build and run the Weechat Docker container
+# 	@$(MAKE) -f $(WEE_MK) weechat-all $(NPD)
 
-.PHONY: setup_weechat cleanup_weechat
+# cleanup_weechat: ## Calls weechat.mk to stop and clean up the Weechat Docker container
+# 	@$(MAKE) -f $(WEE_MK) weechat-clean $(NPD)
+
+.PHONY: weechat
+# .PHONY: setup_weechat cleanup_weechat
 # **************************************************************************** #
 # ---------------------------------- UTILS ----------------------------------- #
 # **************************************************************************** #
@@ -109,7 +113,7 @@ help: ## Display available targets
 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 		}' $(MAKEFILE_LIST)
 
-ARG_PORT	:= 
+ARG_PORT	:= 6667
 ARG_PSWD	:= 
 
 run: all ## Compile and run the executable with default arguments
@@ -150,16 +154,17 @@ pdf: | $(TMP_DIR) ## Opens the PDF instructions
 # **************************************************************************** #
 # ------------------------------ DOCUMENTATION ------------------------------- #
 # **************************************************************************** #
-URL_DOCKER	:= https://docs.docker.com/engine/
-URL_COMPOSE	:= https://docs.docker.com/compose/
-URL_IMAGES	:= https://docs.docker.com/build/building/base-images/
 URL_CLIENTS	:= https://libera.chat/guides/clients
 URL_WEECHAT	:= https://weechat.org/
 URL_WEEDEV	:= https://weechat.org/files/doc/weechat/stable/weechat_dev.en.html
 URL_WEEIMG	:= https://hub.docker.com/r/weechat/weechat
-URL_GUIDE	:= https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
 URL_RFC1459	:= https://datatracker.ietf.org/doc/html/rfc1459
 URL_RFC2812	:= https://datatracker.ietf.org/doc/html/rfc2812
+URL_RFC7194	:= https://datatracker.ietf.org/doc/html/rfc7194
+URL_IRCV3	:= https://ircv3.net/irc/
+
+URL_MODERN	:= https://modern.ircdocs.horse/
+URL_GUIDE	:= https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
 # ...
 
 doc: ## Offer a list of documentation URL links
@@ -169,9 +174,14 @@ doc: ## Offer a list of documentation URL links
 	@echo "  1. Weechat home page"
 	@echo "  2. Weechat dev documentation"
 	@echo "  3. Weechat docker image"
+	@echo "$(ORANGE)Protocols$(RESET)"
 	@echo "  4. Internet Relay Chat Protocol (RFC1459)"
 	@echo "  5. Internet Relay Chat: Client Protocol (RFC2812)"
-	@echo "  6. ft_irc guide"
+	@echo "  6. Default Port for Internet Relay Chat (IRC) via TLS/SSL (RFC7194)"
+	@echo "  7. IRCv3 Specification"
+	@echo "$(ORANGE)Guides/Tutorials$(RESET)"
+	@echo "  100. Modern IRC client protocol"
+	@echo "  101. ft_irc guide"
 	@read url_choice; \
 	case $$url_choice in \
 		0) CHOICE=$(URL_CLIENTS);; \
@@ -180,7 +190,10 @@ doc: ## Offer a list of documentation URL links
 		3) CHOICE=$(URL_WEEIMG);; \
 		4) CHOICE=$(URL_RFC1459);; \
 		5) CHOICE=$(URL_RFC2818);; \
-		6) CHOICE=$(URL_GUIDE);; \
+		6) CHOICE=$(URL_RFC7194);; \
+		7) CHOICE=$(URL_IRCV3);; \
+		100) CHOICE=$(URL_MODERN);; \
+		101) CHOICE=$(URL_GUIDE);; \
 		*) echo "Invalid choice. Exiting." ; exit 1;; \
 	esac; \
 	open $$CHOICE
