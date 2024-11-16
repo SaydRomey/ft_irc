@@ -1,79 +1,126 @@
 
-Authorized Functions
+- Authorized Functions
+
 * all of cpp98
 
-socket(2)
-Used to create a TCP socket for the server.
-It establishes a communication endpoint for the server to listen for client connections.
+- Socket Programming
 
-close()
+socket():
+Creates a socket file descriptor.
+This is the starting point for network communication,
+allowing you to specify the communication domain
+(e.g., IPv4/IPv6), socket type (e.g., stream or datagram), and protocol (e.g., TCP or UDP).
 
-setsockopt()
+close():
+Closes an open file descriptor,
+releasing resources associated with it.
+This is used to terminate a connection or clean up resources.
 
-getsockname()
+setsockopt():
+Configures options for a socket,
+such as enabling reuse of local addresses (SO_REUSEADDR) or setting timeouts.
 
-getprotobyname()
+getsockname():
+Retrieves the local address and port number of a socket.
 
-gethostbyname()
+getprotobyname():
+Gets information about a protocol by its name (e.g., "tcp" or "udp"),
+often used when creating sockets.
 
-getaddrinfo()
+gethostbyname():
+Resolves a hostname (e.g., "example.com") to an IP address.
+Note: This function is considered outdated; consider getaddrinfo() for newer implementations.
 
-freeaddrinfo()
+getaddrinfo():
+A modern and flexible way to resolve hostnames to addresses and service names to ports.
+It supports both IPv4 and IPv6.
 
-bind(2)
-Binds the created socket to a specific port and IP address,
-as defined in the struct sockaddr_in.
-This associates the socket with a network address.
+freeaddrinfo():
+Frees the memory allocated by getaddrinfo().
 
-connect()
+bind():
+Assigns a specific local address and port to a socket.
+This is typically used by servers to listen on a specific address/port.
 
-listen(2)
-Prepares the socket to accept incoming connections.
-Specifies the maximum number of connections that can be queued for acceptance.
+connect():
+Initiates a connection to a remote host.
+Used by clients to establish communication with a server.
 
-accept(2)
-Function waits for a client to connect.
-When a connection is established, it creates a new socket
-(referred to as client_fd) to handle the communication with the connected client.
+listen():
+Prepares a socket to accept incoming connections,
+setting a queue for pending connections.
 
-htons()
+accept():
+Accepts an incoming connection on a listening socket,
+creating a new socket for communication with the client.
 
-htonl()
+- Byte Order Conversion
 
-ntohs()
+htons() / htonl():
+Converts host byte order to network byte order for short (16-bit)
+and long (32-bit) integers, respectively.
+Necessary for ensuring cross-platform compatibility.
 
-ntohl()
+ntohs() / ntohl():
+Converts network byte order to host byte order for short (16-bit) and long (32-bit) integers, respectively.
 
-inet_addr()
+IP Address Manipulation
+inet_addr():
+Converts an IPv4 address from its string representation (e.g., "192.168.1.1") to its binary form.
 
-inet_ntoa()
+inet_ntoa():
+Converts an IPv4 address from its binary form to a human-readable string (e.g., "192.168.1.1").
 
-send()
 
-recv()
+- Data Transmission
 
-signal()
+send():
+Sends data to a connected socket.
+Useful for transmitting messages in IRC.
 
-sigaction()
+recv():
+Receives data from a connected socket. Used to handle messages from clients.
 
-lseek()
+Signal Handling
+signal() / sigaction():
+Sets up handlers for signals (e.g., SIGINT for clean shutdowns).
+sigaction() is preferred for finer control.
 
-fstat()
+File Descriptor Operations
+lseek():
+Repositions the file offset of an open file descriptor.
+Useful for reading or writing specific parts of a file.
 
-fcntl()
+fstat():
+Retrieves information about a file based on its file descriptor, such as size and type.
 
-poll() (or equivalent) select(), kqueue(), or epoll()
-Can be used for handling all these operations (read, write, but also listen, and so forth)
+fcntl():
+Modifies file descriptor properties.
+For this project, it will be used to set non-blocking mode:
 
-fcntl()
-* We are allowed to use fcntl() only as follows *
-fcntl(fd, F_SETFL, O_NONBLOCK);
-* Any other flag is forbidden *
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 
-/* ************************************************************************** */
+This ensures that I/O operations do not block execution.
 
-unauthorized (but used in tutorials/test)
-read(2)
-Used to read data from the client socket.
-It retrieves data sent by the client, which can then be processed by the server.
+Multiplexing
 
+poll() (or equivalents like select(), kqueue(), or epoll()):
+Monitors multiple file descriptors to see if they are ready for I/O operations (e.g., readable, writable).
+
+poll():
+Monitors multiple descriptors with a simpler interface than select().
+
+select():
+Monitors a fixed number of descriptors and requires manual management of fd_set.
+
+kqueue()/epoll():
+Efficient alternatives for large-scale applications (not always portable).
+
+Key Notes for MacOS:
+Non-blocking Mode:
+Ensure all sockets are set to non-blocking mode using fcntl() with O_NONBLOCK.
+This is essential for compatibility with other Unix-based systems.
+
+Avoidance of Blocking I/O:
+Non-blocking mode prevents operations like read() and write()
+from stalling the program when data is not immediately available or buffers are full.

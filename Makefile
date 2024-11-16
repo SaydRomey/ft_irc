@@ -1,4 +1,3 @@
-
 NAME	:= ircserv
 AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"
@@ -9,26 +8,16 @@ STD		:= -std=c++98
 
 # Header files
 INC_DIR	:= inc
-INCS	:= $(wildcard $(INC_DIR)/*hpp)
-INCS	+= $(wildcard $(INC_DIR)/*/*hpp) #
-HEADERS	:= -I$(INC_DIR)
-# TODO: make headerfiles sub-folder inclusion more dynammic instead of hardcoding...
-HEADERS	+= -I$(INC_DIR)/parsing
-HEADERS	+= -I$(INC_DIR)/testing
-
-# Template files
-TMPLT_DIR	:= $(INC_DIR)/templates
-TPPS	:= $(wildcard $(TMPLT_DIR)/*tpp)
-IPPS	:= $(wildcard $(TMPLT_DIR)/*ipp)
+INCLUDES := $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
 # Source code files
 SRC_DIR	:= src
-SRCS	:= $(wildcard $(SRC_DIR)/*.cpp)
-SRCS	+= $(wildcard $(SRC_DIR)/*/*.cpp)
+SRCS	:= $(shell find $(SRC_DIR) -name "*.cpp")
 
 # Object files
-OBJ_DIR	:= obj
-OBJS	:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJ_DIR		:= obj
+OBJS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
 
 # Utility variables
 REMOVE	:= rm -rf
@@ -47,21 +36,15 @@ TIME	:= $(shell date "+%H:%M:%S")
 # Main targets
 all: $(NAME) ## Compile the Project and create the executable
 
-$(NAME): $(OBJS) $(INCS)
+$(NAME): $(OBJS)
+	@$(COMPILE) $(C_FLAGS) $(STD) $(OBJS) $(INCLUDES) -o $@
 	@echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)]\\t$(GREEN)ready$(RESET)"
-	@$(COMPILE) $(C_FLAGS) $(STD) $(OBJS) $(HEADERS) -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCS) $(TPPS) $(IPPS) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(@D)
 	@echo "$(CYAN)Compiling...$(ORANGE)\t$(notdir $<)$(RESET)"
-	@$(COMPILE) $(C_FLAGS) $(STD) $(HEADERS) -c $< -o $@
+	@$(COMPILE) $(C_FLAGS) $(STD) $(INCLUDES) -c $< -o $@
 	@printf "$(UP)$(ERASE_LINE)"
-
-# TODO: make this more dynamic instead of hardcoding each sub-folders
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(OBJ_DIR)/parsing
-	@mkdir -p $(OBJ_DIR)/testing
-# @mkdir -p $(OBJ_DIR)/...
 
 clean: ## Remove folder containing object files
 	@if [ -n "$(wildcard $(OBJ_DIR))" ]; then \
@@ -90,10 +73,16 @@ re: fclean all ## 'fclean' + 'all' (Recompile the project)
 # ---------------------------------- SETUP ----------------------------------- #
 # **************************************************************************** #
 weechat: ## Starts the weechat docker container
-	docker run -it weechat/weechat
-
-# TODO: automate opening docker desktop, running the weechat container
-# TODO:maybe: automate connection through server with prompt-based script for ease of use
+	@if ! docker info > /dev/null 2>&1; then \
+		echo "Starting Docker..."; \
+		open --background -a Docker; \
+		while ! docker info > /dev/null 2>&1; do \
+			echo "$(GRAYTALIC)Waiting for Docker to be ready...$(RESET)"; \
+			sleep 1; \
+		done; \
+	fi
+	@echo "$Starting Weechat container..."
+	@docker run -it weechat/weechat
 
 .PHONY: weechat
 # **************************************************************************** #
