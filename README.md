@@ -81,7 +81,8 @@ Develop an IRC server in **C++98**.
 ---
 
 ## Test Example
-Verify error handling and behavior under adverse conditions (e.g., partial data or low bandwidth).
+Verify error handling and behavior under adverse conditions  
+(e.g., partial data or low bandwidth).
 
 Example test using `nc`:
 ```bash
@@ -89,12 +90,8 @@ $> nc 127.0.0.1 6667
 com^Dman^Dd
 ```
 
-Use Ctrl+D to send the command in parts (com, then man, then d\n).
+Use Ctrl+D to send the command in parts (com, then man, then d\n).  
 Ensure the server processes and aggregates commands correctly.
-
----
-
-### **Part 7: Bonus Part**
 
 ---
 
@@ -104,7 +101,7 @@ Ensure the server processes and aggregates commands correctly.
 - Add a **bot**.
 
 **Note:**  
-The bonus will only be assessed if the mandatory part is **perfectly implemented**.
+The bonus will only be assessed if the mandatory part is **perfectly implemented**.  
 A perfect implementation means all mandatory requirements are met without any malfunctions.
 
 ---
@@ -115,7 +112,7 @@ A perfect implementation means all mandatory requirements are met without any ma
 - Double-check file names and paths before submission.
 
 ### Testing:
-You are encouraged to create test programs for your project.
+You are encouraged to create test programs for your project.  
 While these tests are not graded, they are invaluable for validating your implementation during defense and peer evaluation.
 
 ---
@@ -128,10 +125,10 @@ While these tests are not graded, they are invaluable for validating your implem
 ---
 
 ## Test Example
-Verify absolutely every possible error and issue
+Verify absolutely every possible error and issue  
 (receiving partial data, low bandwidth, and so forth).
 
-To ensure that your server correctly processes everything you send to it,
+To ensure that your server correctly processes everything you send to it,  
 the following simple test using `nc` can be done:
 ```bash
 $> nc 127.0.0.1 6667
@@ -148,8 +145,8 @@ Here are the extra features you can add to your IRC server to make it even more 
 - Add a **bot**.
 
 **Important Note:**  
-The bonus part will only be assessed if the mandatory part is **PERFECT**.
-Perfect means the mandatory part has been fully implemented and works without any malfunctions.
+The bonus part will only be assessed if the mandatory part is **PERFECT**.  
+Perfect means the mandatory part has been fully implemented and works without any malfunctions.  
 If you fail to meet **ALL** the mandatory requirements, your bonus part will not be evaluated.
 
 ---
@@ -159,9 +156,9 @@ Turn in your assignment in your Git repository as usual.
 Only the work inside your repository will be evaluated during the defense.  
 Don’t hesitate to double-check the names of your files to ensure they are correct.
 
-You are encouraged to create test programs for your project,
+You are encouraged to create test programs for your project,  
 even though they won’t be submitted and won’t be graded.  
-These tests could be especially useful to test your server during the defense
+These tests could be especially useful to test your server during the defense  
 or for evaluating a peer’s project if you have to assess another `ft_irc` implementation one day.
 
 Indeed, you are free to use whatever tests you need during the evaluation process.
