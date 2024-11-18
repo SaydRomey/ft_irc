@@ -17,7 +17,7 @@ class Aggregator
 		std::map<int, std::string>	_buffer; // map each client's fd to their respective buffer
 
 		std::vector<std::string>	_splitCommands(const std::string &raw);
-}
+};
 
 #endif // AGGREGATOR_HPP
 

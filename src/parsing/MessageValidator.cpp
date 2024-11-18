@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 13:22:23 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 15:57:34 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,9 @@ bool	MessageValidator::isValidModeCommand(const std::vector<std::string> &params
 {
 	if (params.size() < 2)
 		return (false);
-	return (isValidChannel(params[0])); // validate first argument as a channel
+	
+	const std::string &channel = params[0];
+	return (isValidChannel(channel));
 }
 
 

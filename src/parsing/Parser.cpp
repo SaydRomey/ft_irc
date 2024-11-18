@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 12:49:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 16:04:32 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Message	Parser::parse(const std::string &rawInput)
 	std::vector<std::string>	tokens = _tokenizer.tokenize(trimmedInput);
 	std::map<std::string, std::string>	parsedCommand = _commandParser.parseCommand(tokens);
 	
-	printMap(parsedCommand, "** Parsed Command:");
+	// printMap(parsedCommand, "** Parsed Command:");
 	
 	// Validate command presence and validity
 	if (!_validator.isValidCommand(parsedCommand))
@@ -50,9 +50,11 @@ Message	Parser::parse(const std::string &rawInput)
 		throw (std::invalid_argument("Invalid channel format"));
 	}
 	
-	if (parsedCommand["command"] == "MODE" && !isValidModeCommand(parsedCommand["params"]))
+	if (parsedCommand["command"] == "MODE")
 	{
-		throw (std::invalid_argument("Invalid Mode command"));
+		std::vector<std::string>	params = _tokenizer.tokenize(parsedCommand["params"]);
+		if (!_validator.isValidModeCommand(params))
+			throw (std::invalid_argument("Invalid Mode command"));
 	}
 	
 	return (Message(parsedCommand));

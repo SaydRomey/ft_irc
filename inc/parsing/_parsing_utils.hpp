@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 22:52:27 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 12:48:06 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 15:43:57 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 # include <string>
 # include <algorithm>
 # include <cctype>
+# include <map>
+#include <iostream>
+#include <sstream>
 
 #include <regex> // for normalization
 

@@ -30,7 +30,7 @@ std::vector<std::string>	Aggregator::processData(int clientFd, const std::string
 	_buffer[clientFd] += data; // append incomming data to the client's buffer
 
 	// split the buffer into commands
-	std::vector<std::string>	splitCommands = _splitCommands(_buffer)
+	std::vector<std::string>	splitCommands = _splitCommands(_buffer[clientFd]);
 
 	// the last element of splitCommands is the incomplete portion, if any
 	if (!splitCommands.empty() && splitCommands.back().find("\r\n") == std::string::npos)

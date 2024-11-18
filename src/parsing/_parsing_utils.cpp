@@ -17,7 +17,7 @@ std::string	normalizeInput(const std::string &input)
 	// Replace multiple spaces or tabs with a single space
 	std::string	normalized = std::regex_replace(input, std::regex("[ \t]+"), " ");
 	// Remove unnecessary carriage returns or line breaks
-	std::string	normalized = std::regex_replace(input, std::regex("\r\n"), "");
+	normalized = std::regex_replace(input, std::regex("\r\n"), "");
 	
 	return (normalized);
 }
@@ -31,7 +31,7 @@ void	printMap(const std::map<std::string, std::string> &parsedCommand, const std
 
 	std::cout << msg << std::endl;
 
-	std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
+	std::map<std::string, std::string>::const_iterator	it = parsedCommand.begin();
 	while (it != parsedCommand.end())
 	{
 		std::cout << "  " << it->first << ": " << it->second << std::endl;

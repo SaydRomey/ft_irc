@@ -17,8 +17,10 @@ IRC clients connect to IRC servers to participate in channels, while IRC servers
 ---
 
 ## General Rules
-- Your program **must not crash** under any circumstances (even when memory is exhausted). Crashing or quitting unexpectedly results in a failing grade (0).
-- You must provide a **Makefile** to compile your source files. The Makefile must not perform unnecessary relinking.
+- Your program **must not crash** under any circumstances (even when memory is exhausted).  
+Crashing or quitting unexpectedly results in a failing grade (0).
+- You must provide a **Makefile** to compile your source files.  
+The Makefile must not perform unnecessary relinking.
 - The Makefile must include at least the following rules:
   - `all`, `clean`, `fclean`, `re`, and `$(NAME)`.
 - Code must be compiled with `c++` using the following flags:
@@ -124,6 +126,7 @@ While these tests are not graded, they are invaluable for validating your implem
   fcntl(fd, F_SETFL, O_NONBLOCK);
 ```
 Any other flag is forbidden
+
 ---
 
 ## Test Example
@@ -140,6 +143,7 @@ $>
 Use ctrl+D to send the command in several parts:  
 ’com’, then ’man’, then ’d\n’.
 In order to process a command, you have to first aggregate the received packets in order to rebuild it.
+
 ---
 
 ## Bonus Part
