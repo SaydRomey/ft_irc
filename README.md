@@ -10,7 +10,8 @@ Understanding solid standard protocols like those used in the Internet is a valu
 ---
 
 ## Introduction
-**Internet Relay Chat (IRC)** is a text-based communication protocol that provides real-time messaging. It supports both public and private communication, allowing users to exchange direct messages or join group channels.  
+**Internet Relay Chat (IRC)** is a text-based communication protocol that provides real-time messaging.  
+It supports both public and private communication, allowing users to exchange direct messages or join group channels.  
 IRC clients connect to IRC servers to participate in channels, while IRC servers interconnect to form a network.
 
 ---
