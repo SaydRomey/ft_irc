@@ -1,8 +1,6 @@
-# ft_irc
+# [ft_irc](https://github.com/SaydRomey/42_ressources/blob/24d50367a9a7a41c9509a5f4731418098813f4f4/pdf/ft_irc_eng.pdf)
 **Internet Relay Chat - 42**  
 **Version:** 7.1  
-
-[ft_irc.pdf](https://github.com/SaydRomey/42_ressources/blob/24d50367a9a7a41c9509a5f4731418098813f4f4/pdf/ft_irc_eng.pdf)
 
 ## Summary
 This project involves creating your own IRC server.  
