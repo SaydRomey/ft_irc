@@ -2,6 +2,8 @@
 **Internet Relay Chat - 42**  
 **Version:** 7.1  
 
+[ft_irc.pdf](https://github.com/SaydRomey/42_ressources/blob/24d50367a9a7a41c9509a5f4731418098813f4f4/pdf/ft_irc_eng.pdf)
+
 ## Summary
 This project involves creating your own IRC server.  
 You will use an actual IRC client to connect to your server and test it.  
@@ -123,6 +125,7 @@ While these tests are not graded, they are invaluable for validating your implem
 ```cpp
   fcntl(fd, F_SETFL, O_NONBLOCK);
 ```
+Any other flag is forbidden
 ---
 
 ## Test Example
@@ -136,7 +139,9 @@ $> nc 127.0.0.1 6667
 com^Dman^Dd
 $>
 ```
-
+Use ctrl+D to send the command in several parts:  
+’com’, then ’man’, then ’d\n’.
+In order to process a command, you have to first aggregate the received packets in order to rebuild it.
 ---
 
 ## Bonus Part
@@ -163,3 +168,5 @@ These tests could be especially useful to test your server during the defense
 or for evaluating a peer’s project if you have to assess another `ft_irc` implementation one day.
 
 Indeed, you are free to use whatever tests you need during the evaluation process.
+
+Your reference client will be used during the evaluation process.
