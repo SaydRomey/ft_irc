@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 23:04:42 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 12:14:56 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,38 @@
 #include <set>
 #include <iostream> // for debug
 
+/*
+must be able to:
+authenticate "PASS"
+set nickname "NICK"
+set username "USER"
+join a channel "JOIN"
+send and recieve private messages "PRIVMSG"
+
+implement commands specific to channel operators:
+KICK
+INVITE
+TOPIC
+MODE
+ i
+ t
+ k
+ o
+ l
+
+{"PASS", "NICK", "USER", "JOIN", "PRIVMSG",
+ "KICK", "INVITE", "TOPIC", "MODE",
+ "PART", "NOTICE", "PING", "PONG", "QUIT"}; // last row not needed..
+*/
+
 MessageValidator::MessageValidator(void) {}
 
 bool	MessageValidator::isValidCommand(const std::map<std::string, std::string> &command)
 {
-	static const std::string	commandsArray[] = {"JOIN", "PING", "PRIVMSG", "NOTICE", "TOPIC"};
+	static const std::string	commandsArray[] = {\
+	"PASS", "NICK", "USER", "JOIN", "PRIVMSG", \
+	"KICK", "INVITE", "TOPIC", "MODE", \
+	"PART", "NOTICE", "PING", "PONG", "QUIT"}; // last row not needed..
 	static const std::set<std::string>	validCommands(commandsArray, commandsArray + sizeof(commandsArray) / sizeof(commandsArray[0]));
 	
 	if (!command.count("command") || command.at("command").empty())
@@ -27,15 +54,23 @@ bool	MessageValidator::isValidCommand(const std::map<std::string, std::string> &
 		std::cout << "** Debug: Command field is missing or empty." << std::endl;
 		return (false);
 	}
+	
+	const std::string	&cmd = command.at("command");
 
-	// TODO: add any additional rules for valid commands here (e.g., valid command names)
-	if (validCommands.find(command.at("command")) == validCommands.end())
+	// Allow numeric replies
+	if (cmd.size() == 3 && std::isdigit(cmd[0]) && std::isdigit(cmd[1]) && std::isdigit(cmd[2]))
 	{
-		std::cout << "** Debug: Command is not a valid IRC command: " << command.at("command") << std::endl;
+		std::cout << "** Debug: Command is a valid numeric reply: " << cmd << std::endl;
+		return (true);
+	}
+
+	if (validCommands.find(cmd) == validCommands.end())
+	{
+		std::cout << "** Debug: Command is not a valid IRC command: " << cmd << std::endl;
 		return (false);
 	}
 	
-	std::cout << "** Debug: Command is valid: " << command.at("command") << std::endl;
+	std::cout << "** Debug: Command is valid: " << cmd << std::endl;
 	return (true);
 }
 
@@ -60,6 +95,59 @@ bool	MessageValidator::isValidChannel(const std::string &channel)
 {
 	return (!channel.empty() && channel[0] == '#' && _isAlphanumeric(channel.substr(1)));
 }
+
+/* untested new functions..
+
+*/
+bool	MessageValidator::isValidTrailing(const std::string &trailing)
+{
+	return (!trailing.empty()); // basic check  for now..
+}
+
+bool	MessageValidator::isValidModeCommand(const std::vector<std::string> &params)
+{
+	if (params.size() < 2)
+		return (false);
+	return (isValidChannel(params[0])); // validate first argument as a channel
+}
+
+
+// bool	MessageValidator::isValidNick(const std::string &nick);
+// bool	MessageValidator::isValidPrivmsg(const std::vector<std::string> &params);
+
+bool	MessageValidator::isChannelOperatorCommand(const std::string &command)
+{
+	static const std::set<std::string>	operatorCommands = {"KICK", "INVITE", "TOPIC", "MODE"};
+	
+	return (operatorCommands.find(command) != operatorCommands.end());
+}
+
+bool	MessageValidator::isMessagingCommand(const std::string &command)
+{
+	static const std::set<std::string>	messagingCommands = {"PRIVMSG", "NOTICE"};
+	
+	return (messagingCommands.find(command) != messagingCommands.end());
+}
+
+
+bool	MessageValidator::isAuthenticationCommand(const std::string &command)
+{
+	static const std::set<std::string>	authCommands = {"PASS", "NICK", "USER"};
+	
+	return (authCommands.find(command) != authCommands.end());
+}
+
+
+bool	MessageValidator::isChannelManagementCommand(const std::string &command)
+{
+	static const std::set<std::string>	managementCommands = {"JOIN", "PART"}
+	
+	return (managementCommands.find(command) != managementCommands.end());
+}
+
+
+
+// 
 
 bool	MessageValidator::_isAlphanumeric(const std::string &str)
 {

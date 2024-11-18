@@ -1,4 +1,17 @@
 
+
+TODO:
+add support for extended commands:
+handle multiple parameters (e.g., MODE #channel +o user)
+handle optional trailing arguments (e.g., TOPIC #channel :New topic)
+
+extend parser to handle both client authentication and command parsing
+
+
+
+
+(wip - trying to untagle syntax and format rules...)
+
 - Channels - names
 
 String beginning with a '&', '#', '+' or '!' character

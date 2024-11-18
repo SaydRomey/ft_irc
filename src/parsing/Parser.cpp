@@ -6,14 +6,13 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 23:06:07 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/17 20:30:39 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
+#include "_parsing_utils.hpp"
 #include <iostream> // for debug
-
-std::string trim(const std::string &str); //tmp
 
 Parser::Parser(void) {}
 
@@ -54,7 +53,13 @@ Message	Parser::parse(const std::string &rawInput)
 	// Validate channel for JOIN command)
 	if (parsedCommand["command"] == "JOIN" && !_validator.isValidChannel(parsedCommand["params"]))
 	{
+		// logError("Invalid channel format: " + parsedCommand["params"]);
 		throw (std::invalid_argument("Invalid channel format"));
+	}
+	
+	if (parsedCommand["command"] == "MODE" && !isValidModeCommand(parsedCommand["params"]))
+	{
+		throw (std::invalid_argument("Invalid Mode command"));
 	}
 	
 	return (Message(parsedCommand));

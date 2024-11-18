@@ -6,22 +6,13 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:31:37 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 23:05:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/17 20:28:18 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Tokenizer.hpp"
+#include "_parsing_utils.hpp"
 #include <sstream>
-
-#include <regex> // for normalization
-
-std::string	normalizeInput(const std::string &input)
-{
-	// Replace multiple spaces or tabs with a single space
-	std::string	normalized = std::regex_replace(input, std::regex("[ \t]+"), " ");
-	
-	return (normalized);
-}
 
 Tokenizer::Tokenizer(void) {}
 
@@ -42,6 +33,27 @@ std::vector<std::string>	Tokenizer::tokenize(const std::string &input)
 	
 	return (tokens);
 }
+
+/* to test, multiple commands in a single message separated by \r\n
+
+
+std::vector<std::string>	Tokenizer::tokenize(const std::string &input)
+{
+	std::vector<std::string>	commands;
+	size_t	start = 0, end;
+
+	while ((end = input.find("\r\n", start)) != std::string::npos)
+	{
+		command.push_back(input.substr(start, end - start));
+		start = end + 2;
+	}
+	if (start < input.size())
+	{
+		commands.push_back(input.substr(start));
+	}
+	return (command);
+}
+*/
 
 void	Tokenizer::_split(const std::string &str, char delimiter, std::vector<std::string> &tokens)
 {
