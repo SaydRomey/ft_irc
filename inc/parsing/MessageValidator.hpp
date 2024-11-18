@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:46:17 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 12:10:05 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 13:22:31 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,10 @@ class MessageValidator
 		bool	isValidChannel(const std::string &channel);
 		
 		bool	isValidTrailing(const std::string &trailing); // to test
-		bool	isChannelOperatorCommand(const std::string &command);
-		bool	isMessagingCommand(const std::string &command);
-		bool	isAuthenticationCommand(const std::string &command);
-		bool	isChannelManagementCommand(const std::string &command);
+		// bool	isChannelOperatorCommand(const std::string &command);
+		// bool	isMessagingCommand(const std::string &command);
+		// bool	isAuthenticationCommand(const std::string &command);
+		// bool	isChannelManagementCommand(const std::string &command);
 	
 	private:
 		bool	_isAlphanumeric(const std::string &str);

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 12:14:56 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 13:22:23 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,31 @@
 #include <cctype>
 #include <set>
 #include <iostream> // for debug
+
+/*
+Commands to Implement
+
+Authentication Commands:
+
+PASS: Client provides the connection password.
+NICK: Client sets their nickname.
+USER: Client sets their username.
+
+Channel Management Commands:
+
+JOIN: Join a specific channel.
+PART: Leave a specific channel.
+TOPIC: View or change the channel's topic.
+MODE: Change channel modes (i, t, k, o, l).
+KICK: Eject a client from a channel.
+INVITE: Invite a client to a channel.
+
+Messaging Commands:
+
+PRIVMSG: Send a private message to a user or channel.
+NOTICE: Send a notice to a user or channel.
+
+*/
 
 /*
 must be able to:
@@ -112,38 +137,37 @@ bool	MessageValidator::isValidModeCommand(const std::vector<std::string> &params
 }
 
 
-// bool	MessageValidator::isValidNick(const std::string &nick);
 // bool	MessageValidator::isValidPrivmsg(const std::vector<std::string> &params);
 
-bool	MessageValidator::isChannelOperatorCommand(const std::string &command)
-{
-	static const std::set<std::string>	operatorCommands = {"KICK", "INVITE", "TOPIC", "MODE"};
+// bool	MessageValidator::isChannelOperatorCommand(const std::string &command)
+// {
+// 	static const std::set<std::string>	operatorCommands = {"KICK", "INVITE", "TOPIC", "MODE"};
 	
-	return (operatorCommands.find(command) != operatorCommands.end());
-}
+// 	return (operatorCommands.find(command) != operatorCommands.end());
+// }
 
-bool	MessageValidator::isMessagingCommand(const std::string &command)
-{
-	static const std::set<std::string>	messagingCommands = {"PRIVMSG", "NOTICE"};
+// bool	MessageValidator::isMessagingCommand(const std::string &command)
+// {
+// 	static const std::set<std::string>	messagingCommands = {"PRIVMSG", "NOTICE"};
 	
-	return (messagingCommands.find(command) != messagingCommands.end());
-}
+// 	return (messagingCommands.find(command) != messagingCommands.end());
+// }
 
 
-bool	MessageValidator::isAuthenticationCommand(const std::string &command)
-{
-	static const std::set<std::string>	authCommands = {"PASS", "NICK", "USER"};
+// bool	MessageValidator::isAuthenticationCommand(const std::string &command)
+// {
+// 	static const std::set<std::string>	authCommands = {"PASS", "NICK", "USER"};
 	
-	return (authCommands.find(command) != authCommands.end());
-}
+// 	return (authCommands.find(command) != authCommands.end());
+// }
 
 
-bool	MessageValidator::isChannelManagementCommand(const std::string &command)
-{
-	static const std::set<std::string>	managementCommands = {"JOIN", "PART"}
+// bool	MessageValidator::isChannelManagementCommand(const std::string &command)
+// {
+// 	static const std::set<std::string>	managementCommands = {"JOIN", "PART"}
 	
-	return (managementCommands.find(command) != managementCommands.end());
-}
+// 	return (managementCommands.find(command) != managementCommands.end());
+// }
 
 
 

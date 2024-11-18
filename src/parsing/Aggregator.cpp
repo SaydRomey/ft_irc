@@ -71,50 +71,58 @@ std::vector<std::string>	Aggregator::_splitCommands(const std::string &raw)
 
 /*	example usage:
 
-void Server::_handleClient(int clientFd)
+void	Server::_handleClient(int clientFd)
 {
-    char buffer[1024];
-    int bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
+	char	buffer[1024];
+	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
 
-    if (bytesRead <= 0)
-    {
-        _disconnectClient(clientFd, "Disconnected");
-        return;
-    }
+	if (bytesRead <= 0)
+	{
+		_disconnectClient(clientFd, "Disconnected");
+		return ;
+	}
 
-    buffer[bytesRead] = '\0';
-    std::string data(buffer);
+	buffer[bytesRead] = '\0';
+	std::string data(buffer);
 
-    // Aggregate and process complete commands
-    std::vector<std::string> commands = _aggregator.processData(clientFd, data);
+	// Aggregate and process complete commands
+	std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
 
-    for (size_t i = 0; i < commands.size(); ++i)
-    {
-        try
-        {
-            Message message = _parser.parse(commands[i]);
-            _handleCommand(clientFd, message);
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Error handling command: " << e.what() << std::endl;
-            _sendMessage(clientFd, "ERROR: " + std::string(e.what()));
-        }
-    }
+	size_t	i = 0;
+	while (i < commands.size())
+	{
+		try
+		{
+			Message message = _parser.parse(commands[i]);
+			_handleCommand(clientFd, message);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << "Error handling command: " << e.what() << std::endl;
+			_sendMessage(clientFd, "ERROR: " + std::string(e.what()));
+		}
+		++i;
+	}
 }
 
-void handleClientData(int fd, const std::string &data) {
-    std::vector<std::string> commands = processData(fd, data);
-    
-    for (const std::string &cmd : commands) {
-        try {
-            Message parsedMessage = parser.parse(cmd);
-            commandHandler.execute(client, parsedMessage);
-        } catch (const std::exception &e) {
-            // Handle parsing errors
-            logError("Parsing failed for client " + std::to_string(fd) + ": " + e.what());
-        }
-    }
+void	handleClientData(int fd, const std::string &data)
+{
+	std::vector<std::string>	commands = processData(fd, data);
+	
+	std::vector<std::string>::const_iterator	it = commands.begin();
+	while (it != commands.end())
+	{
+		try
+		{
+			Message	parsedMessage = parser.parse(*it);
+			commandHandler.execute(client, parsedMessage);
+		}
+		catch (const std::exception &e)
+		{
+			// Handle parsing errors
+			logError("Parsing failed for client " + std::to_string(fd) + ": " + e.what());
+		}
+		++it;
+	}
 }
-
 */

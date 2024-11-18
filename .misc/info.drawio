@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="3vso-2CknVOCGx9vlFHq" name="Page-1">
-        <mxGraphModel dx="2468" dy="914" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="2140" dy="731" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -35,10 +35,7 @@
                     <mxGeometry x="324" y="100" width="180" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="18" value="NICK&lt;br&gt;USER&lt;br&gt;JOIN&lt;br&gt;PART&lt;br&gt;PRIVMSG&lt;br&gt;QUIT&lt;br&gt;etc." style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
-                    <mxGeometry x="570" y="225" width="60" height="110" as="geometry"/>
-                </mxCell>
-                <mxCell id="31" value="Ensure commands are correctly recieved and executed" style="whiteSpace=wrap;html=1;rounded=0;gradientColor=none;strokeColor=default;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="90" y="10" width="170" height="40" as="geometry"/>
+                    <mxGeometry x="326" y="380" width="60" height="110" as="geometry"/>
                 </mxCell>
                 <mxCell id="43" value="handle multiple connections" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="-330" y="240" width="180" height="40" as="geometry"/>
@@ -50,10 +47,10 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="53" value="Implement core IRC commands" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="324" y="260" width="180" height="40" as="geometry"/>
+                    <mxGeometry x="80" y="415" width="180" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="54" value="Error handling and response messages (IRC protocol)" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="324" y="420" width="180" height="40" as="geometry"/>
+                    <mxGeometry x="80" y="575" width="180" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="58" value="" style="edgeStyle=none;html=1;" parent="1" source="56" target="57" edge="1">
                     <mxGeometry relative="1" as="geometry"/>

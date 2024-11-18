@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:41:20 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/17 19:08:08 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 13:05:16 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,7 @@ std::map<std::string, std::string>	CommandParser::parseCommand(const std::vector
 	if (i < tokens.size())
 		command["trailing"] = trim(tokens[i]);
 
-	// // Debugging to verify parsed command
-	// std::cout << "** Parsed Command Debugging:" << std::endl;
-	// std::map<std::string, std::string>::iterator	it = command.begin();
-	// while (it != command.end())
-	// {
-	// 	std::cout << "  " << it->first << ": " << it->second << std::endl;
-	// 	++it;
-	// }
+	printMap(command, "** Parsed command:");
 
 	return (command);
 }

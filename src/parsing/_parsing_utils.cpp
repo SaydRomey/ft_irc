@@ -22,6 +22,23 @@ std::string	normalizeInput(const std::string &input)
 	return (normalized);
 }
 
+// 
+
+void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg)
+{
+	// if (!DEBUG)
+		// return ;
+
+	std::cout << msg << std::endl;
+
+	std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
+	while (it != parsedCommand.end())
+	{
+		std::cout << "  " << it->first << ": " << it->second << std::endl;
+		++it;
+	}
+}
+
 //
 
 std::vector<std::string>	splitParams(const std::string &params, char delimiter)

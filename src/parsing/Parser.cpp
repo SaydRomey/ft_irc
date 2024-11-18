@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/17 20:30:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 12:49:40 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,7 @@ Message	Parser::parse(const std::string &rawInput)
 	std::vector<std::string>	tokens = _tokenizer.tokenize(trimmedInput);
 	std::map<std::string, std::string>	parsedCommand = _commandParser.parseCommand(tokens);
 	
-	// // Debugging
-	// std::cout << "** Parsed Command Debugging:" << std::endl;
-	// std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
-	// while (it != parsedCommand.end())
-	// {
-	// 	std::cout << "  " << it->first << ": " << it->second << std::endl;
-	// 	++it;
-	// }
+	printMap(parsedCommand, "** Parsed Command:");
 	
 	// Validate command presence and validity
 	if (!_validator.isValidCommand(parsedCommand))

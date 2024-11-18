@@ -124,3 +124,27 @@ This is essential for compatibility with other Unix-based systems.
 Avoidance of Blocking I/O:
 Non-blocking mode prevents operations like read() and write()
 from stalling the program when data is not immediately available or buffers are full.
+
+/* ************************************************************************** */
+
+Commands to Implement
+
+Authentication Commands:
+
+	PASS: Client provides the connection password.
+	NICK: Client sets their nickname.
+	USER: Client sets their username.
+
+Channel Management Commands:
+
+	JOIN: Join a specific channel.
+	PART: Leave a specific channel.
+	TOPIC: View or change the channel's topic.
+	MODE: Change channel modes (i, t, k, o, l).
+	KICK: Eject a client from a channel.
+	INVITE: Invite a client to a channel.
+
+Messaging Commands:
+
+	PRIVMSG: Send a private message to a user or channel.
+	NOTICE: Send a notice to a user or channel.

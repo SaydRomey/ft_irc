@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 22:52:27 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/17 19:43:55 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 12:48:06 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,9 @@
 
 std::string trim(const std::string &str);
 std::string	normalizeInput(const std::string &input);
+
+// log functions
+void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg);
 
 
 
