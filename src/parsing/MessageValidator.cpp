@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 15:57:34 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/18 16:30:49 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,31 +37,6 @@ Messaging Commands:
 
 PRIVMSG: Send a private message to a user or channel.
 NOTICE: Send a notice to a user or channel.
-
-*/
-
-/*
-must be able to:
-authenticate "PASS"
-set nickname "NICK"
-set username "USER"
-join a channel "JOIN"
-send and recieve private messages "PRIVMSG"
-
-implement commands specific to channel operators:
-KICK
-INVITE
-TOPIC
-MODE
- i
- t
- k
- o
- l
-
-{"PASS", "NICK", "USER", "JOIN", "PRIVMSG",
- "KICK", "INVITE", "TOPIC", "MODE",
- "PART", "NOTICE", "PING", "PONG", "QUIT"}; // last row not needed..
 */
 
 MessageValidator::MessageValidator(void) {}
