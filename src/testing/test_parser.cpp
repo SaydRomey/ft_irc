@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:17:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 23:09:24 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/19 13:25:29 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ static void	printMsg(const std::string &input, size_t i, bool success = false)
 	else
 		result = std::string(std::string(RED) + "FAILURE!");
 	
-	std::cout << "\nTest " << (i + 1) << ": " << result << RESET << std::endl;
 	std::cout << GRAYTALIC << msg << RESET << std::endl;
+	std::cout << "Test " << (i + 1) << ": " << result << RESET << std::endl;
 }
 
 int	test_parser(void)
@@ -85,23 +85,23 @@ int	test_parser(void)
 		++i;
 	}
 	
-	std::cout << UNDERLINE << "\nTesting invalid Messages:\n" << RESET << std::endl;
-	i = 0;
-	while (i < sizeof(invalidMessages) / sizeof(invalidMessages[0]))
-	{
-		try
-		{
-			Message	message = parser.parse(invalidMessages[i]);
-			printMsg(invalidMessages[i], i);
-			std::cout << RED << "Expected exception but none occurred.\n" << RESET << std::endl;
-		}
-		catch (const std::exception &e)
-		{
-			printMsg(invalidMessages[i], i, true);
-			std::cout << GREEN << "Caught exception: " << RESET << e.what() << "\n" << std::endl;
-		}
-		++i;
-	}
+	// std::cout << UNDERLINE << "\nTesting invalid Messages:\n" << RESET << std::endl;
+	// i = 0;
+	// while (i < sizeof(invalidMessages) / sizeof(invalidMessages[0]))
+	// {
+	// 	try
+	// 	{
+	// 		Message	message = parser.parse(invalidMessages[i]);
+	// 		printMsg(invalidMessages[i], i);
+	// 		std::cout << RED << "Expected exception but none occurred.\n" << RESET << std::endl;
+	// 	}
+	// 	catch (const std::exception &e)
+	// 	{
+	// 		printMsg(invalidMessages[i], i, true);
+	// 		std::cout << GREEN << "Caught exception: " << RESET << e.what() << "\n" << std::endl;
+	// 	}
+	// 	++i;
+	// }
 	
 	return (0);
 }

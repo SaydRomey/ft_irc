@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 16:30:49 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/19 13:36:32 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <cctype>
 #include <set>
 #include <iostream> // for debug
+#include "_parsing_utils.hpp"
 
 /*
 Commands to Implement
@@ -44,9 +45,13 @@ MessageValidator::MessageValidator(void) {}
 bool	MessageValidator::isValidCommand(const std::map<std::string, std::string> &command)
 {
 	static const std::string	commandsArray[] = {\
-	"PASS", "NICK", "USER", "JOIN", "PRIVMSG", \
-	"KICK", "INVITE", "TOPIC", "MODE", \
-	"PART", "NOTICE", "PING", "PONG", "QUIT"}; // last row not needed..
+	"PASS", "NICK", "USER", \
+	"JOIN", "PART", "TOPIC", "MODE", "KICK", "INVITE", \
+	"PRIVMSG", "NOTICE", \
+	"PING"}; // this line is for test (not commands needing implementing)
+
+	printMap(command, "** Debug: isValidCommand:");
+	
 	static const std::set<std::string>	validCommands(commandsArray, commandsArray + sizeof(commandsArray) / sizeof(commandsArray[0]));
 	
 	if (!command.count("command") || command.at("command").empty())
@@ -60,17 +65,17 @@ bool	MessageValidator::isValidCommand(const std::map<std::string, std::string> &
 	// Allow numeric replies
 	if (cmd.size() == 3 && std::isdigit(cmd[0]) && std::isdigit(cmd[1]) && std::isdigit(cmd[2]))
 	{
-		std::cout << "** Debug: Command is a valid numeric reply: " << cmd << std::endl;
+		// std::cout << "** Debug: Command is a valid numeric reply: " << cmd << std::endl;
 		return (true);
 	}
 
 	if (validCommands.find(cmd) == validCommands.end())
 	{
-		std::cout << "** Debug: Command is not a valid IRC command: " << cmd << std::endl;
+		// std::cout << "** Debug: Command is not a valid IRC command: " << cmd << std::endl;
 		return (false);
 	}
 	
-	std::cout << "** Debug: Command is valid: " << cmd << std::endl;
+	// std::cout << "** Debug: Command is valid: " << cmd << std::endl;
 	return (true);
 }
 

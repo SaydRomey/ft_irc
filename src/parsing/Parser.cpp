@@ -6,20 +6,25 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 16:04:32 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/19 13:36:13 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include "_parsing_utils.hpp"
 #include <iostream> // for debug
+#include "_parsing_utils.hpp"
 
 Parser::Parser(void) {}
 
 Message	Parser::parse(const std::string &rawInput)
 {
 	std::string	trimmedInput = trim(rawInput);
-	std::vector<std::string>	tokens = _tokenizer.tokenize(trimmedInput);
+	
+	std::string	normalizedInput = normalizeInput(trimmedInput); //
+	std::vector<std::string>	tokens = _tokenizer.tokenize(normalizedInput); //
+	
+	// std::vector<std::string>	tokens = _tokenizer.tokenize(trimmedInput);
 	std::map<std::string, std::string>	parsedCommand = _commandParser.parseCommand(tokens);
 	
 	// printMap(parsedCommand, "** Parsed Command:");

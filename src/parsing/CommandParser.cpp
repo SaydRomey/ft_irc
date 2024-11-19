@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:41:20 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 13:05:16 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/19 13:23:10 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,25 +36,25 @@ std::map<std::string, std::string>	CommandParser::parseCommand(const std::vector
 		command["command"] = ""; // explicitly empty if no command is found
 
 	// Remaining tokens: params and trailing
-	// if (i < tokens.size())
-	// 	command["params"] = trim(tokens[i++]);
+	if (i < tokens.size())
+		command["params"] = trim(tokens[i++]);
 	
 	// *! modification (to test) to parse commands with multiple arguments
 	// Extract all remaining tokens as params
-	std::string	params;
-	while (i < tokens.size() && tokens[i][0] != ':')
-	{
-		if (!params.empty())
-			params += " ";
-		params += tokens[i++];
-	}
-	command["params"] = trim(tokens[i++]);
+	// std::string	params;
+	// while (i < tokens.size() && tokens[i][0] != ':')
+	// {
+	// 	if (!params.empty())
+	// 		params += " ";
+	// 	params += tokens[i++];
+	// }
+	// command["params"] = trim(tokens[i++]);
 		
 	// Extract trailing
 	if (i < tokens.size())
 		command["trailing"] = trim(tokens[i]);
 
-	printMap(command, "** Parsed command:");
+	// printMap(command, "** Parsed command:");
 
 	return (command);
 }
