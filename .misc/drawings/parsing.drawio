@@ -1,0 +1,244 @@
+<mxfile host="65bd71144e">
+    <diagram id="uao0_eYuucPrijgxwAze" name="Page-1">
+        <mxGraphModel dx="1657" dy="2083" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="3" value="Command Parsing and Handling" style="rounded=0;whiteSpace=wrap;html=1;labelBorderColor=none;labelBackgroundColor=none;strokeColor=#006633;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="40" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Command parser" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="760" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Tokenizer" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="480" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="MessageValidator" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1040" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Message" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1320" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="Parser" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="trim raw input" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="tokenize" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="190" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="parse tokens" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="validate tokens" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="270" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="return Message" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="310" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="normalize input" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="look for &quot; :&quot;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="190" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="main part substr" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="split mainpart, &quot; &quot;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="610" y="270" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="trailing substr" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="310" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="(if found prefix &quot;: &quot;)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="610" y="350" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="return tokens vec" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="390" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="extract prefix" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="820" y="150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="tokenize(input)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="_split(str, delim, vec)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="440" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="parseCommand(vec)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="780" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="extract command" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="820" y="190" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="extract params" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="820" y="230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="extract trailing" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="820" y="270" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="_parsePrefix(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="780" y="320" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="isValidCmd(map)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1060" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="authentication cmd" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1040" y="-750" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="channel management cmd" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1040" y="-590" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="messaging cmd" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1040" y="-310" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="PASS" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-710" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="NICK" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-670" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="USER" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-630" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="JOIN" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-550" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="PART" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-510" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="TOPIC" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-470" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="MODE" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-430" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="KICK" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-390" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="INVITE" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-350" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="50" value="(i, t, k, o, l)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1180" y="-430" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="PRIVMSG" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-270" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="NOTICE" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="other cmd (maybe?)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1040" y="-190" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="54" value="PART" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="PING" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-110" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="56" value="PONG" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-70" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" value="QUIT" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="-30" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="59" value="command exists" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="60" value="allow numeric replies" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="190" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="62" value="isValidNickname(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1060" y="230" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="63" value="starts with letter" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="280" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="64" value="contains only letters, digits, dashed and underscores" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="320" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="65" value="isValidChannel(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1060" y="400" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="66" value="starts with '#'" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="450" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="67" value="contains only letters and digits" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="490" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="68" value="isValidTrailing(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1055" y="540" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="69" value="isValidModeCommand(vec)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1055" y="590" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" value="vec.size() &amp;gt; 2" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="640" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="71" value="validate first arg as channel" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="680" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" value="isValidPrivmsg?" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="720" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" value="isChannelOperatorCmd?&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22isValidPrivmsg%3F%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%221052.5%22%20y%3D%22720%22%20width%3D%22155%22%20height%3D%2240%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="770" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="74" value="isMessagingCmd?" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="820" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="75" value="isAuthCmd?" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="870" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="76" value="isChannelMngCmd?" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="920" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="77" value="_isAlphanumeric(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1052.5" y="970" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="78" value="parse(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="79" value="Message(map)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="80" value="sets attributes if they exist" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1350" y="150" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="81" value="prefix" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1430" y="190" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="82" value="command" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1430" y="230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="83" value="params" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1430" y="270" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="84" value="trailing" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1430" y="310" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="85" value="getters for attributes" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="350" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="86" value="Aggregator" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-160" y="40" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="87" value="processData(fd, str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-140" y="100" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="88" value="append data to buffer,&lt;br&gt;split buffer into commands,&lt;br&gt;handle incomplete portion&lt;br&gt;return complete commands" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-120" y="150" width="170" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="89" value="_splitCommands(str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-150" y="260" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="90" value="split based on &quot;\r\n&quot;&lt;br&gt;handle remaining part:&lt;br&gt;(incomplete or empty str)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-120" y="315" width="170" height="100" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
