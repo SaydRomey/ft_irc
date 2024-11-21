@@ -52,6 +52,9 @@ class Server
 		// helpers
 		void	_sendMessage(int clientFd, const std::string &message);
 		void	_disconnectClient(int clientFd, const std::string &reason);
+
+		// template<int clientFd>
+		// static bool _is_clientFd(const pollfd &pfd) { return pfd.fd == clientFd; }
 };
 
 #endif // SERVER_HPP

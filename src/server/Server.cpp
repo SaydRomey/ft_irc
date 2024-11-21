@@ -19,7 +19,7 @@ void	Server::_initSocket(void)
 {
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
-		throw (std::runtime_error(std::string("Socker creation failed: ").append(strerror(errno))));
+		throw (std::runtime_error(std::string("Socket creation failed: ").append(strerror(errno))));
 
 	int	opt = 1;
 	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -135,7 +135,7 @@ void	Server::_handleClient(int clientFd)
 	}
 }
 
-void	Server::_broadcast(const std::string &message, int senderFd = -1)
+void	Server::_broadcast(const std::string &message, int senderFd)
 {
 	size_t	i = 0;
 
@@ -194,7 +194,7 @@ void	Server::_disconnectClient(int clientFd, const std::string &reason)
 	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
 	close(clientFd);
 
-	_pollFds.erase(std::remove_if(_pollFds.begin(), _pollFds.end(), [clientFd](const pollfd &pfd) { return (pfd.fd == clientFd); }), _pollFds.end());
-	_clients.erase(clientFd);
+	// const int AAA = clientFd;
+	// _pollFds.erase(std::remove_if(_pollFds.begin(), _pollFds.end(), _is_clientFd<AAA>), _pollFds.end());
+	// _clients.erase(clientFd);
 }
-
