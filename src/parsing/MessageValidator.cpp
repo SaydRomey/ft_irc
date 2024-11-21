@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/19 13:36:32 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/21 13:30:16 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ bool	MessageValidator::isValidCommand(const std::map<std::string, std::string> &
 	"PRIVMSG", "NOTICE", \
 	"PING"}; // this line is for test (not commands needing implementing)
 
-	printMap(command, "** Debug: isValidCommand:");
+	// printMap(command, "** Debug: isValidCommand:");
 	
 	static const std::set<std::string>	validCommands(commandsArray, commandsArray + sizeof(commandsArray) / sizeof(commandsArray[0]));
 	

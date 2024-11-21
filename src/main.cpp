@@ -6,16 +6,21 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 17:58:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/21 15:49:51 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "_test_header.hpp"
 
-int	main(void)
+int	main(int argc, char *argv[])
 {
-	// test_server();
-	test_parser();
+	(void)argc;
+	(void)argv;
+	
+	test_server();
+	
+	// test_parser();
+	// test_tokenizer(argc, argv);
 	// test_log_error();
 	// test_send_error_response();
 	// test_custom_err();
