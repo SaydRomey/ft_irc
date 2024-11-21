@@ -12,6 +12,7 @@ class User
 	public:
 		User(std::string username, std::string nickname, int fd);
 		User(int fd);
+		std::string getNickname();
 };
 
 #endif

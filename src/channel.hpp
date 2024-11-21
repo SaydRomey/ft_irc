@@ -11,21 +11,21 @@ class Channel
 	private:
 		std::string _name;
 		std::string _topic;
-		std::vector<User*> _members;
-		std::vector<User*> _operators; //admin
-		std::map<char, std::string> _modes;
+		std::map<User*, bool> _members; //true if it's an operator/admin
+		std::map<char, bool> _modes; //+ pour ajouté ou - pour enlever, peut enchainer les modes a suivre (ex: +itk)
 		std::string _password;
-		int _memberLimit;
+		size_t _memberLimit;
 	public:
-		Channel(std::string name);
+		Channel(std::string name, User& op);
 		~Channel();
 
-		void	addMember(User *user);
-		void	removeMember(User *user);
-		void	setName(std::string name, User *operators);
-		void	setTopic(const std::string &topic, User *user);
+		bool	addMember(User& user);
+		bool	removeMember(User& user);
+		bool	setTopic(const std::string &topic, const User& op);
+		bool	kick(User &user, const User& op, std::string reason);
+		bool	invite(User &user, const User& op);
+		bool	setMode(char mode, const User& op, std::string pswOrLimit = "");
 		std::string getTopic();
-
 };
 
 #endif
