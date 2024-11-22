@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:37:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 15:51:31 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/22 17:37:23 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <arpa/inet.h>	// inet_ntoa()
 #include <poll.h>		// poll()
 #include <csignal>		// signal()
+#include <cstring>		// memset()
 
 /*
 compile and launch the executable,
