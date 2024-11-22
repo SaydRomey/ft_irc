@@ -2,11 +2,11 @@
 
 Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
 {
-	_modes.insert_or_assign('i', false);
-	_modes.insert_or_assign('t', false);
-	_modes.insert_or_assign('k', false);
-	_modes.insert_or_assign('o', false);
-	_modes.insert_or_assign('l', false);
+	_modes['i'] = false;
+	_modes['t'] = false;
+	_modes['k'] = false;
+	_modes['o'] = false;
+	_modes['l'] = false;
 	_members[&op]=true;
 }
 Channel::~Channel()
@@ -14,17 +14,30 @@ Channel::~Channel()
 
 }
 
-bool	Channel::addMember(User& user)
+bool	Channel::addMember(User& user, std::string pswIfNeeded)
 {
-	//voir si le mode i est pas activé sinon refus et mot de passe? 
-	//voir aussi la limite d'utilisateur vs nombre actuel
-	_members[&user]=false;
-	if (_members.find(&user) != _members.end())
+	if (_modes['i'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
 	{
-		//ajouter message quand class user fini
-		return true;
+		if (_modes['l'] == false || _members.size() < _memberLimit)
+		{
+			_members[&user]=false;
+			if (_members.find(&user) != _members.end())
+			{
+				std::cout << user.getNickname() << " has joined the channel " << this->_name << "! :)" << std::endl;
+				return true;
+			}
+		}
+		else
+		{
+			std::cout << "The channel member limit has been reached" << std::endl;
+			return false;
+		}
 	}
-	return false;
+	else
+	{
+		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
+		return false;
+	}
 }
 
 bool	Channel::removeMember(User& user)
@@ -33,7 +46,7 @@ bool	Channel::removeMember(User& user)
 		_members.erase(&user);
 	if (_members.find(&user) == _members.end())
 	{
-		//ajouter message quand class user fini
+		std::cout << "User " << user.getNickname() << " has left the channel " << this->_name << std::endl;
 		return true;
 	}
 	return false;
@@ -42,13 +55,18 @@ bool	Channel::removeMember(User& user)
 
 bool	Channel::setTopic(const std::string &topic, const User& op)
 {
-	//voir si le mode t est bien en true sinon on affiche juste le topic
+	if (_modes['t'] == true)
+	{
+		std::cout << "Channel " << this->_name << " theme: " << this->_topic << std::endl;
+		return true;
+	}
 	User current = op;
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
 		_topic = topic;
 		return true;
 	}
+	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
 	return false;
 }
 
@@ -57,30 +75,59 @@ bool	Channel::kick(User &user, const User& op, std::string reason)
 	User current = op;
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
-		
+		this->removeMember(user);
+		std::cout << "User " << user.getNickname() << " has been kicked for the following reason: " << reason << std::endl;
+		return true;
 	}
+	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
+	return false;
 }
 
 bool	Channel::invite(User &user, const User& op)
 {
-	//voir la limite d'utilisateur vs nombre actuel
 	User current = op;
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
-		
+		if (_modes['l'] == false || _members.size() < _memberLimit)
+		{
+			_members[&user]=false;
+			if (_members.find(&user) != _members.end())
+			{
+				std::cout << user.getNickname() << " has been invited to join the channel " << this->_name << "! :)" << std::endl;
+				return true;
+			}
+		}
+		else
+		{
+			std::cout << "The channel member limit has been reached" << std::endl;
+			return false;
+		}
 	}
+	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
+	return false;
 }
 
-bool	Channel::setMode(char mode, const User& op, std::string pswOrLimit = "")
+bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "")
 {
 	User current = op;
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
-		
+		//next step: reste juste ca a faire, voir pour detecté si 1er caractere est - ou +
+		//voir comment faire pour parcourir et faire en evitant trop de if else
 	}
 }
 
-std::string Channel::getTopic()
+bool	Channel::addOperator(User &user, const char addOrRemove)
 {
-	return this->_topic;
+	if (addOrRemove == '+')
+	{
+		this->_members[&user] = true;
+		return true;
+	}
+	else if (addOrRemove == '-')
+	{
+		this->_members[&user] = false;
+		return true;
+	}
+	return false;
 }

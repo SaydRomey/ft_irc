@@ -19,13 +19,13 @@ class Channel
 		Channel(std::string name, User& op);
 		~Channel();
 
-		bool	addMember(User& user);
+		bool	addMember(User& user, std::string pswIfNeeded);
 		bool	removeMember(User& user);
 		bool	setTopic(const std::string &topic, const User& op);
 		bool	kick(User &user, const User& op, std::string reason);
 		bool	invite(User &user, const User& op);
-		bool	setMode(char mode, const User& op, std::string pswOrLimit = "");
-		std::string getTopic();
+		bool	setMode(std::string mode, const User& op, std::string pswOrLimit = "");
+		bool	addOperator(User &user, const char addOrRemove);
 };
 
 #endif
