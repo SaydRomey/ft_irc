@@ -58,3 +58,4 @@ Weechat provides an easy way to test your server's functionality and adherence t
 
 Real Client Experience:
 You'll see how a real IRC client interacts with your server, helping you debug and improve the server's behavior.
+

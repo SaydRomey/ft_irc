@@ -86,8 +86,8 @@ weechat: ## Starts the weechat docker container
 			sleep 1; \
 		done; \
 	fi
-	@echo "$Starting Weechat container..."
-	@docker run --rm -it $(WEECHAT_IMAGE)
+	@echo "Starting Weechat container..."
+	@docker run --rm -it --network=host $(WEECHAT_IMAGE)
 
 .PHONY: weechat
 # **************************************************************************** # # (wip - more robust automation of weechat container target...)
