@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 15:50:51 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/22 17:16:12 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ void	Client::setIpAdd(std::string ipadd)
 	_ipAdd = ipadd;
 }
 
+/* ************************************************************************** */
+
 Server::Server()
 {
 	_serSocketFd = -1;
@@ -72,8 +74,6 @@ void	Server::ClearClients(int fd)
 		i++;
 	}
 }
-
-/* ************************************************************************** */
 
 bool	Server::_signal = false; // initialize the static boolean
 
@@ -108,21 +108,30 @@ void	Server::SerSocket()
 
 	add.sin_family = AF_INET; // set the address family to ipv4
 	add.sin_port = htons(this->_port); // convert the port to network byte order (big endian)
-	add.sin_addr.s_addr = INADDR_ANY; // set the address to any local machine address
+	// add.sin_addr.s_addr = INADDR_ANY; // set the address to any local machine address
+	add.sin_addr.s_addr = inet_addr("127.0.0.1");
 
+	std::cout << "Creating socket..." << std::endl;
 	_serSocketFd = socket(AF_INET, SOCK_STREAM, 0); // create the server socket
 	if (_serSocketFd == -1) // check if the socket is created
 		throw (std::runtime_error("Failed to create socket"));
 	
+	std::cout << "Setting socket options..." << std::endl;
 	int	en = 1;
 	if (setsockopt(_serSocketFd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) // set the socket option (SO_REUSEADDR) to reuse the address
 		throw (std::runtime_error("Failed to set option (SO_REUSEADDR) on socket"));
+		
 	if (fcntl(_serSocketFd, F_SETFL, O_NONBLOCK) == -1) // set the socket option (O_NONBLOCK) for non-blocking socket
 		throw (std::runtime_error("Failed to set option (O_NONBLOCK) on socket"));
+		
 	if (bind(_serSocketFd, (struct sockaddr *)&add, sizeof(add)) == -1) // bin the socket to the address
 		throw (std::runtime_error("Failed to bind socket"));
+		
 	if (listen(_serSocketFd, SOMAXCONN) == -1) // listen for incomming connections and makes the socket a passive socket
 		throw (std::runtime_error("listen() failed"));
+	
+	std::cout << "Server socket initialized on port " << this->_port << std::endl;
+	std::cout << "Server bound to: 127.0.0.1:" << _port << std::endl;
 	
 	NewPoll.fd = _serSocketFd; // add the server socket to the pollfd
 	NewPoll.events = POLLIN; // set the event to POLLIN for reading data
@@ -132,7 +141,7 @@ void	Server::SerSocket()
 
 void	Server::ServerInit()
 {
-	this->_port = 4444;
+	this->_port = 6667;
 	SerSocket(); // create the server socket
 
 	std::cout << GREEN << "Server <" << _serSocketFd << "> Connected" << RESET << std::endl;
@@ -209,8 +218,36 @@ void	Server::RecieveNewData(int fd)
 	{
 		// print the recieved data
 		buff[bytes] = '\0';
-		std::cout << YELLOW << "Client <" << fd << "> Data: " RESET << buff;
+		std::string	data(buff);
+
 		// here we add code to process the recueved data: parse, check, authenticate, handle the commands, etc...
+		
+		// tmp examples for testing
+		
+		if (data.find("NICK") == 0)
+		{
+			// Respond to NICK
+			std::string	nick = data.substr(5);
+			std::string	reply = ":ft_irc 001 " + nick + " :Welcome to the server\r\n";
+			send(fd, reply.c_str(), reply.size(), 0);
+		}
+		else if (data.find("USER") == 0)
+		{
+			// Respond to USER
+			std::string	reply = ":ft_irc 001 user :User registered\r\n";
+			send(fd, reply.c_str(), reply.size(), 0);
+		}
+		else if (data.find("PING") == 0)
+		{
+			// Respond to PING with PONG
+			std::string	pong = "PONG :ft_irc\r\n";
+			send(fd, pong.c_str(), pong.size(), 0);
+		}
+		else
+		{
+			// handle generic messages
+			std::cout << YELLOW << "Client <" << fd << "> Data: " RESET << buff;
+		}
 	}
 }
 
