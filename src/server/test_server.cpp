@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/22 17:16:12 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/22 20:37:38 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,8 @@ void	Server::SerSocket()
 
 	add.sin_family = AF_INET; // set the address family to ipv4
 	add.sin_port = htons(this->_port); // convert the port to network byte order (big endian)
-	// add.sin_addr.s_addr = INADDR_ANY; // set the address to any local machine address
-	add.sin_addr.s_addr = inet_addr("127.0.0.1");
+	add.sin_addr.s_addr = INADDR_ANY; // set the address to any local machine address
+	// add.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	std::cout << "Creating socket..." << std::endl;
 	_serSocketFd = socket(AF_INET, SOCK_STREAM, 0); // create the server socket
@@ -222,32 +222,9 @@ void	Server::RecieveNewData(int fd)
 
 		// here we add code to process the recueved data: parse, check, authenticate, handle the commands, etc...
 		
-		// tmp examples for testing
 		
-		if (data.find("NICK") == 0)
-		{
-			// Respond to NICK
-			std::string	nick = data.substr(5);
-			std::string	reply = ":ft_irc 001 " + nick + " :Welcome to the server\r\n";
-			send(fd, reply.c_str(), reply.size(), 0);
-		}
-		else if (data.find("USER") == 0)
-		{
-			// Respond to USER
-			std::string	reply = ":ft_irc 001 user :User registered\r\n";
-			send(fd, reply.c_str(), reply.size(), 0);
-		}
-		else if (data.find("PING") == 0)
-		{
-			// Respond to PING with PONG
-			std::string	pong = "PONG :ft_irc\r\n";
-			send(fd, pong.c_str(), pong.size(), 0);
-		}
-		else
-		{
-			// handle generic messages
-			std::cout << YELLOW << "Client <" << fd << "> Data: " RESET << buff;
-		}
+		// handle generic messages (tmp)
+		std::cout << YELLOW << "Client <" << fd << "> Data: " RESET << buff;
 	}
 }
 
