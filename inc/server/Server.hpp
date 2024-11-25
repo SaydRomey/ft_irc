@@ -12,6 +12,7 @@
 # include <netinet/in.h>
 # include <poll.h>
 # include <stdexcept>
+# include <cerrno>
 # include "Aggregator.hpp"
 # include "Parser.hpp"
 

@@ -44,12 +44,12 @@ void	Client::setIpAdd(std::string ipadd)
 
 /* ************************************************************************** */
 
-Server::Server()
+TestServer::TestServer()
 {
 	_serSocketFd = -1;
 }
 
-void	Server::ClearClients(int fd)
+void	TestServer::ClearClients(int fd)
 {
 	size_t	i = 0;
 	// remove the client from the pollfd
@@ -75,16 +75,16 @@ void	Server::ClearClients(int fd)
 	}
 }
 
-bool	Server::_signal = false; // initialize the static boolean
+bool	TestServer::_signal = false; // initialize the static boolean
 
-void	Server::SignalHandler(int signum)
+void	TestServer::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << "\n" << "Signal Recieved!" << std::endl;
-	Server::_signal = true; // set the static boolean to true to stop the server
+	TestServer::_signal = true; // set the static boolean to true to stop the server
 }
 
-void	Server::CloseFds()
+void	TestServer::CloseFds()
 {
 	size_t	i = 0;
 	// close all the clients
@@ -101,7 +101,7 @@ void	Server::CloseFds()
 	}
 }
 
-void	Server::SerSocket()
+void	TestServer::SerSocket()
 {
 	struct sockaddr_in	add;
 	struct pollfd		NewPoll;
@@ -139,7 +139,7 @@ void	Server::SerSocket()
 	_fds.push_back(NewPoll); // add the server socket to the pollfd
 }
 
-void	Server::ServerInit()
+void	TestServer::TestServerInit()
 {
 	this->_port = 6667;
 	SerSocket(); // create the server socket
@@ -147,9 +147,9 @@ void	Server::ServerInit()
 	std::cout << GREEN << "Server <" << _serSocketFd << "> Connected" << RESET << std::endl;
 	std::cout << "Waiting to accept a connection..." << std::endl;
 
-	while (Server::_signal == false) // run the server until the signal is recieved
+	while (TestServer::_signal == false) // run the server until the signal is recieved
 	{
-		if ((poll(&_fds[0], _fds.size(), -1) == -1) && Server::_signal == false) // wait for an event
+		if ((poll(&_fds[0], _fds.size(), -1) == -1) && TestServer::_signal == false) // wait for an event
 			throw (std::runtime_error("poll() failed"));
 		
 		size_t	i = 0;
@@ -169,7 +169,7 @@ void	Server::ServerInit()
 	CloseFds(); // close the file descriptor when the server stops
 }
 
-void	Server::AcceptNewClient()
+void	TestServer::AcceptNewClient()
 {
 	Client	client;
 	struct sockaddr_in	cliadd;
@@ -201,7 +201,7 @@ void	Server::AcceptNewClient()
 	std::cout << GREEN << "Client <" << incofd << "> Connected" << RESET << std::endl;
 }
 
-void	Server::RecieveNewData(int fd)
+void	TestServer::RecieveNewData(int fd)
 {
 	char	buff[1024]; // buffer for the recieved data
 	memset(buff, 0, sizeof(buff)); // clear the buffer
@@ -253,14 +253,14 @@ void	Server::RecieveNewData(int fd)
 
 void	test_server(void)
 {
-	Server	server;
+	TestServer	server;
 	
 	std::cout << "---- SERVER ----" << std::endl;
 	try
 	{
-		signal(SIGINT, Server::SignalHandler); // catch the signal (CTRL + c)
-		signal(SIGQUIT, Server::SignalHandler); // catch the signal (CTRL + \)
-		server.ServerInit(); // initialize the server
+		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
+		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
+		server.TestServerInit(); // initialize the server
 	}
 	catch (std::exception &e)
 	{

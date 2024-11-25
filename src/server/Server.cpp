@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include <iostream>
 #include <cstring> // for strerror
+#include <cstdlib>
 #include <unistd.h> // for close()
 
 Server::Server(const std::string &port, const std::string &password) \
@@ -29,7 +30,7 @@ void	Server::_initSocket(void)
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-	serverAddr.sin_port = htons(std::stoi(_port));
+	serverAddr.sin_port = htons(atoi(_port.c_str()));
 
 	if (bind(_serverFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
 		throw (std::runtime_error("Binding failed: " + std::string(strerror(errno))));
