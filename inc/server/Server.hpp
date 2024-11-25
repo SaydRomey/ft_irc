@@ -15,6 +15,7 @@
 # include <cerrno>
 # include "Aggregator.hpp"
 # include "Parser.hpp"
+# include "Client.hpp"
 
 class Server
 {
@@ -34,7 +35,7 @@ class Server
 
 		// polling
 		std::vector<pollfd>	_pollFds;
-		std::map<int, std::string>	_clients; // maps file descriptor to client identifier (e.g., nicknames)
+		std::map<int, ft::Client*>	_clients; // maps file descriptor to ft::Client pointer
 
 		// parsing and buffering
 		Aggregator	_aggregator;
