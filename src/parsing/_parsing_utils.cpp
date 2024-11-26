@@ -15,7 +15,7 @@ std::string trim(const std::string &str)
 std::string normalizeInput(const std::string &input)
 {
 	std::string	normalized;
-	normalized.reserve(input.size()); // Reserve space to avoid multiple reallocations
+	normalized.reserve(input.size());
 
 	bool	previousWasSpace = false;
 

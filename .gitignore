@@ -1,0 +1,23 @@
+# object files and archives in all directories
+*.o
+*.a
+
+# PDFs
+*.pdf
+
+# macOS specific files
+*.dSYM
+.DS_Store
+
+# Visual Studio Code settings
+.vscode
+
+# tmp, and obj directories in all directories
+**/tmp/
+**/obj/
+
+# # Executables
+ircserv
+
+# Default executable
+a.out
