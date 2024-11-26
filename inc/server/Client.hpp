@@ -8,14 +8,20 @@ namespace ft
 class Client
 {
 public:
+	Client(void); // Only for map element init, sets fd to -1
 	Client(int fd);
 	~Client();
 	Client& operator=(const Client& that);
 
 	void	setNickname(const std::string& nickname);
 	void	setUsername(const std::string& username);
+	void	setRegistered(void); // Throws logic_error if nickname or username isn't set
 
-	// TODO: Move Server::_sendMessage method into Client class
+	const std::string&	getNickname(void) const;
+	const std::string&	getUsername(void) const;
+	bool				isRegistered(void) const;
+
+	// TODO: move the following methods from Server into Client
 	void	sendMessage(const std::string& msg);
 
 private:

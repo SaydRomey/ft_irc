@@ -98,7 +98,7 @@ void	Server::_acceptConnection(void)
 
 	pollfd	clientPollFd = {clientFd, POLLIN, 0};
 	_pollFds.push_back(clientPollFd);
-	_clients[clientFd] = new ft::Client(clientFd);
+	_clients[clientFd] = ft::Client(clientFd);
 
 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
 }
@@ -149,6 +149,14 @@ void	Server::_broadcast(const std::string &message, int senderFd)
 	}
 }
 
+void Server::_welcomeClient(int clientFd)
+{
+	Client& client = _clients[clientFd];
+	std::string msg;
+
+	msg = "001 "
+}
+
 void	Server::_handleCommand(int clientFd, const Message &message)
 {
 	const std::string	&command = message.getCommand();
@@ -193,7 +201,6 @@ void	Server::_sendMessage(int clientFd, const std::string &message)
 void	Server::_disconnectClient(int clientFd, const std::string &reason)
 {
 	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
-	delete _clients[clientFd];
 	_clients.erase(clientFd);
 	close(clientFd);
 

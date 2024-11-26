@@ -35,7 +35,7 @@ class Server
 
 		// polling
 		std::vector<pollfd>	_pollFds;
-		std::map<int, ft::Client*>	_clients; // maps file descriptor to ft::Client pointer
+		std::map<int, ft::Client>	_clients; // maps file descriptor to ft::Client pointer
 
 		// parsing and buffering
 		Aggregator	_aggregator;
@@ -46,6 +46,7 @@ class Server
 		void	_acceptConnection(void);
 		void	_handleClient(int clientFd);
 		void	_broadcast(const std::string &message, int senderFd = -1);
+		void	_welcomeClient(int clientFd);
 
 		// command handlers
 		void	_handleCommand(int clientFd, const Message &message);
