@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 22:52:27 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/18 15:43:57 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/22 17:36:54 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 # include <algorithm>
 # include <cctype>
 # include <map>
-#include <iostream>
-#include <sstream>
-
-#include <regex> // for normalization
+# include <iostream>
+# include <sstream>
+# include <string>
+# include <vector>
 
 std::string trim(const std::string &str);
 std::string	normalizeInput(const std::string &input);

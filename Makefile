@@ -86,8 +86,8 @@ weechat: ## Starts the weechat docker container
 			sleep 1; \
 		done; \
 	fi
-	@echo "$Starting Weechat container..."
-	@docker run --rm -it $(WEECHAT_IMAGE)
+	@echo "Starting Weechat container..."
+	@docker run --rm -it --network=host $(WEECHAT_IMAGE)
 
 .PHONY: weechat
 # **************************************************************************** # # (wip - more robust automation of weechat container target...)
@@ -194,49 +194,50 @@ pdf: | $(TMP_DIR) ## Opens the PDF instructions
 # **************************************************************************** #
 # ------------------------------ DOCUMENTATION ------------------------------- #
 # **************************************************************************** #
-URL_CLIENTS	:= https://libera.chat/guides/clients
+# Weechat
 URL_WEECHAT	:= https://weechat.org/
-URL_WEEDEV	:= https://weechat.org/files/doc/weechat/stable/weechat_dev.en.html
-URL_WEEIMG	:= https://hub.docker.com/r/weechat/weechat
-URL_RFC1459	:= https://datatracker.ietf.org/doc/html/rfc1459
-URL_RFC2812	:= https://datatracker.ietf.org/doc/html/rfc2812
-URL_RFC7194	:= https://datatracker.ietf.org/doc/html/rfc7194
-URL_IRCV3	:= https://ircv3.net/irc/
-
-URL_MODERN	:= https://modern.ircdocs.horse/
+URL_WEEDOC	:= https://weechat.org/doc/
+# Guides/Tutorials
 URL_SMALL	:= https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
 URL_GUIDE	:= https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
+# Protocols
+URL_RFC1459	:= https://datatracker.ietf.org/doc/html/rfc1459
+URL_RFC2810	:= https://datatracker.ietf.org/doc/html/rfc2810
+URL_RFC2811	:= https://datatracker.ietf.org/doc/html/rfc2811
+URL_RFC2812	:= https://datatracker.ietf.org/doc/html/rfc2812
+URL_RFC2813	:= https://datatracker.ietf.org/doc/html/rfc2813
+URL_RFC7194	:= https://datatracker.ietf.org/doc/html/rfc7194
 # ...
 
 doc: ## Offer a list of documentation URL links
 	@clear
 	@echo "Select documentation subject:"
-	@echo "  0. Choosing an IRC client"
-	@echo "  1. Weechat home page"
-	@echo "  2. Weechat dev documentation"
-	@echo "  3. Weechat docker image"
-	@echo "$(ORANGE)Protocols$(RESET)"
-	@echo "  4. Internet Relay Chat Protocol (RFC1459)"
-	@echo "  5. Internet Relay Chat: Client Protocol (RFC2812)"
-	@echo "  6. Default Port for Internet Relay Chat (IRC) via TLS/SSL (RFC7194)"
-	@echo "  7. IRCv3 Specification"
+	@echo "$(ORANGE)Weechat$(RESET)"
+	@echo "  0. Weechat home page"
+	@echo "  1. Weechat documentation"
 	@echo "$(ORANGE)Guides/Tutorials$(RESET)"
-	@echo "  100. Modern IRC client protocol"
-	@echo "  101. ft_irc guide - on medium.com"
-	@echo "  102. ft_irc guide - on reactive.so"
+	@echo "  100. ft_irc guide - on medium.com"
+	@echo "  101. ft_irc guide - on reactive.so"
+	@echo "$(ORANGE)IRC Protocols - RFC$(RESET)"
+	@echo "  1459. IRC Protocol"
+	@echo "  2810. Architecture"
+	@echo "  2811. Channel Management"
+	@echo "  2812. Client Protocol"
+	@echo "  2813. Server Protocol"
+	@echo "  7194. Default Port for IRC via TLS/SS"
+
 	@read url_choice; \
 	case $$url_choice in \
-		0) CHOICE=$(URL_CLIENTS);; \
-		1) CHOICE=$(URL_WEECHAT);; \
-		2) CHOICE=$(URL_WEEDEV);; \
-		3) CHOICE=$(URL_WEEIMG);; \
-		4) CHOICE=$(URL_RFC1459);; \
-		5) CHOICE=$(URL_RFC2818);; \
-		6) CHOICE=$(URL_RFC7194);; \
-		7) CHOICE=$(URL_IRCV3);; \
-		100) CHOICE=$(URL_MODERN);; \
-		101) CHOICE=$(URL_SMALL);; \
-		102) CHOICE=$(URL_GUIDE);; \
+		0) CHOICE=$(URL_WEECHAT);; \
+		1) CHOICE=$(URL_WEEDOC);; \
+		100) CHOICE=$(URL_SMALL);; \
+		101) CHOICE=$(URL_GUIDE);; \
+		1459) CHOICE=$(URL_RFC1459);; \
+		2810) CHOICE=$(URL_RFC2810);; \
+		2811) CHOICE=$(URL_RFC2811);; \
+		2812) CHOICE=$(URL_RFC2812);; \
+		2813) CHOICE=$(URL_RFC2813);; \
+		7194) CHOICE=$(URL_RFC7194);; \
 		*) echo "Invalid choice. Exiting." ; exit 1;; \
 	esac; \
 	open $$CHOICE
@@ -251,7 +252,7 @@ REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
 repo: ## Open the GitHub repository
 	@echo "Opening $(AUTHOR)'s github repo..."
-	@$(OPEN) $(REPO_LINK);
+	@open $(REPO_LINK);
 
 .PHONY: repo
 # **************************************************************************** #

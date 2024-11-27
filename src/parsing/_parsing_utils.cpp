@@ -12,13 +12,34 @@ std::string trim(const std::string &str)
 	return (str.substr(start, end - start + 1));
 }
 
-std::string	normalizeInput(const std::string &input)
+std::string normalizeInput(const std::string &input)
 {
-	// Replace multiple spaces or tabs with a single space
-	std::string	normalized = std::regex_replace(input, std::regex("[ \t]+"), " ");
-	// Remove unnecessary carriage returns or line breaks
-	normalized = std::regex_replace(input, std::regex("\r\n"), "");
-	
+	std::string	normalized;
+	normalized.reserve(input.size());
+
+	bool	previousWasSpace = false;
+
+	std::string::const_iterator it = input.begin();
+	while (it != input.end())
+	{
+		// Replace multiple spaces or tabs with a single space
+		if (*it == ' ' || *it == '\t')
+		{
+			if (!previousWasSpace)
+			{
+				normalized += ' ';
+				previousWasSpace = true;
+			}
+		}
+		// Remove carriage returns and line breaks
+		else if (*it != '\r' && *it != '\n')
+		{
+			normalized += *it;
+			previousWasSpace = false;
+		}
+		++it;
+	}
+
 	return (normalized);
 }
 
