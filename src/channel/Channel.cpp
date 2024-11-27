@@ -107,26 +107,87 @@ bool	Channel::invite(User &user, const User& op)
 	return false;
 }
 
-bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "")
+bool	isValidNb(const std::string& str)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (!std::isdigit(str[i]))
+			return false;
+	}
+	if (str.empty())
+		return false;
+	return true;
+}
+
+bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
 {
 	User current = op;
+	std::string validMod = "itkol";
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
-		//next step: reste juste ca a faire, voir pour detecté si 1er caractere est - ou +
-		//voir comment faire pour parcourir et faire en evitant trop de if else
+		if (mode[0] == '+')
+		{
+			for (size_t i = 1; i < mode.size(); i++)
+			{
+				if (validMod.find(mode[i]) != std::string::npos)
+				{
+					this->_modes[mode[i]] = true;
+					if (mode[i] == 'k')
+						if (!pswOrLimit.empty())
+							this->_password = pswOrLimit;
+					if (mode[i] == 'o')
+						if (user != NULL)
+							addOperator(user, '+');
+					if (mode[i] == 'l')
+						if (isValidNb(pswOrLimit) != false)
+							this->_memberLimit = std::atoi(pswOrLimit.c_str());
+				}
+				else
+				{
+					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
+				}
+			}
+		}
+		else if (mode[0] = '-')
+		{
+			for (size_t i = 1; i < mode.size(); i++)
+			{
+				if (validMod.find(mode[i]) != std::string::npos)
+				{
+					this->_modes[mode[i]] = false;
+					if (mode[i] == 'k')
+						this->_password = "";
+					if (mode[i] == 'o')
+						if (user != NULL)
+							addOperator(user, '-');
+					if (mode[i] == 'l')
+						_memberLimit = 0;
+				}
+				else
+				{
+					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
+				}
+			}
+		}
+		else
+		{
+			std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
+		}
 	}
 }
 
-bool	Channel::addOperator(User &user, const char addOrRemove)
+bool	Channel::addOperator(User *user, const char addOrRemove)
 {
 	if (addOrRemove == '+')
 	{
-		this->_members[&user] = true;
+		this->_members[user] = true;
 		return true;
 	}
 	else if (addOrRemove == '-')
 	{
-		this->_members[&user] = false;
+		this->_members[user] = false;
 		return true;
 	}
 	return false;
