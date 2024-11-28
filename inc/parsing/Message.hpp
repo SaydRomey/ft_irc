@@ -19,11 +19,19 @@
 class Message
 {
 	public:
+		Message(void);
 		Message(const std::map<std::string, std::string> &parsedCommand);
 		const std::string&	getPrefix(void) const;
 		const std::string&	getCommand(void) const;
 		const std::string&	getParams(void) const;
 		const std::string&	getTrailing(void) const;
+
+		void	setPrefix(const std::string& prefix);
+		void	setCommand(const std::string& command);
+		void	setParams(const std::string& params);
+		void	setTrailing(const std::string& trailing);
+
+		std::string	str(void) const;
 	
 	private:
 		std::string	_prefix;

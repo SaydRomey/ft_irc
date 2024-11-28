@@ -17,6 +17,9 @@
 # include "Parser.hpp"
 # include "Client.hpp"
 
+namespace ft
+{
+
 class Server
 {
 	public:
@@ -28,14 +31,15 @@ class Server
 	
 	private:
 		// server core
-		int	_serverFd;
+		int			_serverFd;
 		std::string	_port;
 		std::string	_password;
-		bool	_isRunning;
+		bool		_isRunning;
+		time_t		_startTime;
 
 		// polling
 		std::vector<pollfd>	_pollFds;
-		std::map<int, ft::Client>	_clients; // maps file descriptor to ft::Client pointer
+		std::map<int, ft::Client>	_clients; // maps file descriptor to ft::Client object
 
 		// parsing and buffering
 		Aggregator	_aggregator;
@@ -59,5 +63,7 @@ class Server
 		// template<int clientFd>
 		// static bool _is_clientFd(const pollfd &pfd) { return pfd.fd == clientFd; }
 };
+
+}
 
 #endif // SERVER_HPP

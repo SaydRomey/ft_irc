@@ -12,6 +12,9 @@
 
 #include "Message.hpp"
 
+Message::Message(void): _prefix(), _command(), _params(), _trailing()
+{}
+
 Message::Message(const std::map<std::string, std::string> &parsedCommand)
 {
 	// _prefix = parsedCommand.find("prefix") != parsedCommand.end() ? parsedCommand.at("prefix") : "";
@@ -57,4 +60,29 @@ const std::string&	Message::getParams(void) const
 
 const std::string&	Message::getTrailing(void) const{
 	return (_trailing);
+}
+
+void Message::setPrefix(const std::string &prefix)
+{
+	_prefix = prefix;
+}
+
+void Message::setCommand(const std::string &command)
+{
+	_command = command;
+}
+
+void Message::setParams(const std::string &params)
+{
+	_params = params;
+}
+
+void Message::setTrailing(const std::string &trailing)
+{
+	_trailing = trailing;
+}
+
+std::string Message::str(void) const
+{
+	return _prefix + " " + _command + " " + _params + " " + _trailing + "\r\n";
 }

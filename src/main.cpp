@@ -23,7 +23,7 @@ int	main(int ac, char **av)
 
 	if (ac != 3)
 		return 1;
-	Server serv(av[1], av[2]);
+	ft::Server serv(av[1], av[2]);
 	serv.start();
 
 	return (0);

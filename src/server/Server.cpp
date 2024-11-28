@@ -4,19 +4,20 @@
 #include <cstring> // for strerror
 #include <cstdlib>
 #include <unistd.h> // for close()
+#include <ctime>
 
-Server::Server(const std::string &port, const std::string &password) \
+ft::Server::Server(const std::string &port, const std::string &password) \
 : _port(port), _password(password), _isRunning(false), _serverFd(-1)
 {
 	// 
 }
 
-Server::~Server(void)
+ft::Server::~Server(void)
 {
 	stop();
 }
 
-void	Server::_initSocket(void)
+void	ft::Server::_initSocket(void)
 {
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
@@ -41,10 +42,11 @@ void	Server::_initSocket(void)
 	std::cout << "Server initialized and listening on port " << _port << std::endl;
 }
 
-void	Server::start(void)
+void	ft::Server::start(void)
 {
 	_isRunning = true;
 	_initSocket();
+	time(&_startTime);
 
 	pollfd	serverPollFd = {_serverFd, POLLIN, 0};
 	_pollFds.push_back(serverPollFd);
@@ -66,7 +68,7 @@ void	Server::start(void)
 	}
 }
 
-void	Server::stop(void)
+void	ft::Server::stop(void)
 {
 	_isRunning = false;
 
@@ -83,7 +85,7 @@ void	Server::stop(void)
 }
 
 
-void	Server::_acceptConnection(void)
+void	ft::Server::_acceptConnection(void)
 {
 	sockaddr_in	clientAddr;
 	socklen_t	clientLen = sizeof(clientAddr);
@@ -101,9 +103,10 @@ void	Server::_acceptConnection(void)
 	_clients[clientFd] = ft::Client(clientFd);
 
 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
+	// _handleClient(clientFd);
 }
 
-void	Server::_handleClient(int clientFd)
+void	ft::Server::_handleClient(int clientFd)
 {
 	char	buffer[1024];
 	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
@@ -116,27 +119,39 @@ void	Server::_handleClient(int clientFd)
 
 	buffer[bytesRead] = '\0';
 	std::string	data(buffer);
-
-	std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
-
-	size_t	i = 0;
-	while (i < commands.size())
+	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << data << std::flush;
+	try
 	{
-		try
-		{
-			Message	message = _parser.parse(commands[i]);
-			_handleCommand(clientFd, message);
-		}
-		catch (const std::exception &e)
-		{
-			std::cout << "Error handling command: " << e.what() << std::endl;
-			_sendMessage(clientFd, "ERROR: " + std::string(e.what()));
-		}
-		++i;
+		Message	message = _parser.parse(data);
+		_handleCommand(clientFd, message);
 	}
+	catch (const std::exception& e)
+	{
+		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
+		_disconnectClient(clientFd, e.what());
+	}
+	
+	// std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
+	// size_t	i = 0;
+	// while (i < commands.size())
+	// {
+	// 	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << commands[i] << std::endl;
+	// 	try
+	// 	{
+	// 		Message	message = _parser.parse(commands[i]);
+	// 		_handleCommand(clientFd, message);
+	// 	}
+	// 	catch (const std::exception &e)
+	// 	{
+	// 		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
+	// 		_disconnectClient(clientFd, e.what());
+	// 		break;
+	// 	}
+	// 	++i;
+	// }
 }
 
-void	Server::_broadcast(const std::string &message, int senderFd)
+void	ft::Server::_broadcast(const std::string &message, int senderFd)
 {
 	size_t	i = 0;
 
@@ -149,21 +164,42 @@ void	Server::_broadcast(const std::string &message, int senderFd)
 	}
 }
 
-void Server::_welcomeClient(int clientFd)
+void ft::Server::_welcomeClient(int clientFd)
 {
-	Client& client = _clients[clientFd];
-	std::string msg;
+	Client&	client = _clients[clientFd];
+	Message	msg;
 
-	msg = "001 "
+	msg.setPrefix(":ft-irc");
+	msg.setCommand("001");
+	msg.setParams(client.getNickname());
+	msg.setTrailing("Placeholder text");
+	client.sendMessage(msg.str());
+
+	msg.setCommand("002");
+	client.sendMessage(msg.str());
+
+	msg.setCommand("003");
+	client.sendMessage(msg.str());
+
+	msg.setCommand("004");
+	client.sendMessage(msg.str());
 }
 
-void	Server::_handleCommand(int clientFd, const Message &message)
+void	ft::Server::_handleCommand(int clientFd, const Message &message)
 {
 	const std::string	&command = message.getCommand();
+	ft::Client&			client = _clients[clientFd];
 
 	if (command == "PASS")
 	{
+		if (client.isAuthenticated())
+			return;
 		_authenticateClient(clientFd, message);
+	}
+	else if (!client.isAuthenticated())
+	{
+		client.sendMessage(":ft-irc 464 Password is wrong/not supplied");
+		throw std::logic_error("Password error");
 	}
 	else if (command == "PING")
 	{
@@ -179,12 +215,11 @@ void	Server::_handleCommand(int clientFd, const Message &message)
 	}
 }
 
-void	Server::_authenticateClient(int clientFd, const Message &message)
+void	ft::Server::_authenticateClient(int clientFd, const Message &message)
 {
-	if (message.getTrailing() == _password)
+	if (message.getParams() == _password)
 	{
-		_sendMessage(clientFd, "Password accepted.");
-		std::cout << "Client autheticated (fd: " << clientFd << ")." << std::endl;
+		std::cout << "Client authenticated (fd: " << clientFd << ")." << std::endl;
 	}
 	else
 	{
@@ -192,19 +227,23 @@ void	Server::_authenticateClient(int clientFd, const Message &message)
 	}
 }
 
-void	Server::_sendMessage(int clientFd, const std::string &message)
+void	ft::Server::_sendMessage(int clientFd, const std::string &message)
 {
 	std::string	formattedMessage = message + "\r\n";
 	send(clientFd, formattedMessage.c_str(), formattedMessage.size(), 0);
 }
 
-void	Server::_disconnectClient(int clientFd, const std::string &reason)
+void	ft::Server::_disconnectClient(int clientFd, const std::string &reason)
 {
 	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
 	_clients.erase(clientFd);
 	close(clientFd);
 
-	// const int AAA = clientFd;
-	// _pollFds.erase(std::remove_if(_pollFds.begin(), _pollFds.end(), _is_clientFd<AAA>), _pollFds.end());
-	// _clients.erase(clientFd);
+	for (std::vector<pollfd>::iterator it=_pollFds.begin(); it != _pollFds.end(); it++)
+	{
+		if (it->fd != clientFd)
+			continue;
+		_pollFds.erase(it);
+		break;
+	}
 }

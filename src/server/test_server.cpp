@@ -149,8 +149,10 @@ void	TestServer::TestServerInit()
 
 	while (TestServer::_signal == false) // run the server until the signal is recieved
 	{
+		std::cout << PURPLE << "[DEBUG] Polling..." << RESET << std::endl;
 		if ((poll(&_fds[0], _fds.size(), -1) == -1) && TestServer::_signal == false) // wait for an event
 			throw (std::runtime_error("poll() failed"));
+		std::cout << PURPLE << "[DEBUG] Polling complete!" << RESET << std::endl;
 		
 		size_t	i = 0;
 		while (i < _fds.size())
