@@ -27,6 +27,7 @@ class Channel
 		bool	isValidNb(const std::string& str);
 		bool	setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL);
 		bool	addOperator(User *user, const char addOrRemove);
+		//ajouter un getmember et getmode (car MODE sans parametres retourne les mode activés "Mode du channel xx activé : +i +o etc")
 };
 
 #endif

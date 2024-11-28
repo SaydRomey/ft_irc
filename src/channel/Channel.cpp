@@ -109,7 +109,7 @@ bool	Channel::invite(User &user, const User& op)
 
 bool	isValidNb(const std::string& str)
 {
-	for (size_t i = 0; i < str.length(); i++)
+	for (size_t i = 1; i < str.length(); i++) //voir pour enlever le - oui +
 	{
 		if (!std::isdigit(str[i]))
 			return false;
