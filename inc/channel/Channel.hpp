@@ -19,7 +19,7 @@ class Channel
 		Channel(std::string name, User& op);
 		~Channel();
 
-		bool	addMember(User& user, std::string pswIfNeeded);
+		bool	addMember(User& user, std::string pswIfNeeded = "");
 		bool	removeMember(User& user);
 		bool	setTopic(const std::string &topic, const User& op);
 		bool	kick(User &user, const User& op, std::string reason);

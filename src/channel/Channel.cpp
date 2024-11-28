@@ -3,7 +3,7 @@
 Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
 {
 	_modes['i'] = false;
-	_modes['t'] = false;
+	_modes['t'] = true;
 	_modes['k'] = false;
 	_modes['o'] = false;
 	_modes['l'] = false;
@@ -122,7 +122,7 @@ bool	isValidNb(const std::string& str)
 bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
 {
 	User current = op;
-	std::string validMod = "itkol";
+	const std::string validMod = "itkol";
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
 		if (mode[0] == '+')
