@@ -10,9 +10,11 @@ Understanding solid standard protocols like those used in the Internet is a valu
 ---
 
 ## Introduction
-**Internet Relay Chat (IRC)** is a text-based communication protocol that provides real-time messaging.  
-It supports both public and private communication, allowing users to exchange direct messages or join group channels.  
-IRC clients connect to IRC servers to participate in channels, while IRC servers interconnect to form a network.
+**Internet Relay Chat** or **IRC** is a text-based communication protocol on the Internet.  
+It offers real-time messaging that can be either public or private.  
+Users can exchange direct messages and join group channels.  
+IRC clients connect to IRC servers in order to join channels.  
+IRC servers are connected together to form a network.
 
 ---
 
@@ -29,6 +31,8 @@ The Makefile must not perform unnecessary relinking.
 - Prefer C++ features over their C equivalents (e.g., `<cstring>` instead of `<string.h>`).
 - External libraries and Boost libraries are **forbidden**.
 
+You are allowed to use C functions, but always prefer their C++ versions if possible.
+
 ---
 
 ## Mandatory Part
@@ -40,6 +44,7 @@ The Makefile must not perform unnecessary relinking.
 - Optional: configuration file.
 
 ### **Arguments:**  
+Your executable will be run as follows:
 ```bash
 ./ircserv <port> <password>
 ```
@@ -47,15 +52,15 @@ The Makefile must not perform unnecessary relinking.
 - **password:** The connection password required by any IRC client to connect.
 
 ### **External Functions Allowed:**
-- `socket`, `close`, `setsockopt`, `getsockname`, `getprotobyname`, `gethostbyname`, 
-`getaddrinfo`, `freeaddrinfo`, `bind`, `connect`, `listen`, `accept`, 
-`htons`, `htonl`, `ntohs`, `ntohl`, `inet_addr`, `inet_ntoa`, 
+- `socket`, `close`, `setsockopt`, `getsockname`, `getprotobyname`, `gethostbyname`,  
+`getaddrinfo`, `freeaddrinfo`, `bind`, `connect`, `listen`, `accept`,  
+`htons`, `htonl`, `ntohs`, `ntohl`, `inet_addr`, `inet_ntoa`,  
 `send`, `recv`, `signal`, `sigaction`, `lseek`, `fstat`, `fcntl`, `poll` (or equivalents).
 
 ### **Description:**  
 Develop an IRC server in **C++98**.
 
-#### Key Requirements:
+#### Requirements:
 - **No client implementation required.**
 - **No server-to-server communication required.**
 - The server must handle **multiple clients simultaneously** and must not hang.
@@ -116,7 +121,7 @@ However, you are allowed to use `fcntl()` only as follows:
 ```cpp
   fcntl(fd, F_SETFL, O_NONBLOCK);
 ```
-Any other flag is forbidden
+**Any other flag is forbidden**
 
 ---
 
@@ -133,8 +138,7 @@ $> nc 127.0.0.1 6667
 com^Dman^Dd
 ```
 Use Ctrl+D to send the command in several parts: 'com', then 'man', then 'd\n'.  
-In order to process a command,  
-you have to first aggregate the received packets in order to rebuild it.
+In order to process a command, you have to first aggregate the received packets in order to rebuild it.
 
 ---
 
