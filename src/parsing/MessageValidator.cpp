@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:48:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 13:30:16 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/28 15:38:54 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,8 +109,11 @@ bool	MessageValidator::isValidTrailing(const std::string &trailing)
 	return (!trailing.empty()); // basic check  for now..
 }
 
+/* !!TODO: 
+*/
 bool	MessageValidator::isValidModeCommand(const std::vector<std::string> &params)
 {
+	// must start with '+' or '-' and trail one char at least (mode char validity will be handled by Channel class)
 	if (params.size() < 2)
 		return (false);
 	

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/22 17:14:27 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/28 18:15:14 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 	
-	test_server();
+	// test_server();
 	
 	// test_parser();
 	// test_tokenizer(argc, argv);

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:17:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/19 13:25:29 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/28 15:51:37 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,8 @@ int	test_parser(void)
 		":nickname PRIVMSG #channel :This is a test message",
 		":server NOTICE * :Server maintenance scheduled",
 		":nickname TOPIC #channel :New channel topic",
-		":nickname    JOIN    #channel   :Hello    world!", // Extra spaces
 		"   PING   :server1.example.com  ", // Command with extra spaces
+		":nickname   JOIN    #channel   :Hello    world!", // Extra spaces
 		":nickname JOIN #channel\t:Hello\tworld!" // Tabs in the input
 	};
 
