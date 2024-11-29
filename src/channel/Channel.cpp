@@ -1,9 +1,9 @@
-#include "channel.hpp"
+#include "Channel.hpp"
 
 Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
 {
 	_modes['i'] = false;
-	_modes['t'] = true;
+	_modes['t'] = false;
 	_modes['k'] = false;
 	_modes['o'] = false;
 	_modes['l'] = false;
@@ -16,7 +16,8 @@ Channel::~Channel()
 
 bool	Channel::addMember(User& user, std::string pswIfNeeded)
 {
-	if (_modes['i'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
+	//verifier aussi si k est activé car sinon rentre dedans
+	if (_modes['i'] == false && _modes['k'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
 	{
 		if (_modes['l'] == false || _members.size() < _memberLimit)
 		{
@@ -38,10 +39,12 @@ bool	Channel::addMember(User& user, std::string pswIfNeeded)
 		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
 		return false;
 	}
+	return true;
 }
 
 bool	Channel::removeMember(User& user)
 {
+	//voir si plus personne dans le channel car si c'Est le cas on supprime channel
 	if (_members.find(&user) != _members.end())
 		_members.erase(&user);
 	if (_members.find(&user) == _members.end())
@@ -55,6 +58,8 @@ bool	Channel::removeMember(User& user)
 
 bool	Channel::setTopic(const std::string &topic, const User& op)
 {
+	//par defaut sur false tout le monde peut modifier le topic.
+	//si mode +t donc true est activé, c'est seulement les users qui peuvent le changer
 	if (_modes['t'] == true)
 	{
 		std::cout << "Channel " << this->_name << " theme: " << this->_topic << std::endl;
@@ -72,6 +77,7 @@ bool	Channel::setTopic(const std::string &topic, const User& op)
 
 bool	Channel::kick(User &user, const User& op, std::string reason)
 {
+	//enlever l'appel a removemember car sinon ca met 2 messages
 	User current = op;
 	if (_members.find(&current) != _members.end() && _members[&current] == true)
 	{
@@ -107,7 +113,7 @@ bool	Channel::invite(User &user, const User& op)
 	return false;
 }
 
-bool	isValidNb(const std::string& str)
+static bool	isValidNb(const std::string& str)
 {
 	for (size_t i = 1; i < str.length(); i++) //voir pour enlever le - oui +
 	{
@@ -119,7 +125,7 @@ bool	isValidNb(const std::string& str)
 	return true;
 }
 
-bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
+bool	Channel::setMode(std::string mode, const User& op, const std::string& pswOrLimit, User* user)
 {
 	User current = op;
 	const std::string validMod = "itkol";
@@ -146,10 +152,11 @@ bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit =
 				{
 					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
 					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
+					return false;
 				}
 			}
 		}
-		else if (mode[0] = '-')
+		else if (mode[0] == '-')
 		{
 			for (size_t i = 1; i < mode.size(); i++)
 			{
@@ -168,14 +175,17 @@ bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit =
 				{
 					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
 					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
+					return false;
 				}
 			}
 		}
 		else
 		{
 			std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
+			return false;
 		}
 	}
+	return true;
 }
 
 bool	Channel::addOperator(User *user, const char addOrRemove)
@@ -191,4 +201,20 @@ bool	Channel::addOperator(User *user, const char addOrRemove)
 		return true;
 	}
 	return false;
+}
+
+void Channel::printMembers()
+{
+	std::cout << "Members list: " << std::endl;
+	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		std::cout << "-> " << it->first->getNickname() << " : " << it->second << std::endl;
+	// for (std::map<User*, bool>::iterator it = this->_members.begin(); it != this->_members.end(); it++)
+	// 	std::cout << "-> " << it->first->getNickname() << std::endl;
+}
+
+void	Channel::printMode()
+{
+	std::cout << "Modes list: " << std::endl;
+	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
+		std::cout << "-> " << it->first << " : " << it->second << std::endl;
 }

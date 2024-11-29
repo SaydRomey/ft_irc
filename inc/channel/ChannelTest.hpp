@@ -11,5 +11,5 @@ class ChannelTest
 		void addRemoveTests();
 		void commandsOpTest();
 	public:
-		void runTests();
+		void channelTests();
 };

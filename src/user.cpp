@@ -1,4 +1,4 @@
-#include "user.hpp"
+#include "User.hpp"
 
 User::User(void) : _fd(0), _isRegistred(false)
 {
