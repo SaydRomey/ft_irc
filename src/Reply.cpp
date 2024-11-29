@@ -6,14 +6,14 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/29 12:02:03 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/29 12:42:00 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Reply.hpp"
 #include <sstream>
 #include <stdexcept>
-#include <cstdio> // if we use snprintf
+// #include <cstdio> // if we use snprintf
 
 Reply::Reply()
 {
@@ -22,20 +22,94 @@ Reply::Reply()
 
 Reply::~Reply() {}
 
-// Initialize default reply templates
 void Reply::_initializeTemplates()
 {
-	_replyTemplates["WELCOME"] = ":" SERVER_NAME " 001 %s :Welcome to the IRC network, %s!";
-	_replyTemplates["NICK_IN_USE"] = ":" SERVER_NAME " 433 * %s :Nickname is already in use.";
-	_replyTemplates["AUTH_FAILED"] = ":" SERVER_NAME " 464 * :Authentication failed: %s.";
-	_replyTemplates["JOIN_SUCCESS"] = ":" SERVER_NAME " 332 %s :Joined channel %s.";
-	_replyTemplates["PRIVATE_MSG"] = ":%s PRIVMSG %s :%s";
-	_replyTemplates["CHANNEL_MSG"] = ":%s PRIVMSG %s :%s";
-	_replyTemplates["KICK"] = ":" SERVER_NAME " KICK %s %s :%s";
-	_replyTemplates["INVITE"] = ":" SERVER_NAME " INVITE %s %s";
-	_replyTemplates["TOPIC"] = ":" SERVER_NAME " 332 %s :%s";
-	_replyTemplates["MODE"] = ":" SERVER_NAME " MODE %s %s";
-	_replyTemplates["ERROR"] = ":" SERVER_NAME " %s :%s";
+	// General server replies
+	_replyTemplates["RPL_WELCOME"] = ":" SERVER_NAME " 001 %s :Welcome to the IRC network, %s!";
+	_replyTemplates["RPL_AUTH_FAILED"] = ":" SERVER_NAME " 464 * :Authentication failed: %s.";
+	_replyTemplates["RPL_JOIN_SUCCESS"] = ":" SERVER_NAME " 332 %s :Joined channel %s.";
+	_replyTemplates["RPL_PRIVATE_MSG"] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
+	_replyTemplates["RPL_CHANNEL_MSG"] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
+	_replyTemplates["RPL_KICK"] = ":" SERVER_NAME " KICK %s %s :%s";
+	_replyTemplates["RPL_INVITE"] = ":" SERVER_NAME " INVITE %s %s";
+	_replyTemplates["RPL_TOPIC"] = ":" SERVER_NAME " 332 %s :%s";
+	_replyTemplates["RPL_MODE"] = ":" SERVER_NAME " MODE %s %s";
+
+	// Error replies
+	_replyTemplates["ERR_NEEDMOREPARAMS"] = ":" SERVER_NAME " 461 %s %s :Not enough parameters.";
+	_replyTemplates["ERR_ALREADYREGISTERED"] = ":" SERVER_NAME " 462 %s :You may not reregister.";
+	_replyTemplates["ERR_NICKNAMEINUSE"] = ":" SERVER_NAME " 433 * %s :Nickname is already in use.";
+	_replyTemplates["ERR_NOTONCHANNEL"] = ":" SERVER_NAME " 442 %s %s :You're not on that channel.";
+	_replyTemplates["ERR_NOSUCHCHANNEL"] = ":" SERVER_NAME " 403 %s :No such channel.";
+	_replyTemplates["ERR_NOTREGISTERED"] = ":" SERVER_NAME " 451 %s :You have not registered.";
+	_replyTemplates["ERR_CHANOPRIVSNEEDED"] = ":" SERVER_NAME " 482 %s %s :You're not a channel operator.";
+	_replyTemplates["ERR_UNKNOWNMODE"] = ":" SERVER_NAME " 472 %s :is unknown mode char to me.";
+	_replyTemplates["ERR_INVITEONLYCHAN"] = ":" SERVER_NAME " 473 %s :Cannot join channel (+i).";
+	_replyTemplates["ERR_BADCHANNELKEY"] = ":" SERVER_NAME " 475 %s :Cannot join channel (+k).";
+	_replyTemplates["ERR_CHANNELISFULL"] = ":" SERVER_NAME " 471 %s :Cannot join channel (+l).";
+	_replyTemplates["ERR_USERNOTINCHANNEL"] = ":" SERVER_NAME " 441 %s %s :They aren't on that channel.";
+	_replyTemplates["ERR_CANNOTSENDTOCHAN"] = ":" SERVER_NAME " 404 %s %s :Cannot send to channel.";
+	_replyTemplates["ERR_USERONCHANNEL"] = ":" SERVER_NAME " 443 %s %s :is already on channel.";
+	_replyTemplates["ERR_UNKNOWNCOMMAND"] = ":" SERVER_NAME " 421 %s %s :Unknown command.";
+}
+
+/*
+Helper function to build argument list
+*/
+std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+{
+	std::vector<std::string>	args;
+	
+	if (!arg1.empty())
+		args.push_back(arg1);
+	if (!arg2.empty())
+		args.push_back(arg2);
+	if (!arg3.empty())
+		args.push_back(arg3);
+	if (!arg4.empty())
+		args.push_back(arg4);
+	
+	return (args);
+}
+
+/*
+format a reply based on the template and arguments
+** using ostringstream **
+
+loop through each character in template string
+replace occurrences of "%s" with corresponding argument from the vector
+append non-placeholder characters directly to the result
+exception thrown if mismatched placeholders and arguments..
+*/
+std::string	Reply::_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const
+{
+	std::ostringstream	oss;
+	size_t	argIndex = 0;
+	
+	size_t	i = 0;
+	while (i < templateStr.size())
+	{
+		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
+		{
+			if (argIndex >= args.size())
+			{
+				throw (std::runtime_error("Not enough arguments for reply template: " + templateStr));
+			}
+			oss << args[argIndex++];
+			++i; // skip 's' after '%'
+		}
+		else
+		{
+			oss << templateStr[i];
+		}
+		++i;
+	}
+	if (argIndex < args.size())
+	{
+		throw (std::runtime_error("Too many arguments for reply template: " + templateStr));
+	}
+
+	return (oss.str());
 }
 
 /*
@@ -141,62 +215,8 @@ format a reply based on the template and arguments
 // 	return (std::string(buffer));
 // }
 
-/*
-format a reply based on the template and arguments
-** using ostringstream **
 
-loop through each character in template string
-replace occurrences of "%s" with corresponding argument from the vector
-append non-placeholder characters directly to the result
-exception thrown if mismatched placeholders and arguments..
-*/
-std::string	Reply::_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const
-{
-	std::ostringstream	oss;
-	size_t	argIndex = 0;
-	
-	size_t	i = 0;
-	while (i < templateStr.size())
-	{
-		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
-		{
-			if (argIndex >= args.size())
-			{
-				throw (std::runtime_error("Not enough arguments for reply template: " + templateStr));
-			}
-			oss << args[argIndex++];
-			++i; // skip 's' after '%'
-		}
-		else
-		{
-			oss << templateStr[i];
-		}
-		++i;
-	}
 
-	if (argIndex < args.size())
-	{
-		throw (std::runtime_error("Too many arguments for reply template: " + templateStr));
-	}
-
-	return (oss.str());
-}
-
-std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &arg2, const std::string &arg3)
-{
-	std::vector<std::string>	args;
-	
-	if (!arg1.empty())
-		args.push_back(arg1);
-	if (!arg2.empty())
-		args.push_back(arg2);
-	if (!arg3.empty())
-		args.push_back(arg3);
-	// if (!arg4.empty())
-	// 	args.push_back(arg4);
-	
-	return (args);
-}
 
 
 std::string	Reply::welcome(const std::string &userNickname)
@@ -207,54 +227,60 @@ std::string	Reply::welcome(const std::string &userNickname)
 	// args.push_back(userNickname);
 	// return (generateReply("WELCOME", args));
 	
-	return (generateReply("WELCOME", makeArgs(userNickname, userNickname)));
+	return (generateReply("RPL_WELCOME", makeArgs(userNickname, userNickname)));
+	// return (_formatReply(_replyTemplates["RPL_WELCOME"], makeArgs(userNickname, userNickname)))
 	
 	// return (generateReply("WELCOME", std::vector<std::string>{serverName, userNickname, userNickname}));
 }
 
-std::string	Reply::nicknameInUse(const std::string &userNickname)
-{
-	std::vector<std::string>	args;
-
-	args.push_back(userNickname);
-	
-	return (generateReply("NICK_IN_USE", args));
-	// return (generateReply("NICK_IN_USE", std::vector<std::string>{userNickname}));
-}
-
 std::string	Reply::authenticationFailed(const std::string &reason)
 {
-	std::vector<std::string>	args;
-
-	args.push_back(reason);
-	
-	return (generateReply("AUTH_FAILED", args));
-	// return (generateReply("AUTH_FAILED", std::vector<std::string>{reason}));
+	return (generateReply("RPL_AUTHFAILED", makeArgs(reason)));
 }
 
 std::string	Reply::joinSuccess(const std::string &channelName)
 {
-	std::vector<std::string>	args;
-
-	args.push_back(channelName);
-	
-	return (generateReply("JOIN_SUCCESS", args));
-	// return (generateReply("JOIN_SUCCESS", std::vector<std::string>{channelName}));
+	return (generateReply("RPL_JOINSUCCESS", makeArgs(channelName)));
 }
 
 std::string	Reply::privateMessage(const std::string &sender, const std::string &receiver, const std::string &message)
 {
-	std::vector<std::string>	args;
-
-	args.push_back(sender);
-	args.push_back(receiver);
-	args.push_back(message);
-	
-	return (generateReply("PRIVATE_MSG", args));
-	// return (generateReply("PRIVATE_MSG", std::vector<std::string>{sender, receiver, message}));
+	return (generateReply("RPL_PRIVMSG", makeArgs(sender, receiver, message)));
 }
 
-// ...
+std::string	Reply::channelMessage(const std::string &sender, const std::string &channel, const std::string &message)
+{
+	return (generateReply("RPL_CHANNELMSG", makeArgs(sender, channel, message)));
+}
+
+// std::string	Reply::kickMessage(const std::string &operatorName, const std::string &target, const std::string &channel, const std::string &reason);
+
+// std::string	Reply::inviteMessage(const std::string &operatorName, const std::string &target, const std::string &channel);
+
+// std::string	Reply::topicMessage(const std::string &channel, const std::string &topic);
+
+// std::string	Reply::modeChange(const std::string &channel, const std::string &mode, const std::string &parameter);
+
+
+
+std::string	Reply::needMoreParams(const std::string &command)
+{
+	return (generateReply("ERR_NEEDMOREPARAMS", makeArgs(command)));
+}
+// std::string	Reply::alreadyRegistered(const std::string &userNickname);
+std::string	Reply::nicknameInUse(const std::string &userNickname);
+// std::string	Reply::notOnChannel(const std::string &channel);
+// std::string	Reply::noSuchChannel(const std::string &channel);
+// std::string	Reply::notRegistered(const std::string &userNickname);
+std::string	Reply::chanOpPrivsNeeded(const std::string &channelName);
+// std::string	Reply::unknownMode(const std::string &mode);
+// std::string	Reply::inviteOnlyChannel(const std::string &channel);
+// std::string	Reply::badChannelKey(const std::string &channel);
+// std::string	Reply::channelIsFull(const std::string &channel);
+// std::string	Reply::userNotInChannel(const std::string &target, const std::string &channel);
+// std::string	Reply::cannotSendToChannel(const std::string &channel);
+// std::string	Reply::userOnChannel(const std::string &user, const std::string &channel);
+// std::string	Reply::unknownCommand(const std::string &command);
 
 /*	example usage
 
