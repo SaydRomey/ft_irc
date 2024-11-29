@@ -101,17 +101,11 @@ However, you only have to implement the following features:
     - `o`: *Give/take* channel operator privileges.
     - `l`: *Set/remove* the user limit to channel.
 
+- Of course, you are expected to write a clean code.
 
 ---
 
-## Notes for macOS Users
-- Since macOS handles `write()` differently than other Unix operating systems,  
-you may use `fcntl()` as follows:
-```cpp
-  fcntl(fd, F_SETFL, O_NONBLOCK);
-```
-Any other flag is forbidden
-
+#### Notes for macOS Users
 - Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
 you are allowed to use `fcntl()`.  
 You must use file descriptors in **non-blocking** mode  
@@ -125,19 +119,18 @@ However, you are allowed to use `fcntl()` only as follows:
 
 ---
 
-## Test Example
+#### Test Example
 Verify absolutely every possible error and issue  
 (receiving partial data, low bandwidth, and so forth).
 
 To ensure that your server correctly processes everything that you send to it,  
-the following simple test using nc can be done:
-
-Example test using `nc`:
+the following simple test using `nc` can be done:
 ```bash
 $> nc 127.0.0.1 6667
 com^Dman^Dd
 ```
-Use Ctrl+D to send the command in several parts: 'com', then 'man', then 'd\n'.  
+
+Use **Ctrl+D** to send the command in several parts: **'com'**, then **'man'**, then **'d\n'**.  
 In order to process a command, you have to first aggregate the received packets in order to rebuild it.
 
 ---

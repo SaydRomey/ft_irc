@@ -1,2 +1,13 @@
 
 # Add links here, i will add them to the 'doc' target
+
+...
+
+# Links to check:
+
+non-blocking file descriptors:
+https://copyconstruct.medium.com/nonblocking-i-o-99948ad7c957
+
+
+
+
