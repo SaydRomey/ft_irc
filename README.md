@@ -63,65 +63,56 @@ Develop an IRC server in **C++98**.
 - All I/O operations must be **non-blocking.**
 - Use **one `poll()` (or equivalent)** to handle all operations (read, write, listen, etc.).
 
+**Note:**  
+Because you have to use non-blocking file descriptors,  
+it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
+and your server wouldn’t be blocking.  
+But it would consume more system resources.  
+Thus, if you try to read/recv or write/send in any file descriptor  
+without using poll() (or equivalent), your grade will be 0.
+
+- Several IRC clients exist. You have to choose one of them as a reference.  
+Your reference client will be used during the evaluation process.  
+- Your reference client must be able to connect to your server without encountering any error.  
+- Communication between client and server has to be done via TCP/IP (v4 or v6).  
+- Using your reference client with your server must be similar to using it with any official IRC server.  
+However, you only have to implement the following features:
+
 #### Implementation Features:
 - Authentication.
 - Set a nickname and username.
 - Join channels.
-- Send and receive private messages.
-- Forward messages to all channel members.
-- Distinguish between operators and regular users.
-- Implement operator commands:
+- Send and receive private messages using your reference client.
+- Forward messages sent from one client to a channel to all channel members.
+- Distinguish between *operators* and regular users.
+- Implement **channel operator** commands:
   - `KICK`: Remove a client from a channel.
   - `INVITE`: Invite a client to a channel.
   - `TOPIC`: View or modify the channel topic.
   - `MODE`: Modify channel modes:
-    - `i`: Invite-only channel.
-    - `t`: Restrict `TOPIC` command to operators.
-    - `k`: Set/remove channel password.
-    - `o`: Manage operator privileges.
-    - `l`: Set/remove user limit.
+    - `i`: *Set/remove* Invite-only channel.
+    - `t`: *Set/remove* the restriction of the `TOPIC` command to  channel operators.
+    - `k`: *Set/remove* the channel key (password).
+    - `o`: *Give/take* channel operator privileges.
+    - `l`: *Set/remove* the user limit to channel.
 
----
-
-## Test Example
-Verify error handling and behavior under adverse conditions  
-(e.g., partial data or low bandwidth).
-
-Example test using `nc`:
-```bash
-$> nc 127.0.0.1 6667
-com^Dman^Dd
-```
-
-Use Ctrl+D to send the command in parts (com, then man, then d\n).  
-Ensure the server processes and aggregates commands correctly.
-
----
-
-## Bonus Part
-### Additional Features:
-- Handle **file transfers**.
-- Add a **bot**.
-
-**Note:**  
-The bonus will only be assessed if the mandatory part is **perfectly implemented**.  
-A perfect implementation means all mandatory requirements are met without any malfunctions.
-
----
-
-## Submission and Peer-Evaluation
-- Submit the project via your Git repository.  
-- Only the files in your repository will be evaluated.  
-- Double-check file names and paths before submission.
-
-### Testing:
-You are encouraged to create test programs for your project.  
-While these tests are not graded, they are invaluable for validating your implementation during defense and peer evaluation.
 
 ---
 
 ## Notes for macOS Users
-- Since macOS handles `write()` differently, you may use `fcntl()` as follows:
+- Since macOS handles `write()` differently than other Unix operating systems,  
+you may use `fcntl()` as follows:
+```cpp
+  fcntl(fd, F_SETFL, O_NONBLOCK);
+```
+Any other flag is forbidden
+
+- Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
+you are allowed to use `fcntl()`.  
+You must use file descriptors in **non-blocking** mode  
+in order to get a behavior similar to the one of other Unix operating systems.
+
+However, you are allowed to use `fcntl()` only as follows:
 ```cpp
   fcntl(fd, F_SETFL, O_NONBLOCK);
 ```
@@ -133,42 +124,47 @@ Any other flag is forbidden
 Verify absolutely every possible error and issue  
 (receiving partial data, low bandwidth, and so forth).
 
-To ensure that your server correctly processes everything you send to it,  
-the following simple test using `nc` can be done:
+To ensure that your server correctly processes everything that you send to it,  
+the following simple test using nc can be done:
+
+Example test using `nc`:
 ```bash
 $> nc 127.0.0.1 6667
 com^Dman^Dd
-$>
 ```
-Use ctrl+D to send the command in several parts:  
-’com’, then ’man’, then ’d\n’.
-In order to process a command, you have to first aggregate the received packets in order to rebuild it.
+Use Ctrl+D to send the command in several parts: 'com', then 'man', then 'd\n'.  
+In order to process a command,  
+you have to first aggregate the received packets in order to rebuild it.
 
 ---
 
 ## Bonus Part
-Here are the extra features you can add to your IRC server to make it even more like an actual IRC server:
+Extra features you can add to your IRC server so it looks even more like and actual IRC server:
 
-- Handle **file transfers**.
+### Additional Features:
+- Handle **file transfer**.
 - Add a **bot**.
 
-**Important Note:**  
-The bonus part will only be assessed if the mandatory part is **PERFECT**.  
-Perfect means the mandatory part has been fully implemented and works without any malfunctions.  
-If you fail to meet **ALL** the mandatory requirements, your bonus part will not be evaluated.
+**Note:**  
+The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
+A perfect implementation means all mandatory requirements are met without any malfunctions.  
+If you have not passed ALL the mandatory requirements,  
+your bonus part will not be evaluated at all.
 
 ---
 
 ## Submission and Peer-Evaluation
-Turn in your assignment in your Git repository as usual.  
-Only the work inside your repository will be evaluated during the defense.  
-Don’t hesitate to double-check the names of your files to ensure they are correct.
+- Submit the project via your **Git** repository as usual.  
+- Only the files in your repository will be evaluated.  
+- Double-check file names and paths before submission.
 
+### Testing:
 You are encouraged to create test programs for your project,  
-even though they won’t be submitted and won’t be graded.  
+even though they **won't be submitted and won't be graded**.  
 These tests could be especially useful to test your server during the defense  
-or for evaluating a peer’s project if you have to assess another `ft_irc` implementation one day.
-
+or for evaluating a peer’s project if you have to evaluate another `ft_irc` implementation one day.  
 Indeed, you are free to use whatever tests you need during the evaluation process.
+
+---
 
 Your reference client will be used during the evaluation process.
