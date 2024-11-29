@@ -65,7 +65,7 @@ Contains all the info about the server
 has a vector of clients to keep track of all the clients
 and manage their requests
 */
-class TestServer
+class Server
 {
 	private:
 		int							_port; // server port
@@ -75,9 +75,9 @@ class TestServer
 		std::vector<struct pollfd>	_fds; // vector of pollfd
 	
 	public:
-		TestServer();
+		Server();
 		
-		void	TestServerInit(); // server initialization
+		void	ServerInit(); // server initialization
 		void	SerSocket(); // server socket creation
 		void	AcceptNewClient(); // accept new client
 		void	RecieveNewData(int fd); // recieve new data from a registered client

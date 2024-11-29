@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 15:49:02 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/29 03:14:29 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include "test_server.hpp"
 # include "Parser.hpp"
+# include "Reply.hpp"
 # include <iostream>
 
 # define RESET		"\033[0m"
@@ -30,9 +31,10 @@
 # define ORANGE		"\033[38;5;208m"
 # define GRAYTALIC	"\033[3;90m"
 
-void test_server(void);
+void	test_reply(void);
+void	test_server(void);
 
-int	test_parser(void);
-int	test_tokenizer(int argc, char *argv[]);
+int		test_parser(void);
+int		test_tokenizer(int argc, char *argv[]);
 
 #endif // TEST_HEADER_HPP

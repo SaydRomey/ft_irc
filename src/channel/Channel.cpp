@@ -11,8 +11,19 @@
 // }
 // Channel::~Channel()
 // {
-
+// Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
+// {
+// 	_modes['i'] = false;
+// 	_modes['t'] = true;
+// 	_modes['k'] = false;
+// 	_modes['o'] = false;
+// 	_modes['l'] = false;
+// 	_members[&op]=true;
 // }
+// Channel::~Channel()
+// {
+
+// // }
 
 // bool	Channel::addMember(User& user, std::string pswIfNeeded)
 // {
@@ -29,6 +40,31 @@
 // 			// if user does not exist in _members map
 // 			std::cout << "tmp error message.." << std::endl; // ** tmp to avoid compiler error
 // 			return (false);
+// 		}
+// 		else
+// 		{
+// 			std::cout << "The channel member limit has been reached" << std::endl;
+// 			return false;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
+// 		return false;
+// 	}
+// }
+// bool	Channel::addMember(User& user, std::string pswIfNeeded)
+// {
+// 	if (_modes['i'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
+// 	{
+// 		if (_modes['l'] == false || _members.size() < _memberLimit)
+// 		{
+// 			_members[&user]=false;
+// 			if (_members.find(&user) != _members.end())
+// 			{
+// 				std::cout << user.getNickname() << " has joined the channel " << this->_name << "! :)" << std::endl;
+// 				return true;
+// 			}
 // 		}
 // 		else
 // 		{
@@ -110,8 +146,7 @@
 // 	return false;
 // }
 
-// // bool	isValidNb(const std::string& str)
-// bool	isValidNb(std::string& str)
+// bool	isValidNb(const std::string& str)
 // {
 // 	for (size_t i = 0; i < str.length(); i++)
 // 	{
@@ -123,7 +158,7 @@
 // 	return true;
 // }
 
-// bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit, User* user)
+// bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
 // {
 // 	User current = op;
 // 	const std::string validMod = "itkol";
@@ -153,7 +188,7 @@
 // 				}
 // 			}
 // 		}
-// 		else if (mode[0] == '-')
+// 		else if (mode[0] = '-')
 // 		{
 // 			for (size_t i = 1; i < mode.size(); i++)
 // 			{

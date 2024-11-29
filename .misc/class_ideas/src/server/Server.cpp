@@ -2,36 +2,34 @@
 // #include "Server.hpp"
 // #include <iostream>
 // #include <cstring> // for strerror
-// #include <cstdlib>
 // #include <unistd.h> // for close()
-// #include <ctime>
 
-// ft::Server::Server(const std::string &port, const std::string &password) \
+// Server::Server(const std::string &port, const std::string &password) \
 // : _port(port), _password(password), _isRunning(false), _serverFd(-1)
 // {
 // 	// 
 // }
 
-// ft::Server::~Server(void)
+// Server::~Server(void)
 // {
 // 	stop();
 // }
 
-// void	ft::Server::_initSocket(void)
+// void	Server::_initSocket(void)
 // {
 // 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 // 	if (_serverFd < 0)
-// 		throw (std::runtime_error(std::string("Socket creation failed: ").append(strerror(errno))));
+// 		throw (std::runtime_error("Socker creation failed: " + std::string(strerror(errno))));
 
 // 	int	opt = 1;
 // 	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-// 		throw (std::runtime_error(std::string("setsockopt failed: ").append(strerror(errno))));
+// 		throw (std::runtime_error("setsockopt failed: ") + std::string(strerror(errno)));
 
 // 	sockaddr_in	serverAddr;
 // 	std::memset(&serverAddr, 0, sizeof(serverAddr));
 // 	serverAddr.sin_family = AF_INET;
 // 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-// 	serverAddr.sin_port = htons(atoi(_port.c_str()));
+// 	serverAddr.sin_port = htons(std::stoi(_port));
 
 // 	if (bind(_serverFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
 // 		throw (std::runtime_error("Binding failed: " + std::string(strerror(errno))));
@@ -42,11 +40,10 @@
 // 	std::cout << "Server initialized and listening on port " << _port << std::endl;
 // }
 
-// void	ft::Server::start(void)
+// void	Server::start(void)
 // {
 // 	_isRunning = true;
 // 	_initSocket();
-// 	time(&_startTime);
 
 // 	pollfd	serverPollFd = {_serverFd, POLLIN, 0};
 // 	_pollFds.push_back(serverPollFd);
@@ -68,7 +65,7 @@
 // 	}
 // }
 
-// void	ft::Server::stop(void)
+// void	Server::stop(void)
 // {
 // 	_isRunning = false;
 
@@ -85,7 +82,7 @@
 // }
 
 
-// void	ft::Server::_acceptConnection(void)
+// void	Server::_acceptConnection(void)
 // {
 // 	sockaddr_in	clientAddr;
 // 	socklen_t	clientLen = sizeof(clientAddr);
@@ -100,13 +97,12 @@
 
 // 	pollfd	clientPollFd = {clientFd, POLLIN, 0};
 // 	_pollFds.push_back(clientPollFd);
-// 	_clients[clientFd] = ft::Client(clientFd);
+// 	_clients[clientFd] = ""; // initialize with an empty nickname
 
 // 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
-// 	// _handleClient(clientFd);
 // }
 
-// void	ft::Server::_handleClient(int clientFd)
+// void	Server::_handleClient(int clientFd)
 // {
 // 	char	buffer[1024];
 // 	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
@@ -119,39 +115,27 @@
 
 // 	buffer[bytesRead] = '\0';
 // 	std::string	data(buffer);
-// 	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << data << std::flush;
-// 	try
+
+// 	std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
+
+// 	size_t	i = 0;
+// 	while (i < commands.size())
 // 	{
-// 		Message	message = _parser.parse(data);
-// 		_handleCommand(clientFd, message);
+// 		try
+// 		{
+// 			Message	message = _parser.parse(commands[i]);
+// 			_handleCommand(clientFd, message);
+// 		}
+// 		catch (const std::exception &e)
+// 		{
+// 			std::cout << "Error handling command: " << e.what() << std::endl;
+// 			_sendMessage(clientFd, "ERROR: " + std::sting(e.what()));
+// 		}
+// 		++i;
 // 	}
-// 	catch (const std::exception& e)
-// 	{
-// 		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
-// 		_disconnectClient(clientFd, e.what());
-// 	}
-	
-// 	// std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
-// 	// size_t	i = 0;
-// 	// while (i < commands.size())
-// 	// {
-// 	// 	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << commands[i] << std::endl;
-// 	// 	try
-// 	// 	{
-// 	// 		Message	message = _parser.parse(commands[i]);
-// 	// 		_handleCommand(clientFd, message);
-// 	// 	}
-// 	// 	catch (const std::exception &e)
-// 	// 	{
-// 	// 		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
-// 	// 		_disconnectClient(clientFd, e.what());
-// 	// 		break;
-// 	// 	}
-// 	// 	++i;
-// 	// }
 // }
 
-// void	ft::Server::_broadcast(const std::string &message, int senderFd)
+// void	Server::_broadcast(const std::string &message, int senderFd = -1)
 // {
 // 	size_t	i = 0;
 
@@ -164,42 +148,13 @@
 // 	}
 // }
 
-// void ft::Server::_welcomeClient(int clientFd)
-// {
-// 	Client&	client = _clients[clientFd];
-// 	Message	msg;
-
-// 	msg.setPrefix(":ft-irc");
-// 	msg.setCommand("001");
-// 	msg.setParams(client.getNickname());
-// 	msg.setTrailing("Placeholder text");
-// 	client.sendMessage(msg.str());
-
-// 	msg.setCommand("002");
-// 	client.sendMessage(msg.str());
-
-// 	msg.setCommand("003");
-// 	client.sendMessage(msg.str());
-
-// 	msg.setCommand("004");
-// 	client.sendMessage(msg.str());
-// }
-
-// void	ft::Server::_handleCommand(int clientFd, const Message &message)
+// void	Server::_handleCommand(int clientFd, const Message &message)
 // {
 // 	const std::string	&command = message.getCommand();
-// 	ft::Client&			client = _clients[clientFd];
 
 // 	if (command == "PASS")
 // 	{
-// 		if (client.isAuthenticated())
-// 			return;
 // 		_authenticateClient(clientFd, message);
-// 	}
-// 	else if (!client.isAuthenticated())
-// 	{
-// 		client.sendMessage(":ft-irc 464 Password is wrong/not supplied");
-// 		throw std::logic_error("Password error");
 // 	}
 // 	else if (command == "PING")
 // 	{
@@ -207,7 +162,7 @@
 // 	}
 // 	else if (command == "PRIVMSG")
 // 	{
-// 		_broadcast(message.getTrailing(), clientFd);
+// 		_broadcase(message.getTrailing(), clientFd);
 // 	}
 // 	else
 // 	{
@@ -215,11 +170,12 @@
 // 	}
 // }
 
-// void	ft::Server::_authenticateClient(int clientFd, const Message &message)
+// void	Server::_authenticateClient(int clientFd, const Message &message)
 // {
-// 	if (message.getParams() == _password)
+// 	if (message.getTrailing() == _password)
 // 	{
-// 		std::cout << "Client authenticated (fd: " << clientFd << ")." << std::endl;
+// 		_sendMessage(clientFd, "Password accepted.");
+// 		std::cout << "Client autheticated (fd: " << clientFd << ")." << std::endl;
 // 	}
 // 	else
 // 	{
@@ -227,23 +183,30 @@
 // 	}
 // }
 
-// void	ft::Server::_sendMessage(int clientFd, const std::string &message)
+// void	Server::_sendMessage(int cliendFd, const std::string &message)
 // {
 // 	std::string	formattedMessage = message + "\r\n";
 // 	send(clientFd, formattedMessage.c_str(), formattedMessage.size(), 0);
 // }
 
-// void	ft::Server::_disconnectClient(int clientFd, const std::string &reason)
+// void Server::_disconnectClient(int clientFd, const std::string &reason)
 // {
 // 	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
-// 	_clients.erase(clientFd);
 // 	close(clientFd);
 
-// 	for (std::vector<pollfd>::iterator it=_pollFds.begin(); it != _pollFds.end(); it++)
+// 	// Find and erase the client from _pollFds
+// 	std::vector<pollfd>::iterator it = _pollFds.begin();
+
+// 	while (it != _pollFds.end())
 // 	{
-// 		if (it->fd != clientFd)
-// 			continue;
-// 		_pollFds.erase(it);
-// 		break;
+// 		if (it->fd == clientFd)
+// 		{
+// 			_pollFds.erase(it);
+// 			break ; // exit loop after removing the client
+// 		}
+// 		++it;
 // 	}
+
+// 	// Remove the client from _clients map
+// 	_clients.erase(clientFd);
 // }

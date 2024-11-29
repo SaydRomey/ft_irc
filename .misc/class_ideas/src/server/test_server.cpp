@@ -44,12 +44,12 @@ void	Client::setIpAdd(std::string ipadd)
 
 /* ************************************************************************** */
 
-TestServer::TestServer()
+Server::Server()
 {
 	_serSocketFd = -1;
 }
 
-void	TestServer::ClearClients(int fd)
+void	Server::ClearClients(int fd)
 {
 	size_t	i = 0;
 	// remove the client from the pollfd
@@ -75,16 +75,16 @@ void	TestServer::ClearClients(int fd)
 	}
 }
 
-bool	TestServer::_signal = false; // initialize the static boolean
+bool	Server::_signal = false; // initialize the static boolean
 
-void	TestServer::SignalHandler(int signum)
+void	Server::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << "\n" << "Signal Recieved!" << std::endl;
-	TestServer::_signal = true; // set the static boolean to true to stop the server
+	Server::_signal = true; // set the static boolean to true to stop the server
 }
 
-void	TestServer::CloseFds()
+void	Server::CloseFds()
 {
 	size_t	i = 0;
 	// close all the clients
@@ -101,7 +101,7 @@ void	TestServer::CloseFds()
 	}
 }
 
-void	TestServer::SerSocket()
+void	Server::SerSocket()
 {
 	struct sockaddr_in	add;
 	struct pollfd		NewPoll;
@@ -139,7 +139,7 @@ void	TestServer::SerSocket()
 	_fds.push_back(NewPoll); // add the server socket to the pollfd
 }
 
-void	TestServer::TestServerInit()
+void	Server::ServerInit()
 {
 	this->_port = 6667;
 	SerSocket(); // create the server socket
@@ -147,12 +147,10 @@ void	TestServer::TestServerInit()
 	std::cout << GREEN << "Server <" << _serSocketFd << "> Connected" << RESET << std::endl;
 	std::cout << "Waiting to accept a connection..." << std::endl;
 
-	while (TestServer::_signal == false) // run the server until the signal is recieved
+	while (Server::_signal == false) // run the server until the signal is recieved
 	{
-		std::cout << PURPLE << "[DEBUG] Polling..." << RESET << std::endl;
-		if ((poll(&_fds[0], _fds.size(), -1) == -1) && TestServer::_signal == false) // wait for an event
+		if ((poll(&_fds[0], _fds.size(), -1) == -1) && Server::_signal == false) // wait for an event
 			throw (std::runtime_error("poll() failed"));
-		std::cout << PURPLE << "[DEBUG] Polling complete!" << RESET << std::endl;
 		
 		size_t	i = 0;
 		while (i < _fds.size())
@@ -171,7 +169,7 @@ void	TestServer::TestServerInit()
 	CloseFds(); // close the file descriptor when the server stops
 }
 
-void	TestServer::AcceptNewClient()
+void	Server::AcceptNewClient()
 {
 	Client	client;
 	struct sockaddr_in	cliadd;
@@ -203,7 +201,7 @@ void	TestServer::AcceptNewClient()
 	std::cout << GREEN << "Client <" << incofd << "> Connected" << RESET << std::endl;
 }
 
-void	TestServer::RecieveNewData(int fd)
+void	Server::RecieveNewData(int fd)
 {
 	char	buff[1024]; // buffer for the recieved data
 	memset(buff, 0, sizeof(buff)); // clear the buffer
@@ -232,14 +230,14 @@ void	TestServer::RecieveNewData(int fd)
 
 void	test_server(void)
 {
-	TestServer	server;
+	Server	server;
 	
 	std::cout << "---- SERVER ----" << std::endl;
 	try
 	{
-		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
-		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
-		server.TestServerInit(); // initialize the server
+		signal(SIGINT, Server::SignalHandler); // catch the signal (CTRL + c)
+		signal(SIGQUIT, Server::SignalHandler); // catch the signal (CTRL + \)
+		server.ServerInit(); // initialize the server
 	}
 	catch (std::exception &e)
 	{

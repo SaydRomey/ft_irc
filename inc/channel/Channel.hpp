@@ -1,6 +1,10 @@
-#ifndef CHANNEL_HPP
-# define CHANNEL_HPP
+// #ifndef CHANNEL_HPP
+// # define CHANNEL_HPP
 
+// # include <iostream>
+// # include "user.hpp"
+// # include <vector>
+// # include <map>
 // # include <iostream>
 // # include "user.hpp"
 // # include <vector>
@@ -29,7 +33,7 @@
 // 		bool	addOperator(User *user, const char addOrRemove);
 // };
 
-// #endif
+// // #endif
 
 /* ************************************************************************** */
 
