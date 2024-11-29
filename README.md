@@ -175,30 +175,24 @@ Indeed, you are free to use whatever tests you need during the evaluation proces
 
 ## Markdown testing
 
->        Some text  
->   /\   and some more text  
->  /  \  and the rest  
-> /____\ of the text  
->        at the right of the symbol
-
-
-```
-    Some text
- ⚠️   and some more text
-     and the rest
-     of the text
-     at the right of the symbol
-```
+>⚠️  
+>   Some text  
+>   and some more text  
+>   and the rest of the text  
+>   at the right of the symbol.
 
 ⚠️  
-   Some text  
-   and some more text  
-   and the rest of the text  
-   at the right of the symbol.
+>   Some text  
+>   and some more text  
+>   and the rest of the text  
+>   at the right of the symbol.
 
+>⚠️  Some text  
+>   and some more text  
+>   and the rest of the text  
+>   at the right of the symbol.
 
->         Text  
->   /\    Some text  
->  /  \   and some more text  
-> /____\  and the rest of the text  
->         at the right of the symbol.
+>⚠️  Some text  
+>⚠️  and some more text  
+>⚠️  and the rest of the text  
+>⚠️  at the right of the symbol.
