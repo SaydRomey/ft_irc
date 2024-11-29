@@ -36,27 +36,27 @@ You are allowed to use C functions, but always prefer their C++ versions if poss
 ---
 
 ## Mandatory Part
-### **Program Name:**  
+#### **Program Name:**  
 `ircserv`
 
-### **Turn-In Files:**  
+#### **Turn-In Files:**  
 - `Makefile`, `*.{h, hpp, cpp, tpp, ipp}`
 - Optional: configuration file.
 
-### **Makefile:**  
+#### **Makefile:**  
 - `NAME`, `all`, `clean`, `fclean`, `re`
 
-### **Arguments:**  
+#### **Arguments:**  
 - **port:** The listening port for incoming IRC connections.  
 - **password:** The connection password required by any IRC client to connect.
 
-### **External Functions Allowed:**
+#### **External Functions Allowed:**
 - `socket`, `close`, `setsockopt`, `getsockname`, `getprotobyname`, `gethostbyname`,  
 `getaddrinfo`, `freeaddrinfo`, `bind`, `connect`, `listen`, `accept`,  
 `htons`, `htonl`, `ntohs`, `ntohl`, `inet_addr`, `inet_ntoa`,  
 `send`, `recv`, `signal`, `sigaction`, `lseek`, `fstat`, `fcntl`, `poll` (or equivalents).
 
-### **Description:**  
+#### **Description:**  
 Develop an IRC server in **C++98**.
 
 You **mustn’t** develop a client.
@@ -74,7 +74,7 @@ IRC connections.
 > Even if poll() is mentionned in the subject and the evaluation scale,  
 > you can use any equivalent such as select(), kqueue(), or epoll().
 
-#### Requirements:
+### Requirements:
 - The server must handle **multiple clients simultaneously** and must not hang.
 - **Forking is not allowed.**
 - All I/O operations must be **non-blocking.**
@@ -111,9 +111,8 @@ However, you only have to implement the following features:
       - `o`: *Give/take* channel operator privileges.
       - `l`: *Set/remove* the user limit to channel.
 
----
 
-#### For macOS only
+### For macOS only
 > ℹ **Info:**  
 > Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
 > you are allowed to use `fcntl()`.  
@@ -125,9 +124,7 @@ However, you only have to implement the following features:
 > fcntl(fd, F_SETFL, O_NONBLOCK);
 > **Any other flag is forbidden**
 
----
-
-#### Test Example
+### Test Example
 Verify absolutely every possible error and issue  
 (receiving partial data, low bandwidth, and so forth).
 
@@ -152,9 +149,9 @@ Extra features you can add to your IRC server so it looks even more like and act
 
 > ⚠️ **Warning:**  
 > The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
->  A perfect implementation means all mandatory requirements are met without any malfunctions.  
->  If you have not passed ALL the mandatory requirements,  
->  your bonus part will not be evaluated at all.
+> A perfect implementation means all mandatory requirements are met without any malfunctions.  
+> If you have not passed ALL the mandatory requirements,  
+> your bonus part will not be evaluated at all.
 
 ---
 
@@ -170,7 +167,38 @@ These tests could be especially useful to test your server during the defense
 or for evaluating a peer’s project if you have to evaluate another `ft_irc` implementation one day.  
 Indeed, you are free to use whatever tests you need during the evaluation process.
 
----
 
 > ℹ **Info:**  
 > Your reference client will be used during the evaluation process.
+
+---
+
+## Markdown testing
+
+>        Some text  
+>   /\   and some more text  
+>  /  \  and the rest  
+> /____\ of the text  
+>        at the right of the symbol
+
+
+```
+    Some text
+ ⚠️   and some more text
+     and the rest
+     of the text
+     at the right of the symbol
+```
+
+⚠️  
+   Some text  
+   and some more text  
+   and the rest of the text  
+   at the right of the symbol.
+
+
+>         Text  
+>   /\    Some text  
+>  /  \   and some more text  
+> /____\  and the rest of the text  
+>         at the right of the symbol.
