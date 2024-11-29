@@ -43,11 +43,10 @@ You are allowed to use C functions, but always prefer their C++ versions if poss
 - `Makefile`, `*.{h, hpp, cpp, tpp, ipp}`
 - Optional: configuration file.
 
+### **Makefile:**  
+- `NAME`, `all`, `clean`, `fclean`, `re`
+
 ### **Arguments:**  
-Your executable will be run as follows:
-```bash
-./ircserv <port> <password>
-```
 - **port:** The listening port for incoming IRC connections.  
 - **password:** The connection password required by any IRC client to connect.
 
@@ -60,21 +59,34 @@ Your executable will be run as follows:
 ### **Description:**  
 Develop an IRC server in **C++98**.
 
+You **mustn’t** develop a client.
+You **mustn’t** handle server-to-server communication.
+
+Your executable will be run as follows:
+```bash
+./ircserv <port> <password>
+```
+- **port:** The port number on which your IRC server will be listening to for incoming
+IRC connections.  
+- **password:** The connection password. It will be needed by any IRC client that tries to connect to your server.
+
+> Even if poll() is mentionned in the subject and the evaluation scale,  
+> you can use any equivalent such as select(), kqueue(), or epoll().
+
 #### Requirements:
-- **No client implementation required.**
-- **No server-to-server communication required.**
 - The server must handle **multiple clients simultaneously** and must not hang.
 - **Forking is not allowed.**
 - All I/O operations must be **non-blocking.**
-- Use **one `poll()` (or equivalent)** to handle all operations (read, write, listen, etc.).
+- Use only **one** `poll()` (or equivalent) to handle all operations (read, write, listen, etc.).
 
-> **Note:**  
-> Because you have to use non-blocking file descriptors,  
-> it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
-> and your server wouldn’t be blocking.  
-> But it would consume more system resources.  
-> Thus, if you try to read/recv or write/send in any file descriptor  
-> without using poll() (or equivalent), your grade will be 0.
+<div style="border: 1px solid black; padding: 10px;">
+Because you have to use non-blocking file descriptors,  
+it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
+and your server wouldn’t be blocking.  
+But it would consume more system resources.  
+Thus, if you try to read/recv or write/send in any file descriptor  
+without using poll() (or equivalent), your grade will be 0.
+</div>
 
 - Several IRC clients exist. You have to choose one of them as a reference.  
 Your reference client will be used during the evaluation process.  
@@ -82,38 +94,36 @@ Your reference client will be used during the evaluation process.
 - Communication between client and server has to be done via TCP/IP (v4 or v6).  
 - Using your reference client with your server must be similar to using it with any official IRC server.  
 However, you only have to implement the following features:
-
-#### Implementation Features:
-- Authentication.
-- Set a nickname and username.
-- Join channels.
-- Send and receive private messages using your reference client.
-- Forward messages sent from one client to a channel to all channel members.
-- Distinguish between *operators* and regular users.
-- Implement **channel operator** commands:
-  - `KICK`: Remove a client from a channel.
-  - `INVITE`: Invite a client to a channel.
-  - `TOPIC`: View or modify the channel topic.
-  - `MODE`: Modify channel modes:
-    - `i`: *Set/remove* Invite-only channel.
-    - `t`: *Set/remove* the restriction of the `TOPIC` command to  channel operators.
-    - `k`: *Set/remove* the channel key (password).
-    - `o`: *Give/take* channel operator privileges.
-    - `l`: *Set/remove* the user limit to channel.
+  - Authentication.
+  - Set a nickname and username.
+  - Join channels.
+  - Send and receive private messages using your reference client.
+  - Forward messages sent from one client to a channel to all channel members.
+  - Distinguish between *operators* and regular users.
+  - Implement **channel operator** commands:
+    - `KICK`: Remove a client from a channel.
+    - `INVITE`: Invite a client to a channel.
+    - `TOPIC`: View or modify the channel topic.
+    - `MODE`: Modify channel modes:
+      - `i`: *Set/remove* Invite-only channel.
+      - `t`: *Set/remove* the restriction of the `TOPIC` command to  channel operators.
+      - `k`: *Set/remove* the channel key (password).
+      - `o`: *Give/take* channel operator privileges.
+      - `l`: *Set/remove* the user limit to channel.
 
 ---
 
-#### Notes for macOS Users
-- Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
-you are allowed to use `fcntl()`.  
-You must use file descriptors in **non-blocking** mode  
-in order to get a behavior similar to the one of other Unix operating systems.
+#### For macOS only
+> Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
+> you are allowed to use `fcntl()`.  
+> You must use file descriptors in **non-blocking** mode  
+> in order to get a behavior similar to the one of other Unix operating systems.
 
+<div style="border: 1px solid black; padding: 10px;">
 However, you are allowed to use `fcntl()` only as follows:
-```cpp
-  fcntl(fd, F_SETFL, O_NONBLOCK);
-```
+fcntl(fd, F_SETFL, O_NONBLOCK);
 **Any other flag is forbidden**
+</div>
 
 ---
 
@@ -129,6 +139,7 @@ com^Dman^Dd
 ```
 
 Use **Ctrl+D** to send the command in several parts: **'com'**, then **'man'**, then **'d\n'**.  
+
 In order to process a command, you have to first aggregate the received packets in order to rebuild it.
 
 ---
@@ -140,11 +151,12 @@ Extra features you can add to your IRC server so it looks even more like and act
 - Handle **file transfer**.
 - Add a **bot**.
 
-**Note:**  
+<div style="border: 1px solid black; padding: 10px;">
 The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
 A perfect implementation means all mandatory requirements are met without any malfunctions.  
 If you have not passed ALL the mandatory requirements,  
 your bonus part will not be evaluated at all.
+</div>
 
 ---
 
@@ -162,4 +174,4 @@ Indeed, you are free to use whatever tests you need during the evaluation proces
 
 ---
 
-Your reference client will be used during the evaluation process.
+> Your reference client will be used during the evaluation process.
