@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/29 12:42:00 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/29 17:21:42 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Reply::~Reply() {}
 void Reply::_initializeTemplates()
 {
 	// General server replies
-	_replyTemplates["RPL_WELCOME"] = ":" SERVER_NAME " 001 %s :Welcome to the IRC network, %s!";
+	_replyTemplates["RPL_WELCOME"] = ":" SERVER_NAME " 001 %s :Welcome to Fun Times City, dear %s!";
 	_replyTemplates["RPL_AUTH_FAILED"] = ":" SERVER_NAME " 464 * :Authentication failed: %s.";
 	_replyTemplates["RPL_JOIN_SUCCESS"] = ":" SERVER_NAME " 332 %s :Joined channel %s.";
 	_replyTemplates["RPL_PRIVATE_MSG"] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
@@ -84,7 +84,7 @@ exception thrown if mismatched placeholders and arguments..
 std::string	Reply::_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const
 {
 	std::ostringstream	oss;
-	size_t	argIndex = 0;
+	size_t				argIndex = 0;
 	
 	size_t	i = 0;
 	while (i < templateStr.size())
@@ -92,28 +92,25 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
 		{
 			if (argIndex >= args.size())
-			{
 				throw (std::runtime_error("Not enough arguments for reply template: " + templateStr));
-			}
+
 			oss << args[argIndex++];
 			++i; // skip 's' after '%'
 		}
 		else
-		{
 			oss << templateStr[i];
-		}
 		++i;
 	}
 	if (argIndex < args.size())
-	{
 		throw (std::runtime_error("Too many arguments for reply template: " + templateStr));
-	}
 
 	return (oss.str());
 }
 
 /*
 generic method to generate replies using templates
+** use key in '_replyTemplates' map,
+** use helper function 'makeArgs()' to generate variadic vector for 'args' parameter
 */
 std::string	Reply::generateReply(const std::string &key, const std::vector<std::string> &args)
 {
@@ -127,110 +124,17 @@ std::string	Reply::generateReply(const std::string &key, const std::vector<std::
 	return (_formatReply(it->second, args));
 }
 
-/*
-if we prefer a variadic version with overloading instead of using vectors..
-*/
-// std::string	Reply::generateReply(const std::string &key, const std::string &arg1, const std::string &arg2, const std::string &arg3)
-// {
-// 	std::map<std::string, std::string>::const_iterator	it = _replyTemplates.find(key);
-// 	if (it == _replyTemplates.end())
-// 	{
-// 		throw (std::runtime_error("Reply template not found for key: " + key));
-// 	}
-
-// 	const std::string&	templateStr = it->second;
-// 	std::ostringstream	oss;
-// 	size_t	argIndex = 0;
-
-// 	size_t	i = 0;
-// 	while (i < templateStr.size())
-// 	{
-// 		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
-// 		{
-// 			++i; // skip 's'
-// 			switch (argIndex++)
-// 			{
-// 				case 0:
-// 					oss << arg1;
-// 					break ;
-// 				case 1:
-// 					oss << arg2;
-// 					break ;
-// 				case 2:
-// 					oss << arg3;
-// 					break ;
-// 				default:
-// 					throw (std::runtime_error("Too many placeholders in template."));
-// 			}
-// 		}
-// 		else
-// 		{
-// 			oss << templateStr[i];
-// 		}
-// 		++i;
-// 	}
-
-// 	if (argIndex < 3 && !arg3.empty())
-// 	{
-// 		throw (std::runtime_error("Too many arguments for template: " + key));
-// 	}
-
-// 	return (oss.str());
-// }
-
-
-/*
-format a reply based on the template and arguments
-** using snprintf **
-*/
-// std::string	Reply::_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const
-// {
-// 	char	buffer[512]; //might adjust size if necessary later..
-// 	int		result;
-
-// 	// build format string dynamically based on template and arguments
-// 	switch (args.size())
-// 	{
-// 		case 1:
-// 			result = snprintf(buffer, sizeof(buffer), templateStr.c_str(), args[0].c_str());
-// 			break ;
-// 		case 2:
-// 			result = snprintf(buffer, sizeof(buffer), templateStr.c_str(), args[0].c_str(), args[1].c_str());
-// 			break ;
-// 		case 3:
-// 			result = snprintf(buffer, sizeof(buffer), templateStr.c_str(), args[0].c_str(), args[1].c_str(), args[2].c_str());
-// 			break ;
-// 		case 4:
-// 			result = snprintf(buffer, sizeof(buffer), templateStr.c_str(), args[0].c_str(), args[1].c_str(), args[2].c_str(), args[3].c_str());
-// 			break ;
-// 		default:
-// 			throw (std::runtime_error("Unsupported number of arguments for reply formatting..."));
-// 	}
-	
-// 	if (result < 0 || result >= static_cast<int>(sizeof(buffer)))
-// 	{
-// 		throw (std::runtime_error("Reply formatting failed or truncated..."));
-// 	}
-
-// 	return (std::string(buffer));
-// }
-
-
-
-
+/* ************************************************************************** */ // General replies
 
 std::string	Reply::welcome(const std::string &userNickname)
 {
 	// std::vector<std::string>	args;
-	// args.push_back(serverName);
 	// args.push_back(userNickname);
 	// args.push_back(userNickname);
 	// return (generateReply("WELCOME", args));
 	
 	return (generateReply("RPL_WELCOME", makeArgs(userNickname, userNickname)));
 	// return (_formatReply(_replyTemplates["RPL_WELCOME"], makeArgs(userNickname, userNickname)))
-	
-	// return (generateReply("WELCOME", std::vector<std::string>{serverName, userNickname, userNickname}));
 }
 
 std::string	Reply::authenticationFailed(const std::string &reason)
@@ -245,7 +149,7 @@ std::string	Reply::joinSuccess(const std::string &channelName)
 
 std::string	Reply::privateMessage(const std::string &sender, const std::string &receiver, const std::string &message)
 {
-	return (generateReply("RPL_PRIVMSG", makeArgs(sender, receiver, message)));
+	return (generateReply("RPL_PRIVATE_MSG", makeArgs(sender, receiver, message)));
 }
 
 std::string	Reply::channelMessage(const std::string &sender, const std::string &channel, const std::string &message)
@@ -262,29 +166,50 @@ std::string	Reply::channelMessage(const std::string &sender, const std::string &
 // std::string	Reply::modeChange(const std::string &channel, const std::string &mode, const std::string &parameter);
 
 
+/* ************************************************************************** */ // Error replies
 
 std::string	Reply::needMoreParams(const std::string &command)
 {
 	return (generateReply("ERR_NEEDMOREPARAMS", makeArgs(command)));
 }
 // std::string	Reply::alreadyRegistered(const std::string &userNickname);
-std::string	Reply::nicknameInUse(const std::string &userNickname);
+
+std::string	Reply::nicknameInUse(const std::string &userNickname)
+{
+	return (generateReply("ERR_NICKNAMEINUSE", makeArgs(userNickname)));
+}
+
 // std::string	Reply::notOnChannel(const std::string &channel);
+
 // std::string	Reply::noSuchChannel(const std::string &channel);
+
 // std::string	Reply::notRegistered(const std::string &userNickname);
-std::string	Reply::chanOpPrivsNeeded(const std::string &channelName);
+
+std::string	Reply::chanOpPrivsNeeded(const std::string &channelName)
+{
+	return (generateReply("ERR_CHANOPRIVSNEEDED", makeArgs(channelName)));
+}
+
 // std::string	Reply::unknownMode(const std::string &mode);
+
 // std::string	Reply::inviteOnlyChannel(const std::string &channel);
+
 // std::string	Reply::badChannelKey(const std::string &channel);
+
 // std::string	Reply::channelIsFull(const std::string &channel);
+
 // std::string	Reply::userNotInChannel(const std::string &target, const std::string &channel);
+
 // std::string	Reply::cannotSendToChannel(const std::string &channel);
+
 // std::string	Reply::userOnChannel(const std::string &user, const std::string &channel);
+
 // std::string	Reply::unknownCommand(const std::string &command);
 
 /*	example usage
 
 #include "Reply.hpp"
+#include <iostream>
 
 void	test_reply(void)
 {
@@ -292,13 +217,10 @@ void	test_reply(void)
 
 	try
 	{
-		std::string	welcome = reply.welcome("ft_irc", "HomeBoy");
-		std::string	nicknameError = reply.nicknameInUse("HomeBoy");
-		std::string	privateMessage = reply.privateMessage("senderPerson", "recieverPerson", "Hello my friend!");
-
-		std::cout << welcome << std::endl;
-		std::cout << nicknameError << std::endl;
-		std::cout << privateMessage << std::endl;
+		std::cout << reply.welcome("HomeBoy"); << std::endl;
+		std::cout << reply.nicknameInUse("HomeBoy") << std::endl;
+		std::cout << reply.privateMessage("senderPerson", "recieverPerson", "Hello my friend!") << std::endl;
+		std::cout << reply.needMoreParams("JOIN") << std::endl;
 	}
 	catch (const std::exception& e)
 	{

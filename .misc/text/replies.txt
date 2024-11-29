@@ -1,0 +1,171 @@
+
+RFC 2812 - IRC - Client Protocol
+
+/* ************************************************************************** */
+
+Connection Registration
+
+a PASS command is not required for a client connection,
+but it must precede the NICK/USER combination (for a user connection)
+
+Recommended order for a client to register:
+
+1. Pass message
+2. Nick message
+3. User message
+
+Upon success, client will recieve an RPL_WELCOME
+
+REPLIES:
+
+    RPL_WELCOME
+
+/* ************************************************************************** */ PASS
+
+cmd: PASS
+arg: <password>
+
+used to set a 'connection password'
+can and must be set before any attempt to register the connection is made
+
+REPLIES:
+    
+    ERR_NEEDMOREPARAMS
+
+    ERR_ALREADYREGISTERED
+
+ex:
+
+	PASS secretpasswordhere
+
+/* ************************************************************************** */ NICK
+
+cmd: NICK
+arg: <nickname>
+
+used to give a user a nickname or change the existing one
+
+REPLIES:
+
+	ERR_NONICKNAMEGIVEN
+
+    ERR_NICKNAMEINUSE
+    
+	ERR_UNAVAILRESOURCE
+	
+	ERR_RESTRICTED
+	
+	ERR_ERRONEUSNICKNAME
+	
+	ERR_NICKCOLLISION
+
+ex:
+(introducing new nick "Wiz" if session is still unregistered, or user changing his nickname to "Wiz")
+
+	NICK Wiz
+
+REPLIES:?
+(server telling that "PreviousNickname" changed his nickname to "NewNickname")
+
+	:PreviousNickname NICK NewNickname
+
+/* ************************************************************************** */ USER
+
+cmd: USER
+arg: <user> <mode> <unused> <realname>
+
+used at the beginning of connection to specify the
+username, hostname and realname of a new user
+
+the <realname> may contain space chars
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS
+
+	ERR_ALREADYREGISTERED
+
+ex:
+(user registering themselves with a username of "guest" and real name "Mr Guest")
+
+	USER guest 0 * :Mr Guest
+
+(user registering themselves with a username of "guest" and real name "Mr Guest", and asking to be invisible)
+
+	USER guest 8 * :Mr Guest
+
+/* ************************************************************************** */ OPER
+
+cmd: OPER
+arg: <name> <password>
+
+used by a normal user to obtain operator privileges
+the combination of <name> and <password> are required to gain operator privileges
+
+upon success, the user will recieve a MODE message indicating the new user modes
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS
+    
+	ERR_NOOPERHOST
+	
+	RPL_YOUREOPER
+	
+	ERR_PASSWDMISMATCH
+
+ex:
+(attempt to register as an operator using a username of "dudles" and "pswdwsp" as the password)
+
+	OPER dudles pswdwsp
+
+/* ************************************************************************** */ Channel operations
+/* ************************************************************************** */
+
+Channel operations
+
+this group of messages is concerned with manipulating channels,
+their properties (channel modes), and content (typically users)
+
+all of these messages are requests which will or will not be granted by the server
+
+the server must send a reply informing the user whether the request was
+granted, denied or generated an error
+
+when the server grants the request, the message is typically sent back
+(eventually reformatted) to the user with the prefix set to the user itself
+
+/* ************************************************************************** */ JOIN
+
+cmd: JOIN
+arg: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] )
+     / "0"
+
+/* ************************************************************************** */ MODE (channel)
+
+cmd: MODE
+arg: <nickname> *( ( "+" / "-" ) *( "i" / "t" / "k" / "o" / "l" ) )
+
+/* ************************************************************************** */
+
+cmd: 
+arg: 
+
+/* ************************************************************************** */
+
+cmd: 
+arg: 
+
+/* ************************************************************************** */
+
+cmd: 
+arg: 
+
+/* ************************************************************************** */ PRIVMSG
+/* ************************************************************************** */ *(forward message sent from a client to a channel to all channel members)*
+/* ************************************************************************** */ 
+/* ************************************************************************** */ 
+/* ************************************************************************** */ KICK
+/* ************************************************************************** */ INVITE
+/* ************************************************************************** */ TOPIC
+/* ************************************************************************** */ 

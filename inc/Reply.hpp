@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 01:35:46 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/29 12:41:01 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/29 17:21:12 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@
 /*
 constant or macro for the server name
 */
-// const std::string SERVER_NAME = "ft_irc";
-# define SERVER_NAME "ft_irc"
+// const std::string SERVER_NAME = "ircserv";
+# define SERVER_NAME "ircserv"
 
 /*
 when a client sends a command to a server, the server will send a reply
@@ -41,11 +41,11 @@ usual characteristics:
 
 examples of valid IRC replies:
 
-:irc.example.com 001 borja :Welcome to the Internet Relay Network borja!borja@polaris.cs.uchicago.edu
+:ircserv 001 [nickname] :Welcome to Fun Times City, dear [nickname]
 
-:irc.example.com 433 * borja :Nickname is already in use.
+:ircserv 433 * [nickname] :Nickname is already in use.
 
-:irc.example.org 332 borja #cmsc23300 :A channel for CMSC 23300 students
+:ircserv 332 [nickname] #cmsc23300 :A channel for CMSC 23300 students
 
 
 */
@@ -57,7 +57,6 @@ class Reply
 		~Reply();
 
 		std::string	generateReply(const std::string &key, const std::vector<std::string> &args);
-		// std::string	generateReply(const std::string &key, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "");
 		
 		// General replies
 		std::string	welcome(const std::string &userNickname);
@@ -106,37 +105,8 @@ class Reply
 };
 
 // helper function for generating argument lists
-std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4);
+std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 
 #endif // REPLY_HPP
 
 
-
-// Error replies
-std::string Reply::needMoreParams(const std::string& command) {
-    return _formatReply(_replyTemplates["ERR_NEEDMOREPARAMS"], makeArgs(command));
-}
-
-std::string Reply::nicknameInUse(const std::string& userNickname) {
-    return _formatReply(_replyTemplates["ERR_NICKNAMEINUSE"], makeArgs(userNickname));
-}
-
-std::string Reply::chanOpPrivsNeeded(const std::string& channelName) {
-    return _formatReply(_replyTemplates["ERR_CHANOPRIVSNEEDED"], makeArgs(channelName));
-}
-
-#include "Reply.hpp"
-#include <iostream>
-
-void test_reply() {
-    Reply reply;
-
-    try {
-        std::cout << reply.welcome("HomeBoy") << std::endl;
-        std::cout << reply.nicknameInUse("HomeBoy") << std::endl;
-        std::cout << reply.privateMessage("Alice", "Bob", "Hello Bob!") << std::endl;
-        std::cout << reply.needMoreParams("JOIN") << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-}
