@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/28 15:59:19 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/11/29 02:51:24 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,28 +33,3 @@ class Message
 };
 
 #endif // MESSAGE_HPP
-
-/* TODO: handle MODE params (include first symbol in _params string)
-
-(max 3 modes **!^)
-
-MODE #somechannel
-returns the mode of channel and
-password and limit (*!! only if in the channel specified)
-
-*/
-
-bool _handleOperatorCommand(int clientFd, const Message &msg)
-{
-	
-	if (msg.getCommand() == "MODE")
-	{
-		std::string	mode = msg.getParams;
-
-		
-		if (msg.getParams[0] == "+")
-		{
-			// 
-		}
-	}
-}
