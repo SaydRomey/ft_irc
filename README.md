@@ -101,8 +101,6 @@ However, you only have to implement the following features:
     - `o`: *Give/take* channel operator privileges.
     - `l`: *Set/remove* the user limit to channel.
 
-- Of course, you are expected to write a clean code.
-
 ---
 
 #### Notes for macOS Users
