@@ -68,13 +68,13 @@ Develop an IRC server in **C++98**.
 - All I/O operations must be **non-blocking.**
 - Use **one `poll()` (or equivalent)** to handle all operations (read, write, listen, etc.).
 
-**Note:**  
-Because you have to use non-blocking file descriptors,  
-it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
-and your server wouldn’t be blocking.  
-But it would consume more system resources.  
-Thus, if you try to read/recv or write/send in any file descriptor  
-without using poll() (or equivalent), your grade will be 0.
+> **Note:**  
+> Because you have to use non-blocking file descriptors,  
+> it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
+> and your server wouldn’t be blocking.  
+> But it would consume more system resources.  
+> Thus, if you try to read/recv or write/send in any file descriptor  
+> without using poll() (or equivalent), your grade will be 0.
 
 - Several IRC clients exist. You have to choose one of them as a reference.  
 Your reference client will be used during the evaluation process.  
