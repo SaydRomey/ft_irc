@@ -70,7 +70,7 @@ Your executable will be run as follows:
 IRC connections.  
 - **password:** The connection password. It will be needed by any IRC client that tries to connect to your server.
 
-> ℹ  
+> ℹ **Info:**  
 > Even if poll() is mentionned in the subject and the evaluation scale,  
 > you can use any equivalent such as select(), kqueue(), or epoll().
 
@@ -80,15 +80,13 @@ IRC connections.
 - All I/O operations must be **non-blocking.**
 - Use only **one** `poll()` (or equivalent) to handle all operations (read, write, listen, etc.).
 
-```
-⚠️  
-Because you have to use non-blocking file descriptors,  
-it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
-and your server wouldn’t be blocking.  
-But it would consume more system resources.  
-Thus, if you try to read/recv or write/send in any file descriptor  
-without using poll() (or equivalent), your grade will be 0.
-```
+> ⚠️ **Warning:**  
+> Because you have to use non-blocking file descriptors,  
+> it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
+> and your server wouldn’t be blocking.  
+> But it would consume more system resources.  
+> Thus, if you try to read/recv or write/send in any file descriptor  
+> without using poll() (or equivalent), your grade will be 0.
 
 - Several IRC clients exist. You have to choose one of them as a reference.  
 Your reference client will be used during the evaluation process.  
@@ -116,18 +114,16 @@ However, you only have to implement the following features:
 ---
 
 #### For macOS only
-> ℹ  
+> ℹ **Info:**  
 > Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
 > you are allowed to use `fcntl()`.  
 > You must use file descriptors in **non-blocking** mode  
 > in order to get a behavior similar to the one of other Unix operating systems.
 
-```
-⚠️  
-However, you are allowed to use `fcntl()` only as follows:
-fcntl(fd, F_SETFL, O_NONBLOCK);
-**Any other flag is forbidden**
-```
+> ⚠️ **Warning:**  
+> However, you are allowed to use `fcntl()` only as follows:
+> fcntl(fd, F_SETFL, O_NONBLOCK);
+> **Any other flag is forbidden**
 
 ---
 
@@ -151,17 +147,15 @@ In order to process a command, you have to first aggregate the received packets 
 ## Bonus Part
 Extra features you can add to your IRC server so it looks even more like and actual IRC server:
 
-### Additional Features:
 - Handle **file transfer**.
-- Add a **bot**.
+- A **bot**.
 
-```
-⚠️  
-The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
-A perfect implementation means all mandatory requirements are met without any malfunctions.  
-If you have not passed ALL the mandatory requirements,  
-your bonus part will not be evaluated at all.
-```
+> ⚠️ **Warning:**  
+> The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
+>  A perfect implementation means all mandatory requirements are met without any malfunctions.  
+>  If you have not passed ALL the mandatory requirements,  
+>  your bonus part will not be evaluated at all.
+
 ---
 
 ## Submission and Peer-Evaluation
@@ -178,5 +172,5 @@ Indeed, you are free to use whatever tests you need during the evaluation proces
 
 ---
 
-> ℹ  
+> ℹ **Info:**  
 > Your reference client will be used during the evaluation process.
