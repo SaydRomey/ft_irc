@@ -246,6 +246,19 @@ doc: ## Offer a list of documentation URL links
 
 .PHONY: doc
 # **************************************************************************** #
+CPP_REF_URL		:=	https://cplusplus.com/reference/
+CPP_TUTO_URL	:=	https://cplusplus.com/doc/oldtutorial/
+
+ref: ## Open C++ reference
+	@echo "Opening cplusplus reference's url..."
+	@$(OPEN) $(CPP_REF_URL);
+
+tuto: ## Open C++ old tutorial
+	@echo "Opening cplusplus oldtutorial's url..."
+	@$(OPEN) $(CPP_TUTO_URL);
+
+.PHONY: ref tuto
+# **************************************************************************** #
 # --------------------------------- GITHUB ----------------------------------- #
 # **************************************************************************** #
 REPO_LINK	:= https://github.com/SaydRomey/ft_irc
@@ -300,3 +313,90 @@ UP			:= $(ESC)[A
 
 # Erasing
 ERASE_LINE	:= $(ESC)[2K
+# **************************************************************************** #
+# --------------------------------- CLASS ------------------------------------ #
+# **************************************************************************** #
+class: ## Automate class creation
+	@echo "Enter the class name: "; \
+	read classname; \
+	classname_upper=`echo $$classname | tr a-z A-Z`; \
+	if [ -f inc/$$classname.hpp ] || [ -f src/$$classname.cpp ]; then \
+		read -p "Files exist. Overwrite? [y/N]: " confirm; \
+		if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then \
+			echo "Canceling class creation"; \
+			exit 1; \
+		fi; \
+	fi; \
+	mkdir -p $(INC_DIR) $(SRC_DIR); \
+	echo "$$CLASS_HEADER" \
+	| sed "s/CLASSNAME_UPPER/$$classname_upper/g" \
+	| sed "s/CLASSNAME/$$classname/g" > inc/$$classname.hpp; \
+	echo "$$CLASS_CPP" \
+	| sed "s/CLASSNAME/$$classname/g" > src/$$classname.cpp; \
+	echo "$$classname created"
+
+.PHONY: class
+# **************************************************************************** #
+# ------------------------------- TEMPLATES ---------------------------------- #
+# **************************************************************************** #
+define CLASS_HEADER
+#ifndef CLASSNAME_UPPER_HPP
+# define CLASSNAME_UPPER_HPP
+
+# include <iostream>
+
+# define RESET		"\\033[0m"
+# define BOLD		"\\033[1m"
+# define ITALIC		"\\033[2m"
+# define UNDERLINE	"\\033[3m"
+# define RED		"\\033[91m"
+# define GREEN		"\\033[32m"
+# define YELLOW		"\\033[33m"
+# define ORANGE		"\\033[38;5;208m"
+# define PURPLE		"\\033[95m"
+# define CYAN		"\\033[96m"
+# define GRAYTALIC	"\\033[3;90m"
+
+class CLASSNAME
+{
+	public:
+		CLASSNAME(void);
+		~CLASSNAME(void);
+		CLASSNAME(const CLASSNAME &other);
+		CLASSNAME&	operator=(const CLASSNAME &other);
+	
+	private:
+
+};
+
+#endif // CLASSNAME_UPPER_HPP
+endef
+
+export CLASS_HEADER
+# **************************************************************************** #
+# **************************************************************************** #
+define CLASS_CPP
+#include "CLASSNAME.hpp"
+
+CLASSNAME::CLASSNAME(void) {}
+
+CLASSNAME::~CLASSNAME(void) {}
+
+CLASSNAME::CLASSNAME(const CLASSNAME &other)
+{
+	*this = other;
+}
+
+CLASSNAME&	CLASSNAME::operator=(const CLASSNAME &other)
+{
+	// if (this != &other)
+	// {}
+	
+	return (*this);
+}
+
+endef
+
+export CLASS_CPP
+# **************************************************************************** #
+# **************************************************************************** #
