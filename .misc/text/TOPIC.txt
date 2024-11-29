@@ -21,6 +21,7 @@ Key Characteristics of Topics in IRC:
 2. Settable by Users:
 	By default, only channel operators (users with operator privileges)
 	can set or modify the topic.
+	
 	However, this behavior can be modified by channel modes, such as +t:
 		+t: Only channel operators can change the topic.
 		-t: Any user in the channel can change the topic.
@@ -36,57 +37,71 @@ Key Characteristics of Topics in IRC:
 The TOPIC Command in IRC
 
 Command Syntax:
+	
 	To View the Topic:
-
 		TOPIC <channel>
 
 	If the channel has a topic, the server responds with the topic.
 	If no topic is set, the server informs the user that the channel has no topic.
 
 	To Set the Topic:
-
 		TOPIC <channel> :<new topic>
 
 If the user has the required privileges, the topic will be updated.
 If the user lacks the privileges, the server will respond with an error.
 
+
 Example Behavior:
-	Viewing the Topic
-		Command:
-			
-			TOPIC #general
 
-		Server Response (if a topic is set):
+Viewing the Topic
 
-			:server.name 332 <nick> #general :Welcome to the general discussion channel!
-Server Response (if no topic is set):
-:server.name 331 <nick> #general :No topic is set
+	Command:
+		TOPIC #general
+
+	Server Response (if a topic is set):
+		:server.name 332 <nick> #general :Welcome to the general discussion channel!
+
+	Server Response (if no topic is set):
+		:server.name 331 <nick> #general :No topic is set
+	
 Setting the Topic
-Command:
-TOPIC #general :Let's discuss the ft_irc project!
-Server Response (if the topic is successfully set):
-:<nick>!<user>@<host> TOPIC #general :Let's discuss the ft_irc project!
-Server Response (if the user lacks privileges):
-:server.name 482 <nick> #general :You're not a channel operator
+
+	Command:
+		TOPIC #general :Let's discuss the ft_irc project!
+	
+	Server Response (if the topic is successfully set):
+		:<nick>!<user>@<host> TOPIC #general :Let's discuss the ft_irc project!
+	
+	Server Response (if the user lacks privileges):
+		:server.name 482 <nick> #general :You're not a channel operator
+
 Implementation Notes for ft_irc:
-Topic Storage:
+
+1.Topic Storage:
 
 Store the topic as part of your Channel class or equivalent.
 Ensure there’s a way to retrieve and update it.
-Access Control:
 
-Implement checks for channel modes (like +t) and user privileges before allowing a topic change.
-Command Handling:
+2.Access Control:
+
+Implement checks for channel modes (like +t)
+and user privileges before allowing a topic change.
+
+3.Command Handling:
 
 Parse the TOPIC command in your server code.
 Respond appropriately based on the channel’s state, the user’s permissions, and the topic.
-Edge Cases:
+
+4.Edge Cases:
 
 Handle cases where the channel does not exist.
 Handle cases where no topic is set.
 Respond with appropriate errors if the user lacks permission.
+
 Relevant IRC Protocol Responses:
-331: No topic is set for the channel.
-332: Topic of the channel (sent after a successful TOPIC request).
-482: The user does not have permission to change the topic.
-By implementing the TOPIC command and integrating it into your ft_irc project, you’ll ensure proper topic management for your channels as per the IRC protocol specifications.
+
+	331: No topic is set for the channel.
+	
+	332: Topic of the channel (sent after a successful TOPIC request).
+	
+	482: The user does not have permission to change the topic.
