@@ -6,7 +6,7 @@
 #    By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/29 15:17:43 by cdumais           #+#    #+#              #
-#    Updated: 2024/11/29 15:34:06 by cdumais          ###   ########.fr        #
+#    Updated: 2024/11/29 17:38:05 by cdumais          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,6 +34,7 @@ URL_WEEDOC	:= https://weechat.org/doc/
 URL_SMALL	:= https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
 URL_GUIDE	:= https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
 URL_CHIRC	:= http://chi.cs.uchicago.edu/chirc/intro.html
+URL_BEEJ	:= https://beej.us/guide/bgnet/pdf/bgnet_a4_c_1.pdf
 
 # Protocols
 URL_RFC1459	:= https://datatracker.ietf.org/doc/html/rfc1459
@@ -53,7 +54,8 @@ doc: ## Offer a list of documentation URL links
 	@echo "$(ORANGE)Guides/Tutorials$(RESET)"
 	@echo "  100. ft_irc guide - on medium.com"
 	@echo "  101. ft_irc guide - on reactive.so"
-	@echo "  102. chirc - similar project with good documentation **"
+	@echo "  102. chirc - similar project with good documentation (MUST READ)**"
+	@echo "  103. Beej's guide to network programming"
 	@echo "$(ORANGE)IRC Protocols - RFC$(RESET)"
 	@echo "  1459. IRC Protocol"
 	@echo "  2810. Architecture"
@@ -69,6 +71,7 @@ doc: ## Offer a list of documentation URL links
 		100) CHOICE=$(URL_SMALL);; \
 		101) CHOICE=$(URL_GUIDE);; \
 		102) CHOICE=$(URL_CHIRC);; \
+		103) CHOICE=$(URL_BEEJ);; \
 		1459) CHOICE=$(URL_RFC1459);; \
 		2810) CHOICE=$(URL_RFC2810);; \
 		2811) CHOICE=$(URL_RFC2811);; \
