@@ -26,7 +26,7 @@ class Channel
 
 		bool	addMember(User& user, std::string pswIfNeeded = "");
 		bool	removeMember(User& user);
-		bool	setTopic(const std::string &topic, const User& op);
+		bool	setTopic(const User& user, std::string* topic = NULL);
 		bool	kick(User &user, const User& op, std::string reason);
 		bool	invite(User &user, const User& op);
 		// bool	isValidNb(const std::string& str);

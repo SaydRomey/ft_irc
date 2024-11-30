@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
+Channel::Channel(std::string name, User& op) : _name(name), _topic(""), _password(""), _memberLimit(0)
 {
 	_modes['i'] = false;
 	_modes['t'] = false;
@@ -53,26 +53,43 @@ bool	Channel::removeMember(User& user)
 		return true;
 	}
 	return false;
-	// voir si c'est pas un operator, sinon voir pour interdire soit remplacer
+	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
-bool	Channel::setTopic(const std::string &topic, const User& op)
+bool	Channel::setTopic(const User& user, std::string* topic)
 {
 	//par defaut sur false tout le monde peut modifier le topic.
-	//si mode +t donc true est activé, c'est seulement les users qui peuvent le changer
+	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
+	User _user = user;
+	if (_members.find(&_user) != _members.end()) //etrange car la je verifie que le membre est dedans, alors que je devrais detecté si il est pas dedans mais quand j'inverse je rentre toujours dans cettet condition
+	{
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	if (topic == NULL)
+	{
+		if (this->_topic.empty())
+			std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+		else
+			std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+		return true;
+	}
 	if (_modes['t'] == true)
 	{
-		std::cout << "Channel " << this->_name << " theme: " << this->_topic << std::endl;
-		return true;
+		if (_members[&_user] != true)
+		{
+			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+			return false;
+		}
+		_topic = *topic;
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	}
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	else
 	{
-		_topic = topic;
-		return true;
+		_topic = *topic;
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
-	return false;
+	return true;
 }
 
 bool	Channel::kick(User &user, const User& op, std::string reason)
@@ -115,7 +132,7 @@ bool	Channel::invite(User &user, const User& op)
 
 static bool	isValidNb(const std::string& str)
 {
-	for (size_t i = 1; i < str.length(); i++) //voir pour enlever le - oui +
+	for (size_t i = 1; i < str.length(); i++) //commencé a 1 pour ignoré le +-
 	{
 		if (!std::isdigit(str[i]))
 			return false;
@@ -129,61 +146,68 @@ bool	Channel::setMode(std::string mode, const User& op, const std::string& pswOr
 {
 	User current = op;
 	const std::string validMod = "itkol";
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	if (_members.find(&current) == _members.end())
 	{
-		if (mode[0] == '+')
+		std::cout << ":server 442 " << current.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	if (_members[&current] != true)
+	{
+		std::cout << ":server 482 " << current.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+	if (mode[0] == '+')
+	{
+		for (size_t i = 1; i < mode.size(); i++)
 		{
-			for (size_t i = 1; i < mode.size(); i++)
+			if (validMod.find(mode[i]) != std::string::npos)
 			{
-				if (validMod.find(mode[i]) != std::string::npos)
-				{
-					this->_modes[mode[i]] = true;
-					if (mode[i] == 'k')
-						if (!pswOrLimit.empty())
-							this->_password = pswOrLimit;
-					if (mode[i] == 'o')
-						if (user != NULL)
-							addOperator(user, '+');
-					if (mode[i] == 'l')
-						if (isValidNb(pswOrLimit) != false)
-							this->_memberLimit = std::atoi(pswOrLimit.c_str());
-				}
-				else
-				{
-					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
-					return false;
-				}
+				this->_modes[mode[i]] = true;
+				if (mode[i] == 'k')
+					if (!pswOrLimit.empty())
+						this->_password = pswOrLimit;
+				if (mode[i] == 'o')
+					if (user != NULL)
+						addOperator(user, '+');
+				if (mode[i] == 'l')
+					if (isValidNb(pswOrLimit) != false)
+						this->_memberLimit = std::atoi(pswOrLimit.c_str());
+			}
+			else
+			{
+				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+				std::cout << ":server 472 " << current.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+				return false;
 			}
 		}
-		else if (mode[0] == '-')
+	}
+	else if (mode[0] == '-')
+	{
+		for (size_t i = 1; i < mode.size(); i++)
 		{
-			for (size_t i = 1; i < mode.size(); i++)
+			if (validMod.find(mode[i]) != std::string::npos)
 			{
-				if (validMod.find(mode[i]) != std::string::npos)
-				{
-					this->_modes[mode[i]] = false;
-					if (mode[i] == 'k')
-						this->_password = "";
-					if (mode[i] == 'o')
-						if (user != NULL)
-							addOperator(user, '-');
-					if (mode[i] == 'l')
-						_memberLimit = 0;
-				}
-				else
-				{
-					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
-					return false;
-				}
+				this->_modes[mode[i]] = false;
+				if (mode[i] == 'k')
+					this->_password = "";
+				if (mode[i] == 'o')
+					if (user != NULL)
+						addOperator(user, '-');
+				if (mode[i] == 'l')
+					_memberLimit = 0;
+			}
+			else
+			{
+				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+				std::cout << ":server 472 " << current.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+				return false;
 			}
 		}
-		else
-		{
-			std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
-			return false;
-		}
+	}
+	else
+	{
+		std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
+		return false;
 	}
 	return true;
 }
