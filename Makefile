@@ -4,7 +4,7 @@ AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"
 
 COMPILE	:= c++
-CFLAGS	:= -Wall -Werror -Wextra
+CFLAGS	:= -Wall -Werror -Wextra # -pedantic
 STD		:= -std=c++98
 
 # Header files
