@@ -6,27 +6,28 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 13:19:00 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 13:27:07 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:09:36 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "_test_header.hpp"
+#include "Message.hpp"
+#include "Parser.hpp"
+#include <iostream>
 
-int	test_tokenizer(int argc, char *argv[])
+void	test_tokenizer(int argc, char *argv[])
 {
-	Parser	parser;
-	
+	std::cout << "Testing: " << argv[1] << std::endl;
 	if (argc < 2)
 	{
 		std::cout << "missing argument for 'test_tokenizer()" << std::endl;
-		return (1);
+		return ;
 	}
-
 	try
 	{
-		std::cout << "Testing: " << argv[1] << std::endl;
+		Parser	parser;
 		
 		Message	message = parser.parse(argv[1]);
+		
 		std::cout << "  Command:\t" << message.getCommand() << std::endl;
 		std::cout << "  Prefix:\t" << message.getPrefix() << std::endl;
 		std::cout << "  Params:\t" << message.getParams() << std::endl;
@@ -35,8 +36,6 @@ int	test_tokenizer(int argc, char *argv[])
 	catch (std::exception &e)
 	{
 		std::cout << "Error: " << e.what() << std::endl;
-		return (1);
+		return ;
 	}
-	
-	return (0);
 }

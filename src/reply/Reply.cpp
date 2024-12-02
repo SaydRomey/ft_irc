@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/30 04:08:47 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:53:39 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,32 +26,32 @@ Reply::~Reply() {}
 void Reply::_initializeTemplates()
 {
 	// General server replies
-	_replyTemplates[RPL_WELCOME] = ":" SERVER_NAME " 001 %s :Welcome to Fun Times City, dear %s!";
-	_replyTemplates[RPL_AUTH_FAILED] = ":" SERVER_NAME " 464 * :Authentication failed: %s.";
-	_replyTemplates[RPL_JOIN_SUCCESS] = ":" SERVER_NAME " 332 %s :Joined channel %s.";
+	_replyTemplates[RPL_WELCOME] = ":" + SERVER_NAME + " 001 %s :Welcome to Fun Times City, dear %s!";
+	_replyTemplates[RPL_AUTH_FAILED] = ":" + SERVER_NAME + " 464 * :Authentication failed: %s.";
+	_replyTemplates[RPL_JOIN_SUCCESS] = ":" + SERVER_NAME + " 332 %s :Joined channel %s.";
 	_replyTemplates[RPL_PRIVATE_MSG] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
 	_replyTemplates[RPL_CHANNEL_MSG] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
-	_replyTemplates[RPL_KICK] = ":" SERVER_NAME " KICK %s %s :%s";
-	_replyTemplates[RPL_INVITE] = ":" SERVER_NAME " INVITE %s %s";
-	_replyTemplates[RPL_TOPIC] = ":" SERVER_NAME " 332 %s :%s";
-	_replyTemplates[RPL_MODE] = ":" SERVER_NAME " MODE %s %s";
+	_replyTemplates[RPL_KICK] = ":" + SERVER_NAME + " KICK %s %s :%s";
+	_replyTemplates[RPL_INVITE] = ":" + SERVER_NAME + " INVITE %s %s";
+	_replyTemplates[RPL_TOPIC] = ":" + SERVER_NAME + " 332 %s :%s";
+	_replyTemplates[RPL_MODE] = ":" + SERVER_NAME + " MODE %s %s";
 
 	// Error replies
-	_replyTemplates[ERR_NEEDMOREPARAMS] = ":" SERVER_NAME " 461 %s %s :Not enough parameters.";
-	_replyTemplates[ERR_ALREADYREGISTERED] = ":" SERVER_NAME " 462 %s :You may not reregister.";
-	_replyTemplates[ERR_NICKNAMEINUSE] = ":" SERVER_NAME " 433 * %s :Nickname is already in use.";
-	_replyTemplates[ERR_NOTONCHANNEL] = ":" SERVER_NAME " 442 %s %s :You're not on that channel.";
-	_replyTemplates[ERR_NOSUCHCHANNEL] = ":" SERVER_NAME " 403 %s :No such channel.";
-	_replyTemplates[ERR_NOTREGISTERED] = ":" SERVER_NAME " 451 %s :You have not registered.";
-	_replyTemplates[ERR_CHANOPRIVSNEEDED] = ":" SERVER_NAME " 482 %s %s :You're not a channel operator.";
-	_replyTemplates[ERR_UNKNOWNMODE] = ":" SERVER_NAME " 472 %s :is unknown mode char to me.";
-	_replyTemplates[ERR_INVITEONLYCHAN] = ":" SERVER_NAME " 473 %s :Cannot join channel (+i).";
-	_replyTemplates[ERR_BADCHANNELKEY] = ":" SERVER_NAME " 475 %s :Cannot join channel (+k).";
-	_replyTemplates[ERR_CHANNELISFULL] = ":" SERVER_NAME " 471 %s :Cannot join channel (+l).";
-	_replyTemplates[ERR_USERNOTINCHANNEL] = ":" SERVER_NAME " 441 %s %s :They aren't on that channel.";
-	_replyTemplates[ERR_CANNOTSENDTOCHAN] = ":" SERVER_NAME " 404 %s %s :Cannot send to channel.";
-	_replyTemplates[ERR_USERONCHANNEL] = ":" SERVER_NAME " 443 %s %s :is already on channel.";
-	_replyTemplates[ERR_UNKNOWNCOMMAND] = ":" SERVER_NAME " 421 %s %s :Unknown command.";
+	_replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s %s :Not enough parameters.";
+	_replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 %s :You may not reregister.";
+	_replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 * %s :Nickname is already in use.";
+	_replyTemplates[ERR_NOTONCHANNEL] = ":" + SERVER_NAME + " 442 %s %s :You're not on that channel.";
+	_replyTemplates[ERR_NOSUCHCHANNEL] = ":" + SERVER_NAME + " 403 %s :No such channel.";
+	_replyTemplates[ERR_NOTREGISTERED] = ":" + SERVER_NAME + " 451 %s :You have not registered.";
+	_replyTemplates[ERR_CHANOPRIVSNEEDED] = ":" + SERVER_NAME + " 482 %s %s :You're not a channel operator.";
+	_replyTemplates[ERR_UNKNOWNMODE] = ":" + SERVER_NAME + " 472 %s :is unknown mode char to me.";
+	_replyTemplates[ERR_INVITEONLYCHAN] = ":" + SERVER_NAME + " 473 %s :Cannot join channel (+i).";
+	_replyTemplates[ERR_BADCHANNELKEY] = ":" + SERVER_NAME + " 475 %s :Cannot join channel (+k).";
+	_replyTemplates[ERR_CHANNELISFULL] = ":" + SERVER_NAME + " 471 %s :Cannot join channel (+l).";
+	_replyTemplates[ERR_USERNOTINCHANNEL] = ":" + SERVER_NAME + " 441 %s %s :They aren't on that channel.";
+	_replyTemplates[ERR_CANNOTSENDTOCHAN] = ":" + SERVER_NAME + " 404 %s %s :Cannot send to channel.";
+	_replyTemplates[ERR_USERONCHANNEL] = ":" + SERVER_NAME + " 443 %s %s :is already on channel.";
+	_replyTemplates[ERR_UNKNOWNCOMMAND] = ":" + SERVER_NAME + " 421 %s %s :Unknown command.";
 }
 
 /*
@@ -120,12 +120,12 @@ std::string	Reply::welcome(const std::string &userNickname) const
 
 std::string	Reply::authenticationFailed(const std::string &reason) const
 {
-	return (generateReply(RPL_AUTHFAILED, makeArgs(reason)));
+	return (generateReply(RPL_AUTH_FAILED, makeArgs(reason)));
 }
 
 std::string	Reply::joinSuccess(const std::string &channelName) const
 {
-	return (generateReply(RPL_JOINSUCCESS, makeArgs(channelName)));
+	return (generateReply(RPL_JOIN_SUCCESS, makeArgs(channelName)));
 }
 
 std::string	Reply::privateMessage(const std::string &sender, const std::string &receiver, const std::string &message) const
@@ -135,7 +135,7 @@ std::string	Reply::privateMessage(const std::string &sender, const std::string &
 
 std::string	Reply::channelMessage(const std::string &sender, const std::string &channel, const std::string &message) const
 {
-	return (generateReply(RPL_CHANNELMSG, makeArgs(sender, channel, message)));
+	return (generateReply(RPL_CHANNEL_MSG, makeArgs(sender, channel, message)));
 }
 
 // std::string	Reply::kickMessage(const std::string &operatorName, const std::string &target, const std::string &channel, const std::string &reason) const;

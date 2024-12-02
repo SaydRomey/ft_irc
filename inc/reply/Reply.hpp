@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 01:35:46 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/30 03:06:22 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:50:49 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ class Reply
 			ERR_UNKNOWNCOMMAND
 		};
 		
-		Reply() const;
-		~Reply() const;
+		Reply();
+		~Reply();
 
 		std::string	generateReply(ReplyType key, const std::vector<std::string> &args) const;
 		
@@ -92,7 +92,7 @@ class Reply
 		
 	private:
 		static const std::string	SERVER_NAME;
-		std::map<std::string, std::string>	_replyTemplates;
+		std::map<ReplyType, std::string>	_replyTemplates;
 
 		void		_initializeTemplates();
 		std::string	_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const;

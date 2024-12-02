@@ -6,11 +6,14 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:48:34 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/29 16:23:52 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:00:43 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "_test_header.hpp"
+#include "Reply.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 void	test_reply(void)
 {
