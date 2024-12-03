@@ -56,12 +56,12 @@ bool	Channel::removeMember(User& user)
 	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
-bool	Channel::setTopic(const User& user, std::string* topic)
+bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat envoie si c'Est string vide
 {
 	//par defaut sur false tout le monde peut modifier le topic.
 	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
-	User _user = user;
-	if (_members.find(&_user) != _members.end()) //etrange car la je verifie que le membre est dedans, alors que je devrais detecté si il est pas dedans mais quand j'inverse je rentre toujours dans cettet condition
+	// const User *_user = &user;
+	if (_members.find(&user) != _members.end()) //etrange car la je verifie que le membre est dedans, alors que je devrais detecté si il est pas dedans mais quand j'inverse je rentre toujours dans cettet condition
 	{
 		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
@@ -76,7 +76,7 @@ bool	Channel::setTopic(const User& user, std::string* topic)
 	}
 	if (_modes['t'] == true)
 	{
-		if (_members[&_user] != true)
+		if (_members[&user] != true)
 		{
 			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 			return false;
@@ -92,24 +92,24 @@ bool	Channel::setTopic(const User& user, std::string* topic)
 	return true;
 }
 
-bool	Channel::kick(User &user, const User& op, std::string reason)
+bool	Channel::kick(User &user, User& op, std::string reason)
 {
 	//enlever l'appel a removemember car sinon ca met 2 messages
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	// User current = op;
+	if (_members.find(&op) != _members.end() && _members[&op] == true)
 	{
 		this->removeMember(user);
 		std::cout << "User " << user.getNickname() << " has been kicked for the following reason: " << reason << std::endl;
 		return true;
 	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
+	std::cout << "Unauthorized access: " << op.getNickname() << " is not an operator" << std::endl;
 	return false;
 }
 
-bool	Channel::invite(User &user, const User& op)
+bool	Channel::invite(User &user, User& op)
 {
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	// User current = op;
+	if (_members.find(&op) != _members.end() && _members[&op] == true)
 	{
 		if (_modes['l'] == false || _members.size() < _memberLimit)
 		{
@@ -126,7 +126,7 @@ bool	Channel::invite(User &user, const User& op)
 			return false;
 		}
 	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
+	std::cout << "Unauthorized access: " << op.getNickname() << " is not an operator" << std::endl;
 	return false;
 }
 
@@ -142,18 +142,18 @@ static bool	isValidNb(const std::string& str)
 	return true;
 }
 
-bool	Channel::setMode(std::string mode, const User& op, const std::string& pswOrLimit, User* user)
+bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user)
 {
-	User current = op;
+	// User current = op;
 	const std::string validMod = "itkol";
-	if (_members.find(&current) == _members.end())
+	if (_members.find(&op) == _members.end())
 	{
-		std::cout << ":server 442 " << current.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	if (_members[&current] != true)
+	if (_members[&op] != true)
 	{
-		std::cout << ":server 482 " << current.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 		return false;
 	}
 	if (mode[0] == '+')
@@ -176,7 +176,7 @@ bool	Channel::setMode(std::string mode, const User& op, const std::string& pswOr
 			else
 			{
 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-				std::cout << ":server 472 " << current.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
 				return false;
 			}
 		}
@@ -199,7 +199,7 @@ bool	Channel::setMode(std::string mode, const User& op, const std::string& pswOr
 			else
 			{
 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-				std::cout << ":server 472 " << current.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
 				return false;
 			}
 		}
