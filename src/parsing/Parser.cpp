@@ -6,90 +6,175 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/19 13:36:13 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:44:09 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
-#include "_parsing_utils.hpp"
-#include <iostream> // for debug
-#include "_parsing_utils.hpp"
+#include "Reply.hpp"
+#include <stdexcept>
 
 Parser::Parser(void) {}
+Parser::~Parser(void) {}
 
-Message	Parser::parse(const std::string &rawInput)
+
+/*
+Use a single entry point (Parser::parse) to handle:
+
+Tokenizing: split the input
+Parsing: extract and organize command data
+Validating: validate command-specific details
+
+Returns a Message object for valid inputs.
+Throws a formatted reply for invalid inputs.
+*/
+Message	Parser::parse(const std::string &input)
 {
-	std::string	trimmedInput = trim(rawInput);
+	std::vector<std::string>	tokens = _tokenize(input);
+	std::map<std::string, std::string>	command = _parseCommand(tokens);
 	
-	std::string	normalizedInput = normalizeInput(trimmedInput); //
-	std::vector<std::string>	tokens = _tokenizer.tokenize(normalizedInput); //
-	
-	// std::vector<std::string>	tokens = _tokenizer.tokenize(trimmedInput);
-	std::map<std::string, std::string>	parsedCommand = _commandParser.parseCommand(tokens);
-	
-	// printMap(parsedCommand, "** Parsed Command:");
-	
-	// Validate command presence and validity
-	if (!_validator.isValidCommand(parsedCommand))
-	{
-		throw (std::invalid_argument("Invalid command in input"));
-	}
-	
-	// Validate nickname if prefix exists
-	if (parsedCommand.count("prefix") && !_validator.isValidNickname(parsedCommand["prefix"]))
-	{
-		throw (std::invalid_argument("Invalid nickname format"));
-	}
+	Validator	validator;
+	Reply		reply;
 
-	// Validate trailing part for commands that require it
-	if ((parsedCommand["command"] == "PRIVMSG" || parsedCommand["command"] == "NOTICE") && \
-		(!parsedCommand.count("trailing") || parsedCommand["trailing"].empty()))
+	if (!validator.isValidCommand(command)) // syntax validation
 	{
-		throw (std::invalid_argument("Trailing part is required"));
+		throw (std::invalid_argument(reply.generateReply(Reply::ERR_UNKNOWNCOMMAND, makeArgs(command["command"]))));
+	}
+	if (!validator.validateCommand(command)) // semantic validation
+	{
+		throw (std::invalid_argument(reply.generateReply(Reply::ERR_NEEDMOREPARAMS, makeArgs(command["command"]))));
 	}
 	
-	// Validate channel for JOIN command)
-	if (parsedCommand["command"] == "JOIN" && !_validator.isValidChannel(parsedCommand["params"]))
-	{
-		// logError("Invalid channel format: " + parsedCommand["params"]);
-		throw (std::invalid_argument("Invalid channel format"));
-	}
-	
-	if (parsedCommand["command"] == "MODE")
-	{
-		std::vector<std::string>	params = _tokenizer.tokenize(parsedCommand["params"]);
-		if (!_validator.isValidModeCommand(params))
-			throw (std::invalid_argument("Invalid Mode command"));
-	}
-	
-	return (Message(parsedCommand));
+	return (Message(command));
 }
 
 /*
-2.3.1 Message format in Augmented BNF
-
-   The protocol messages must be extracted from the contiguous stream of
-   octets.  The current solution is to designate two characters, CR and
-   LF, as message separators.  Empty messages are silently ignored,
-   which permits use of the sequence CR-LF between messages without
-   extra problems.
-
-   The extracted message is parsed into the components <prefix>,
-   <command> and list of parameters (<params>).
-
-	The Augmented BNF representation for this is:
-
-	message    =  [ ":" prefix SPACE ] command [ params ] crlf
-	prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] )
-	command    =  1*letter / 3digit
-	params     =  *14( SPACE middle ) [ SPACE ":" trailing ]
-			   =/ 14( SPACE middle ) [ SPACE [ ":" ] trailing ]
-
-	nospcrlfcl =  %x01-09 / %x0B-0C / %x0E-1F / %x21-39 / %x3B-FF
-					; any octet except NUL, CR, LF, " " and ":"
-	middle     =  nospcrlfcl *( ":" / nospcrlfcl )
-	trailing   =  *( ":" / " " / nospcrlfcl )
-
-	SPACE      =  %x20        ; space character
-	crlf       =  %x0D %x0A   ; "carriage return" "linefeed"
+Format the input string as a vector of string tokens
 */
+std::vector<std::string>	Parser::_tokenize(const std::string &input)
+{
+	std::vector<std::string>	tokens;
+
+	std::stringstream	ss(input);
+	std::string			token;
+	char				delimiter = ' ';
+
+	while (std::getline(ss, token, delimiter))
+	{
+		if (!token.empty()) // ignore empty tokens caused by consecutive delimiters
+			tokens.push_back(token);
+	}
+	return (tokens);
+}
+
+/*
+Extracts and organize command data
+	prefix if first token starts with ':'
+	command
+	parameters
+	trailing message if ':' is found after the command
+*/
+std::map<std::string, std::string>	Parser::_parseCommand(const std::vector<std::string> &tokens)
+{
+	std::map<std::string, std::string>	command;
+	
+	if (tokens.empty())
+		return (command);
+	
+	size_t	index = 0;
+	if (tokens[index][0] == ':')
+	{
+		command["prefix"] = tokens[index].substr(1);
+		index++;
+	}
+	if (index < tokens.size())
+	{
+		command["command"] = tokens[index];
+		index++;
+	}
+
+	std::string	params;
+	while (index < tokens.size())
+	{
+		if (tokens[index][0] == ':')
+		{
+			command["trailing"] = tokens[index].substr(1);
+			break ;
+		}
+		if (!params.empty())
+			params += " ";
+		params += tokens[index];
+		++index;
+	}
+	command["params"] = params;
+
+	return (command);
+}
+
+/* ************************************************************************** */
+
+std::string trim(const std::string &str)
+{
+	size_t	start = str.find_first_not_of(" \t");
+	size_t	end = str.find_last_not_of(" \t");
+
+	if (start == std::string::npos || end == std::string::npos)
+		return (""); // String is entirely whitespace
+
+	return (str.substr(start, end - start + 1));
+}
+
+/*
+Reformat a string by replacing multiple space char (' ') by a single space
+ezample, 
+	":nickname   JOIN    #channel   :Hello    world!"
+would become 
+	":nickname JOIN #channel :Hello world!"
+*/
+std::string normalizeInput(const std::string &input)
+{
+	std::string	normalized;
+	normalized.reserve(input.size());
+
+	bool	previousWasSpace = false;
+
+	std::string::const_iterator it = input.begin();
+	while (it != input.end())
+	{
+		// Replace multiple spaces or tabs with a single space
+		if (*it == ' ' || *it == '\t')
+		{
+			if (!previousWasSpace)
+			{
+				normalized += ' ';
+				previousWasSpace = true;
+			}
+		}
+		// Remove carriage returns and line breaks
+		else if (*it != '\r' && *it != '\n')
+		{
+			normalized += *it;
+			previousWasSpace = false;
+		}
+		++it;
+	}
+
+	return (normalized);
+}
+
+/* ************************************************************************** */
+
+void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg)
+{
+	// if (!DEBUG)
+		// return ;
+
+	std::cout << msg << std::endl;
+
+	std::map<std::string, std::string>::const_iterator	it = parsedCommand.begin();
+	while (it != parsedCommand.end())
+	{
+		std::cout << "  " << it->first << ": " << it->second << std::endl;
+		++it;
+	}
+}

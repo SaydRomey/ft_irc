@@ -11,11 +11,13 @@ class Aggregator
 	public:
 		Aggregator(void);
 		
+		// process incoming data and return complete commands
 		std::vector<std::string>	processData(int clientFd, const std::string &data);
 	
 	private:
 		std::map<int, std::string>	_buffer; // map each client's fd to their respective buffer
 
+		// helper to split commands from raw data
 		std::vector<std::string>	_splitCommands(const std::string &raw);
 };
 

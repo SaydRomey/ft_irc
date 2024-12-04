@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   test_server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
+/*   By: nadege <nadege@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/22 20:37:38 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/04 16:21:22 by nadege           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,12 @@ void	Client::setIpAdd(std::string ipadd)
 /* ************************************************************************** */
 
 TestServer::TestServer()
+TestServer::TestServer()
 {
 	_serSocketFd = -1;
 }
 
+void	TestServer::ClearClients(int fd)
 void	TestServer::ClearClients(int fd)
 {
 	size_t	i = 0;
@@ -76,14 +78,18 @@ void	TestServer::ClearClients(int fd)
 }
 
 bool	TestServer::_signal = false; // initialize the static boolean
+bool	TestServer::_signal = false; // initialize the static boolean
 
+void	TestServer::SignalHandler(int signum)
 void	TestServer::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << "\n" << "Signal Recieved!" << std::endl;
 	TestServer::_signal = true; // set the static boolean to true to stop the server
+	TestServer::_signal = true; // set the static boolean to true to stop the server
 }
 
+void	TestServer::CloseFds()
 void	TestServer::CloseFds()
 {
 	size_t	i = 0;
@@ -101,6 +107,7 @@ void	TestServer::CloseFds()
 	}
 }
 
+void	TestServer::SerSocket()
 void	TestServer::SerSocket()
 {
 	struct sockaddr_in	add;
@@ -140,6 +147,7 @@ void	TestServer::SerSocket()
 }
 
 void	TestServer::TestServerInit()
+void	TestServer::TestServerInit()
 {
 	this->_port = 6667;
 	SerSocket(); // create the server socket
@@ -148,9 +156,11 @@ void	TestServer::TestServerInit()
 	std::cout << "Waiting to accept a connection..." << std::endl;
 
 	while (TestServer::_signal == false) // run the server until the signal is recieved
+	while (TestServer::_signal == false) // run the server until the signal is recieved
 	{
 		if ((poll(&_fds[0], _fds.size(), -1) == -1) && TestServer::_signal == false) // wait for an event
 			throw (std::runtime_error("poll() failed"));
+		std::cout << PURPLE << "[DEBUG] Polling complete!" << RESET << std::endl;
 		
 		size_t	i = 0;
 		while (i < _fds.size())
@@ -169,6 +179,7 @@ void	TestServer::TestServerInit()
 	CloseFds(); // close the file descriptor when the server stops
 }
 
+void	TestServer::AcceptNewClient()
 void	TestServer::AcceptNewClient()
 {
 	Client	client;
@@ -202,6 +213,7 @@ void	TestServer::AcceptNewClient()
 }
 
 void	TestServer::RecieveNewData(int fd)
+void	TestServer::RecieveNewData(int fd)
 {
 	char	buff[1024]; // buffer for the recieved data
 	memset(buff, 0, sizeof(buff)); // clear the buffer
@@ -231,10 +243,14 @@ void	TestServer::RecieveNewData(int fd)
 void	test_server(void)
 {
 	TestServer	server;
+	TestServer	server;
 	
 	std::cout << "---- SERVER ----" << std::endl;
 	try
 	{
+		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
+		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
+		server.TestServerInit(); // initialize the server
 		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
 		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
 		server.TestServerInit(); // initialize the server

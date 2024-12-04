@@ -6,16 +6,12 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/21 15:49:02 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/02 00:25:35 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TEST_HEADER_HPP
 # define TEST_HEADER_HPP
-
-# include "test_server.hpp"
-# include "Parser.hpp"
-# include <iostream>
 
 # define RESET		"\033[0m"
 # define BOLD		"\033[1m"
@@ -30,9 +26,9 @@
 # define ORANGE		"\033[38;5;208m"
 # define GRAYTALIC	"\033[3;90m"
 
-void test_server(void);
-
-int	test_parser(void);
-int	test_tokenizer(int argc, char *argv[]);
+void	test_parser(void);
+void	test_tokenizer(int argc, char *argv[]);
+void	test_validator(void);
+void	test_reply(void);
 
 #endif // TEST_HEADER_HPP

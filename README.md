@@ -10,9 +10,11 @@ Understanding solid standard protocols like those used in the Internet is a valu
 ---
 
 ## Introduction
-**Internet Relay Chat (IRC)** is a text-based communication protocol that provides real-time messaging.  
-It supports both public and private communication, allowing users to exchange direct messages or join group channels.  
-IRC clients connect to IRC servers to participate in channels, while IRC servers interconnect to form a network.
+**Internet Relay Chat** or **IRC** is a text-based communication protocol on the Internet.  
+It offers real-time messaging that can be either public or private.  
+Users can exchange direct messages and join group channels.  
+IRC clients connect to IRC servers in order to join channels.  
+IRC servers are connected together to form a network.
 
 ---
 
@@ -29,146 +31,142 @@ The Makefile must not perform unnecessary relinking.
 - Prefer C++ features over their C equivalents (e.g., `<cstring>` instead of `<string.h>`).
 - External libraries and Boost libraries are **forbidden**.
 
+You are allowed to use C functions, but always prefer their C++ versions if possible.
+
 ---
 
 ## Mandatory Part
-### **Program Name:**  
+#### **Program Name:**  
 `ircserv`
 
-### **Turn-In Files:**  
+#### **Turn-In Files:**  
 - `Makefile`, `*.{h, hpp, cpp, tpp, ipp}`
 - Optional: configuration file.
 
-### **Arguments:**  
-```bash
-./ircserv <port> <password>
-```
+#### **Makefile:**  
+- `NAME`, `all`, `clean`, `fclean`, `re`
+
+#### **Arguments:**  
 - **port:** The listening port for incoming IRC connections.  
 - **password:** The connection password required by any IRC client to connect.
 
-### **External Functions Allowed:**
-- `socket`, `close`, `setsockopt`, `getsockname`, `getprotobyname`, `gethostbyname`, 
-`getaddrinfo`, `freeaddrinfo`, `bind`, `connect`, `listen`, `accept`, 
-`htons`, `htonl`, `ntohs`, `ntohl`, `inet_addr`, `inet_ntoa`, 
+#### **External Functions Allowed:**
+- `socket`, `close`, `setsockopt`, `getsockname`, `getprotobyname`, `gethostbyname`,  
+`getaddrinfo`, `freeaddrinfo`, `bind`, `connect`, `listen`, `accept`,  
+`htons`, `htonl`, `ntohs`, `ntohl`, `inet_addr`, `inet_ntoa`,  
 `send`, `recv`, `signal`, `sigaction`, `lseek`, `fstat`, `fcntl`, `poll` (or equivalents).
 
-### **Description:**  
+#### **Description:**  
 Develop an IRC server in **C++98**.
 
-#### Key Requirements:
-- **No client implementation required.**
-- **No server-to-server communication required.**
+You **mustn’t** develop a client.
+You **mustn’t** handle server-to-server communication.
+
+Your executable will be run as follows:
+```bash
+./ircserv <port> <password>
+```
+- **port:** The port number on which your IRC server will be listening to for incoming
+IRC connections.  
+- **password:** The connection password. It will be needed by any IRC client that tries to connect to your server.
+
+>ℹ
+>    Even if poll() is mentionned in the subject and the evaluation scale,  
+>    you can use any equivalent such as select(), kqueue(), or epoll().
+
+### Requirements:
 - The server must handle **multiple clients simultaneously** and must not hang.
 - **Forking is not allowed.**
 - All I/O operations must be **non-blocking.**
-- Use **one `poll()` (or equivalent)** to handle all operations (read, write, listen, etc.).
+- Use only **one** `poll()` (or equivalent) to handle all operations (read, write, listen, etc.).
 
-#### Implementation Features:
-- Authentication.
-- Set a nickname and username.
-- Join channels.
-- Send and receive private messages.
-- Forward messages to all channel members.
-- Distinguish between operators and regular users.
-- Implement operator commands:
-  - `KICK`: Remove a client from a channel.
-  - `INVITE`: Invite a client to a channel.
-  - `TOPIC`: View or modify the channel topic.
-  - `MODE`: Modify channel modes:
-    - `i`: Invite-only channel.
-    - `t`: Restrict `TOPIC` command to operators.
-    - `k`: Set/remove channel password.
-    - `o`: Manage operator privileges.
-    - `l`: Set/remove user limit.
+>⚠️
+>    Because you have to use non-blocking file descriptors,  
+>    it is possible to use read/recv or write/send functions with no poll() (or equivalent),  
+>    and your server wouldn’t be blocking.  
+>    But it would consume more system resources.  
+>    Thus, if you try to read/recv or write/send in any file descriptor  
+>    without using poll() (or equivalent), your grade will be 0.
 
----
+- Several IRC clients exist. You have to choose one of them as a reference.  
+Your reference client will be used during the evaluation process.  
+- Your reference client must be able to connect to your server without encountering any error.  
+- Communication between client and server has to be done via TCP/IP (v4 or v6).  
+- Using your reference client with your server must be similar to using it with any official IRC server.  
+However, you only have to implement the following features:
+  - Authentication.
+  - Set a nickname and username.
+  - Join channels.
+  - Send and receive private messages using your reference client.
+  - Forward messages sent from one client to a channel to all channel members.
+  - Distinguish between *operators* and regular users.
+  - Implement **channel operator** commands:
+    - `KICK`: Remove a client from a channel.
+    - `INVITE`: Invite a client to a channel.
+    - `TOPIC`: View or modify the channel topic.
+    - `MODE`: Modify channel modes:
+      - `i`: *Set/remove* Invite-only channel.
+      - `t`: *Set/remove* the restriction of the `TOPIC` command to  channel operators.
+      - `k`: *Set/remove* the channel key (password).
+      - `o`: *Give/take* channel operator privileges.
+      - `l`: *Set/remove* the user limit to channel.
 
-## Test Example
-Verify error handling and behavior under adverse conditions  
-(e.g., partial data or low bandwidth).
 
-Example test using `nc`:
-```bash
-$> nc 127.0.0.1 6667
-com^Dman^Dd
-```
+### For macOS only
+>ℹ
+>    Since macOS doesn’t implement `write()` the same way as other Unix operating systems,  
+>    you are allowed to use `fcntl()`.  
+>    You must use file descriptors in **non-blocking** mode  
+>    in order to get a behavior similar to the one of other Unix operating systems.
 
-Use Ctrl+D to send the command in parts (com, then man, then d\n).  
-Ensure the server processes and aggregates commands correctly.
+>⚠️
+>    However, you are allowed to use `fcntl()` only as follows:
+>    fcntl(fd, F_SETFL, O_NONBLOCK);
+>    **Any other flag is forbidden**
 
----
-
-## Bonus Part
-### Additional Features:
-- Handle **file transfers**.
-- Add a **bot**.
-
-**Note:**  
-The bonus will only be assessed if the mandatory part is **perfectly implemented**.  
-A perfect implementation means all mandatory requirements are met without any malfunctions.
-
----
-
-## Submission and Peer-Evaluation
-- Submit the project via your Git repository.  
-- Only the files in your repository will be evaluated.  
-- Double-check file names and paths before submission.
-
-### Testing:
-You are encouraged to create test programs for your project.  
-While these tests are not graded, they are invaluable for validating your implementation during defense and peer evaluation.
-
----
-
-## Notes for macOS Users
-- Since macOS handles `write()` differently, you may use `fcntl()` as follows:
-```cpp
-  fcntl(fd, F_SETFL, O_NONBLOCK);
-```
-Any other flag is forbidden
-
----
-
-## Test Example
+### Test Example
 Verify absolutely every possible error and issue  
 (receiving partial data, low bandwidth, and so forth).
 
-To ensure that your server correctly processes everything you send to it,  
+To ensure that your server correctly processes everything that you send to it,  
 the following simple test using `nc` can be done:
 ```bash
 $> nc 127.0.0.1 6667
 com^Dman^Dd
-$>
 ```
-Use ctrl+D to send the command in several parts:  
-’com’, then ’man’, then ’d\n’.
+
+Use **Ctrl+D** to send the command in several parts: **'com'**, then **'man'**, then **'d\n'**.  
+
 In order to process a command, you have to first aggregate the received packets in order to rebuild it.
 
 ---
 
 ## Bonus Part
-Here are the extra features you can add to your IRC server to make it even more like an actual IRC server:
+Extra features you can add to your IRC server so it looks even more like and actual IRC server:
 
-- Handle **file transfers**.
-- Add a **bot**.
+- Handle **file transfer**.
+- A **bot**.
 
-**Important Note:**  
-The bonus part will only be assessed if the mandatory part is **PERFECT**.  
-Perfect means the mandatory part has been fully implemented and works without any malfunctions.  
-If you fail to meet **ALL** the mandatory requirements, your bonus part will not be evaluated.
+>⚠️
+>    The bonus part will only be assessed if the mandatory part is **perfectly implemented**.  
+>    A perfect implementation means all mandatory requirements are met without any malfunctions.  
+>    If you have not passed ALL the mandatory requirements,  
+>    your bonus part will not be evaluated at all.
 
 ---
 
 ## Submission and Peer-Evaluation
-Turn in your assignment in your Git repository as usual.  
-Only the work inside your repository will be evaluated during the defense.  
-Don’t hesitate to double-check the names of your files to ensure they are correct.
+- Submit the project via your **Git** repository as usual.  
+- Only the files in your repository will be evaluated.  
+- Double-check file names and paths before submission.
 
+### Testing:
 You are encouraged to create test programs for your project,  
-even though they won’t be submitted and won’t be graded.  
+even though they **won't be submitted and won't be graded**.  
 These tests could be especially useful to test your server during the defense  
-or for evaluating a peer’s project if you have to assess another `ft_irc` implementation one day.
-
+or for evaluating a peer’s project if you have to evaluate another `ft_irc` implementation one day.  
 Indeed, you are free to use whatever tests you need during the evaluation process.
 
-Your reference client will be used during the evaluation process.
+
+>ℹ
+>    Your reference client will be used during the evaluation process.

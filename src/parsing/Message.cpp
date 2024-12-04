@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/11/15 14:32:18 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/01 21:49:02 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,6 @@
 
 Message::Message(const std::map<std::string, std::string> &parsedCommand)
 {
-	// _prefix = parsedCommand.find("prefix") != parsedCommand.end() ? parsedCommand.at("prefix") : "";
-	// _command = parsedCommand.find("command") != parsedCommand.end() ? parsedCommand.at("command") : "";
-	// _params = parsedCommand.find("params") != parsedCommand.end() ? parsedCommand.at("params") : "";
-	// _trailing = parsedCommand.find("trailing") != parsedCommand.end() ? parsedCommand.at("trailing") : "";
-
 	if (parsedCommand.find("prefix") != parsedCommand.end())
 		_prefix = parsedCommand.at("prefix");
 	else
@@ -55,6 +50,7 @@ const std::string&	Message::getParams(void) const
 	return (_params);
 }
 
-const std::string&	Message::getTrailing(void) const{
+const std::string&	Message::getTrailing(void) const
+{
 	return (_trailing);
 }
