@@ -3,8 +3,7 @@
 // # define COMMANDHANDLER_HPP
 
 // # include <string>
-// # include "ClientManager.hpp"
-// # include "ChannelManager.hpp"
+// # include "Channel.hpp"
 // # include "Message.hpp"
 
 // class CommandHandler

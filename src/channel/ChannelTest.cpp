@@ -58,9 +58,6 @@ void ChannelTest::setModeTest()
 void ChannelTest::addRemoveTests()
 {
 	std::cout << "---------addRemove Tests---------" << std::endl;
-	// std::vector<User> users;
-	// users.push_back(User("Naddy", "Nad"));
-	// Channel naruto("#Naruto", users.at(0));
 	User naddy("Naddy", "nad");
 	Channel naruto("#Naruto", naddy);
 	naruto.printMembers();
@@ -94,7 +91,7 @@ void ChannelTest::commandsOpTest()
 
 void ChannelTest::channelTests()
 {
-	// addRemoveTests();
+	addRemoveTests();
 	setModeTest();
-	// commandsOpTest();
+	commandsOpTest();
 }

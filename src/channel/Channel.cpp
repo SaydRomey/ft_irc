@@ -16,43 +16,38 @@ Channel::~Channel()
 
 bool	Channel::addMember(User& user, std::string pswIfNeeded)
 {
-	//verifier aussi si k est activé car sinon rentre dedans
-	if (_modes['i'] == false && _modes['k'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
+	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
-		if (_modes['l'] == false || _members.size() < _memberLimit)
-		{
-			_members[&user]=false;
-			if (_members.find(&user) != _members.end())
-			{
-				std::cout << user.getNickname() << " has joined the channel " << this->_name << "! :)" << std::endl;
-				return true;
-			}
-		}
-		else
-		{
-			std::cout << "The channel member limit has been reached" << std::endl;
-			return false;
-		}
-	}
-	else
-	{
-		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
+		std::cout << ":server 473 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+i)" << std::endl;
 		return false;
 	}
+	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0) //ERR_BADCHANNELKEY
+	{
+		std::cout << ":server 475 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+k)" << std::endl;
+		return false;
+	}
+	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+	{
+		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
+		return false;
+	}
+	_members[&user]=false;
+	if (_members.find(&user) != _members.end())
+		std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
 	return true;
 }
 
-bool	Channel::removeMember(User& user)
+bool	Channel::removeMember(User& user) //voir pour garder bool et retourner un si on doit supp le channel car vide
 {
-	//voir si plus personne dans le channel car si c'Est le cas on supprime channel
-	if (_members.find(&user) != _members.end())
-		_members.erase(&user);
-	if (_members.find(&user) == _members.end())
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << "User " << user.getNickname() << " has left the channel " << this->_name << std::endl;
-		return true;
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
 	}
-	return false;
+	_members.erase(&user);
+	if (_members.find(&user) == _members.end())
+		std::cout << ":" << user.getNickname() << "!user@host PART " << this->_name << " :User has left the channel" << std::endl;
+	return true;
 	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
@@ -60,15 +55,14 @@ bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat env
 {
 	//par defaut sur false tout le monde peut modifier le topic.
 	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
-	// const User *_user = &user;
-	if (_members.find(&user) != _members.end()) //etrange car la je verifie que le membre est dedans, alors que je devrais detecté si il est pas dedans mais quand j'inverse je rentre toujours dans cettet condition
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
 		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
 	if (topic == NULL)
 	{
-		if (this->_topic.empty())
+		if (this->_topic.empty()) //ERR_NOTOPIC
 			std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
 		else
 			std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
@@ -76,7 +70,7 @@ bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat env
 	}
 	if (_modes['t'] == true)
 	{
-		if (_members[&user] != true)
+		if (_members[&user] != true) //ERR_CHANOPRIVSNEEDED
 		{
 			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 			return false;
@@ -94,40 +88,48 @@ bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat env
 
 bool	Channel::kick(User &user, User& op, std::string reason)
 {
-	//enlever l'appel a removemember car sinon ca met 2 messages
-	// User current = op;
-	if (_members.find(&op) != _members.end() && _members[&op] == true)
+	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		this->removeMember(user);
-		std::cout << "User " << user.getNickname() << " has been kicked for the following reason: " << reason << std::endl;
-		return true;
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
 	}
-	std::cout << "Unauthorized access: " << op.getNickname() << " is not an operator" << std::endl;
-	return false;
+	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+	{
+		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+	if (_members.find(&user) == _members.end()) //ERR_USERNOTINCHANNEL
+	{
+		std::cout << ":server 441 " << op.getNickname() << " " << user.getNickname() << " " << this->_name << " :They aren't on that channel" << std::endl;
+		return false;
+	}
+	_members.erase(&user);
+	if (_members.find(&user) == _members.end())
+		std::cout << ":server KICK " << this->_name << " " << user.getNickname() << " :" << reason << std::endl;
+	return true;
 }
 
-bool	Channel::invite(User &user, User& op)
+bool	Channel::invite(User &user, User& op) //a refaire comme settopic
 {
-	// User current = op;
-	if (_members.find(&op) != _members.end() && _members[&op] == true)
+	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		if (_modes['l'] == false || _members.size() < _memberLimit)
-		{
-			_members[&user]=false;
-			if (_members.find(&user) != _members.end())
-			{
-				std::cout << user.getNickname() << " has been invited to join the channel " << this->_name << "! :)" << std::endl;
-				return true;
-			}
-		}
-		else
-		{
-			std::cout << "The channel member limit has been reached" << std::endl;
-			return false;
-		}
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
 	}
-	std::cout << "Unauthorized access: " << op.getNickname() << " is not an operator" << std::endl;
-	return false;
+	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+	{
+		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+	{
+		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
+		return false;
+	}
+	_members[&user]=false;
+	if (_members.find(&user) != _members.end())
+		std::cout << ":server 341 " << user.getNickname() << " " << this->_name << " :" << op.getNickname() << std::endl;
+	return true;
 }
 
 static bool	isValidNb(const std::string& str)
@@ -144,14 +146,13 @@ static bool	isValidNb(const std::string& str)
 
 bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user)
 {
-	// User current = op;
 	const std::string validMod = "itkol";
-	if (_members.find(&op) == _members.end())
+	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
 		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	if (_members[&op] != true)
+	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
 	{
 		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 		return false;
@@ -204,9 +205,9 @@ bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit,
 			}
 		}
 	}
-	else
+	else //ERR_UNKNOWNMODE 
 	{
-		std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
+		std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
 		return false;
 	}
 	return true;
@@ -232,8 +233,6 @@ void Channel::printMembers()
 	std::cout << "Members list: " << std::endl;
 	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
 		std::cout << "-> " << it->first->getNickname() << " : " << it->second << std::endl;
-	// for (std::map<User*, bool>::iterator it = this->_members.begin(); it != this->_members.end(); it++)
-	// 	std::cout << "-> " << it->first->getNickname() << std::endl;
 }
 
 void	Channel::printMode()
