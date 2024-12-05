@@ -6,12 +6,14 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/02 00:36:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 13:42:10 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VALIDATOR_HPP
 # define VALIDATOR_HPP
+
+# include "ReplyTypes.hpp" // for numeric reply enum
 
 # include <map>
 # include <set>
@@ -32,10 +34,19 @@ class Validator
 		bool	isValidNickname(const std::string &nickname) const;
 		bool	isValidChannelName(const std::string& channel) const;
 		
+		ReplyType	getError(void) const;
+		const std::vector<std::string>&	getErrorArgs(void) const;
+	
 	private:
 		bool	_validateJoinCommand(const std::map<std::string, std::string>& command) const;
 		bool	_validatePrivmsgCommand(const std::map<std::string, std::string>& command) const;
+		bool	_validatePassCommand(const std::map<std::string, std::string>& command) const;
+		bool	_validateNickCommand(const std::map<std::string, std::string>& command) const;
 		// ...
+
+		bool	_setError(ReplyType error, const std::string &arg1 = "", const std::string &arg2 = "");
+		mutable ReplyType	_error; // store the last error code
+		mutable std::vector<std::string>	_errorArgs; // store arguments for the error reply
 	
 		static const size_t	MAX_NICKNAME_LENGTH;
 		static const size_t	MAX_CHANNEL_NAME_LENGTH;
