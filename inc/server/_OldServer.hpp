@@ -1,6 +1,6 @@
 
-#ifndef SERVER_HPP
-# define SERVER_HPP
+#ifndef _OLDSERVER_HPP
+# define _OLDSERVER_HPP
 
 # include <string>
 # include <map>
@@ -66,4 +66,4 @@ class Server
 
 }
 
-#endif // SERVER_HPP
+#endif
