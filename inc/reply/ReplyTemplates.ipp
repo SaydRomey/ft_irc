@@ -1,3 +1,6 @@
+// irc numeric replies (wip)
+// initialize template strings for numeric replies
+
 // ========================
 // AUTHENTICATION COMMANDS
 // ========================

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 01:35:46 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/04 21:02:48 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/04 21:34:48 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,123 +17,75 @@
 # include <map>
 # include <vector>
 
+# include "ReplyTypes.hpp"
+
+// might change class name to RPL ? -> RPL rpl; rpl.reply()
 class Reply
 {
 	public:
-		
-		enum ReplyType
-		{
-		// ==========================
-		// AUTHENTICATION COMMANDS
-		// ==========================
-			RPL_WELCOME,
-			RPL_YOURHOST,
-			RPL_CREATED,
-			RPL_MYINFO,
-			ERR_NONICKNAMEGIVEN,
-			ERR_ERRONEUSNICKNAME,
-			ERR_NICKNAMEINUSE,
-			ERR_NEEDMOREPARAMS,
-			ERR_ALREADYREGISTERED,
-
-		// ==========================
-		// CHANNEL MANAGEMENT COMMANDS
-		// ==========================
-			RPL_CHANNELMODEIS,
-			RPL_NOTOPIC,
-			RPL_TOPIC,
-			RPL_INVITING,
-			ERR_NOSUCHCHANNEL,
-			ERR_CANNOTSENDTOCHAN,
-			ERR_TOOMANYCHANNELS,
-			ERR_TOOMANYTARGETS,
-			ERR_USERNOTINCHANNEL,
-			ERR_NOTONCHANNEL,
-			ERR_USERONCHANNEL,
-			ERR_KEYSET,
-			ERR_CHANNELISFULL,
-			ERR_UNKNOWNMODE,
-			ERR_INVITEONLYCHAN,
-			ERR_BADCHANNELKEY,
-			ERR_BADCHANMASK,
-			ERR_CHANOPRIVSNEEDED,
-
-		// =======================
-		// MESSAGING COMMANDS
-		// =======================
-			ERR_NOSUCHNICK,
-			ERR_NORECIPIENT,
-			ERR_NOTEXTTOSEND,
-		
-		// =======================
-		// OTHER ?
-		// =======================
-			ERR_UNKNOWNCOMMAND
-		};
-		
 		Reply();
 		~Reply();
 
-		std::string	generateReply(ReplyType key, const std::vector<std::string> &args) const; // might change to reply ? (-> Reply rpl; rpl.reply ?..)
+		std::string	reply(ReplyType key, const std::vector<std::string> &args) const; // might change to reply ? (-> Reply rpl; rpl.reply ?..)
+		std::string	reply(ReplyType key, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 		
-		// General Replies (Authentication)
-		std::string welcome(const std::string &userNickname) const;
-		std::string yourHost(const std::string &userNickname, const std::string &serverName, const std::string &version) const;
-		std::string serverCreated(const std::string &userNickname, const std::string &creationDate) const;
-		std::string myInfo(const std::string &userNickname, const std::string &serverName, const std::string &version,
-                   const std::string &availableUserModes, const std::string &availableChannelModes) const;
+		// // General Replies (Authentication)
+		// std::string welcome(const std::string &userNickname) const;
+		// std::string yourHost(const std::string &userNickname, const std::string &serverName, const std::string &version) const;
+		// std::string serverCreated(const std::string &userNickname, const std::string &creationDate) const;
+		// std::string myInfo(const std::string &userNickname, const std::string &serverName, const std::string &version,
+        //            const std::string &availableUserModes, const std::string &availableChannelModes) const;
 
-		// Channel Management Replies
-		std::string channelModeIs(const std::string &channel, const std::string &modes) const;
-		std::string noTopic(const std::string &channel) const;
-		std::string topic(const std::string &channel, const std::string &topic) const;
-		std::string inviting(const std::string &inviter, const std::string &invitee) const;
+		// // Channel Management Replies
+		// std::string channelModeIs(const std::string &channel, const std::string &modes) const;
+		// std::string noTopic(const std::string &channel) const;
+		// std::string topic(const std::string &channel, const std::string &topic) const;
+		// std::string inviting(const std::string &inviter, const std::string &invitee) const;
 
-		// Messaging Replies
-		std::string privateMessage(const std::string &sender, const std::string &receiver, const std::string &message) const;
-		std::string channelMessage(const std::string &sender, const std::string &channel, const std::string &message) const;
+		// // Messaging Replies
+		// std::string privateMessage(const std::string &sender, const std::string &receiver, const std::string &message) const;
+		// std::string channelMessage(const std::string &sender, const std::string &channel, const std::string &message) const;
 
-		// Error Replies (Authentication)
-		std::string noNicknameGiven() const;
-		std::string erroneousNickname(const std::string &nickname) const;
-		std::string nicknameInUse(const std::string &nickname) const;
-		std::string needMoreParams(const std::string &command) const;
-		std::string alreadyRegistered() const;
+		// // Error Replies (Authentication)
+		// std::string noNicknameGiven() const;
+		// std::string erroneousNickname(const std::string &nickname) const;
+		// std::string nicknameInUse(const std::string &nickname) const;
+		// std::string needMoreParams(const std::string &command) const;
+		// std::string alreadyRegistered() const;
 
-		// Error Replies (Channel Management)
-		std::string noSuchChannel(const std::string &channel) const;
-		std::string cannotSendToChannel(const std::string &channel) const;
-		std::string tooManyChannels(const std::string &channel) const;
-		std::string tooManyTargets(const std::string &target) const;
-		std::string userNotInChannel(const std::string &user, const std::string &channel) const;
-		std::string notOnChannel(const std::string &channel) const;
-		std::string userOnChannel(const std::string &user, const std::string &channel) const;
-		std::string keySet(const std::string &channel) const;
-		std::string channelIsFull(const std::string &channel) const;
-		std::string unknownMode(const std::string &mode) const;
-		std::string inviteOnlyChannel(const std::string &channel) const;
-		std::string badChannelKey(const std::string &channel) const;
-		std::string badChannelMask(const std::string &channel) const;
-		std::string chanOpPrivsNeeded(const std::string &channel) const;
+		// // Error Replies (Channel Management)
+		// std::string noSuchChannel(const std::string &channel) const;
+		// std::string cannotSendToChannel(const std::string &channel) const;
+		// std::string tooManyChannels(const std::string &channel) const;
+		// std::string tooManyTargets(const std::string &target) const;
+		// std::string userNotInChannel(const std::string &user, const std::string &channel) const;
+		// std::string notOnChannel(const std::string &channel) const;
+		// std::string userOnChannel(const std::string &user, const std::string &channel) const;
+		// std::string keySet(const std::string &channel) const;
+		// std::string channelIsFull(const std::string &channel) const;
+		// std::string unknownMode(const std::string &mode) const;
+		// std::string inviteOnlyChannel(const std::string &channel) const;
+		// std::string badChannelKey(const std::string &channel) const;
+		// std::string badChannelMask(const std::string &channel) const;
+		// std::string chanOpPrivsNeeded(const std::string &channel) const;
 
-		// Error Replies (Messaging)
-		std::string noSuchNick(const std::string &nickname) const;
-		std::string noRecipient(const std::string &command) const;
-		std::string noTextToSend() const;
+		// // Error Replies (Messaging)
+		// std::string noSuchNick(const std::string &nickname) const;
+		// std::string noRecipient(const std::string &command) const;
+		// std::string noTextToSend() const;
 
-		// other ?
-		std::string	unknownCommand(const std::string &command) const;
+		// // other ?
+		// std::string	unknownCommand(const std::string &command) const;
 		
 	private:
-		static const std::string	SERVER_NAME; // check if this needs to be public to work with .ipp file ..
+		static const std::string	SERVER_NAME;
 		std::map<ReplyType, std::string>	_replyTemplates;
 
-		// void		_initializeTemplates();
 		std::string	_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const;
 };
 
 // helper function for generating argument lists
-std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
+// std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 
 #endif // REPLY_HPP
 

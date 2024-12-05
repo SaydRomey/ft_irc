@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:48:34 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/02 00:00:43 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/04 21:57:28 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,18 @@
 
 void	test_reply(void)
 {
-	Reply	reply;
+	Reply	rpl;
 
 	try
 	{
-		std::string	welcome = reply.welcome("HomeBoy");
-		std::string	nicknameError = reply.nicknameInUse("HomeBoy");
-		std::string	privateMessage = reply.privateMessage("senderPerson", "recieverPerson", "Hello my friend!");
+		std::string	nickname = "HomeBoy";
+		
+		std::string	welcomeMsg = rpl.reply(RPL_WELCOME, nickname, nickname);
+		std::cout << welcomeMsg << std::endl;
 
-		std::cout << welcome << std::endl;
-		std::cout << nicknameError << std::endl;
-		std::cout << privateMessage << std::endl;
+		std::cout << rpl.reply(ERR_NEEDMOREPARAMS, "PRIVMSG") << std::endl;
+		std::cout << rpl.reply(ERR_ALREADYREGISTERED) << std::endl;
+
 	}
 	catch (const std::exception& e)
 	{
