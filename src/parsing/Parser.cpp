@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/02 00:44:09 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/04 20:27:28 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,15 @@ Message	Parser::parse(const std::string &input)
 	std::map<std::string, std::string>	command = _parseCommand(tokens);
 	
 	Validator	validator;
-	Reply		reply;
+	Reply		rpl;
 
 	if (!validator.isValidCommand(command)) // syntax validation
 	{
-		throw (std::invalid_argument(reply.generateReply(Reply::ERR_UNKNOWNCOMMAND, makeArgs(command["command"]))));
+		throw (std::invalid_argument(rpl.unknownCommand(command["command"])));
 	}
 	if (!validator.validateCommand(command)) // semantic validation
 	{
-		throw (std::invalid_argument(reply.generateReply(Reply::ERR_NEEDMOREPARAMS, makeArgs(command["command"]))));
+		throw (std::invalid_argument(rpl.needMoreParams(command["command"])));
 	}
 	
 	return (Message(command));

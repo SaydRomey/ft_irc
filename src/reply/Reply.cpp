@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/02 21:25:50 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/04 20:58:22 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,211 +14,72 @@
 #include <sstream>
 #include <stdexcept>
 
-/*	**!TODO: lookup which of these expectes replies are not usefull for project scope
-
-- authentication commands
-
-PASS
-	ERR_NEEDMOREPARAMS
-	ERR_ALREADYREGISTERED
-
-NICK
-	ERR_NONICKNAMEGIVEN
-    ERR_NICKNAMEINUSE
-	ERR_UNAVAILRESOURCE
-	ERR_RESTRICTED
-	ERR_ERRONEUSNICKNAME
-	ERR_NICKCOLLISION
-
-USER
-	ERR_NEEDMOREPARAMS
-	ERR_ALREADYREGISTERED
-
-- channel management commands
-
-JOIN
-	ERR_NEEDMOREPARAMS
-	ERR_BANNEDFROMCHAN	?
-    ERR_INVITEONLYCHAN
-	ERR_BADCHANNELKEY
-    ERR_CHANNELISFULL
-	ERR_BADCHANMASK
-    ERR_NOSUCHCHANNEL
-	ERR_TOOMANYCHANNELS
-    ERR_TOOMANYTARGETS
-	ERR_UNAVAILRESOURCE ?
-    RPL_TOPIC
-
-PART
-	ERR_NEEDMOREPARAMS
-	ERR_NOSUCHCHANNEL
-    ERR_NOTONCHANNEL
-
-TOPIC
-	ERR_NEEDMOREPARAMS
-	ERR_NOTONCHANNEL
-331 RPL_NOTOPIC 	"<channel> :No topic is set"
-332 RPL_TOPIC		"<channel> :<topic>"
-    ERR_CHANOPRIVSNEEDED
-	ERR_NOCHANMODES
-
-MODE
-	ERR_NEEDMOREPARAMS
-	ERR_KEYSET
-	ERR_NOCHANMODES
-	ERR_CHANOPRIVSNEEDED
-	ERR_USERNOTINCHANNEL
-	ERR_UNKNOWNMODE
-	RPL_CHANNELMODEIS
-	RPL_BANLIST ?
-	RPL_ENDOFBANLIST ?
-	RPL_EXCEPTLIST ?
-	RPL_ENDOFEXCEPTLIST ?
-	RPL_INVITELIST ?
-	RPL_ENDOFINVITELIST ?
-	RPL_UNIQOPIS ?
-
-KICK
-	ERR_NEEDMOREPARAMS
-	ERR_NOSUCHCHANNEL
-    ERR_BADCHANMASK
-	ERR_CHANOPRIVSNEEDED
-    ERR_USERNOTINCHANNEL
-	ERR_NOTONCHANNEL
-
-INVITE
-	ERR_NEEDMOREPARAMS
-	ERR_NOSUCHNICK
-    ERR_NOTONCHANNEL
-	ERR_USERONCHANNEL
-    ERR_CHANOPRIVSNEEDED
-    RPL_INVITING
-	RPL_AWAY ?
-
-- messaging commands
-
-PRIVMSG
-	ERR_NORECIPIENT
-	ERR_NOTEXTTOSEND
-    ERR_CANNOTSENDTOCHAN
-	ERR_NOTOPLEVEL ?
-    ERR_WILDTOPLEVEL ?
-	ERR_TOOMANYTARGETS
-    ERR_NOSUCHNICK
-    RPL_AWAY ?
-
-NOTICE
-	N/A
-*/
-
-/*	replies to check:
-
-341 RPL_INVITING	"<channel> <nick>"
-381 RPL_YOUREOPER	":You are now an IRC operator"
-	-> sent back to a client which has just successfully issued an OPER message
-	and gained operator status
-
-401 ERR_NOSUCHNICK	"<nickname> :No such nick/channel"
-	-> Used to indicate the nickname parameter supplied to a command is currently unused.
-
-405 ERR_TOOMANYCHANNELS "<channel name> :You have joined too many channels"
-	-> Sent to a user when they have joined the maximum number of allowed channels
-	and they try to join another channel.
-
-407 ERR_TOOMANYTARGETS	"<target> :<error code> recipients. <abort message>"
-	->	Returned to a client which is attempting to send a
-        PRIVMSG/NOTICE using the user@host destination format
-        and for a user@host which has several occurrences.
-
-    ->  Returned to a client which trying to send a
-        PRIVMSG/NOTICE to too many recipients.
-
-    ->  Returned to a client which is attempting to JOIN a safe
-        channel using the shortname when there are more than one
-        such channel.
-
-411 ERR_NORECIPIENT		":No recipient given (<command>)"
-412 ERR_NOTEXTTOSEND	":No text to send"
-	->	Returned by PRIVMSG to indicate that
-        the message wasn't delivered for some reason.
-
-431 ERR_NONICKNAMEGIVEN	":No nickname given"
-	->	Returned when a nickname param expected for a command and isn't found
-
-432 ERRONEUSNICKNAME	"<nick> :Erroneus nickname"
-	->	Returned after receiving a NICK message which contains
-        characters which do not fall in the defined set.
-nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
-
-446 ERR_USERSDISABLED	"USERS has been disabled"
-	->	Returned as a response to the USERS command.
-		MUST be returned by any server which does not implement it.
-
-464 ERR_PASSWDMISMATCH	":Password incorrect"
-	->	Returned to indicate a failed attempt at registering a connection
-		for which a password was required and was either not given or incorrect.
-
-467 ERR_KEYSET			"<channel> :Channel key already set"
-471 ERR_CHANNELISFULL	"<channel> :Cannot join channel (+l)"
-472 ERR_UNKNOWNMODE		"<char> :is unknown mode char to me for <channel>"
-473 ERR_INVITEONLYCHAN	"<channel> :Cannot join channel (+i)"
-474 ERR_BANNEDFROMCHAN	"<channel> :Cannot join channel (+b)"
-475 ERR_BADCHANNELKEY	"<channel> :Cannot join channel (+k)"
-476 ERR_BADCHANMASK		"<channel> :Bad Channel Mask"
-481 ERR_NOPRIVILEGES	":Permission Denied- You're not an IRC operator"
-	->	Any command requiring operator privileges to operate
-        MUST return this error to indicate the attempt was unsuccessful.
-
-482 ERR_CHANOPRIVSNEEDED	"<channel> :You're not channel operator"
-	->	Any command requiring 'chanop' privileges (such as MODE messages)
-		MUST return this error if the client making the attempt
-		is not a chanop on the specified channel.
-
-
-
-
-
-*/
-
 const std::string Reply::SERVER_NAME = "ircserv";
 
 Reply::Reply()
 {
-	_initializeTemplates();
+	// _initializeTemplates(); // backup if .ipp does not work
+	
+	// map init should be included here from the .ipp file ? (to test, then remove initTemplates func ?)
+	#include "ReplyTemplates.ipp" // init template reply strings
 }
 
 Reply::~Reply() {}
 
-void Reply::_initializeTemplates()
-{
-	// General server replies
-	_replyTemplates[RPL_WELCOME] = ":" + SERVER_NAME + " 001 %s :Welcome to Fun Times City, dear %s!";
-	_replyTemplates[RPL_AUTH_FAILED] = ":" + SERVER_NAME + " 464 * :Authentication failed: %s.";
-	_replyTemplates[RPL_JOIN_SUCCESS] = ":" + SERVER_NAME + " 332 %s :Joined channel %s.";
-	_replyTemplates[RPL_PRIVATE_MSG] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
-	_replyTemplates[RPL_CHANNEL_MSG] = ":%s PRIVMSG %s :%s"; // sender's nickname as prefix
-	_replyTemplates[RPL_KICK] = ":" + SERVER_NAME + " KICK %s %s :%s";
-	_replyTemplates[RPL_INVITE] = ":" + SERVER_NAME + " INVITE %s %s";
-	_replyTemplates[RPL_TOPIC] = ":" + SERVER_NAME + " 332 %s :%s";
-	_replyTemplates[RPL_MODE] = ":" + SERVER_NAME + " MODE %s %s";
+// void Reply::_initializeTemplates()
+// {
+// 	// ========================
+// 	// AUTHENTICATION COMMANDS
+// 	// ========================
+// 	_replyTemplates[RPL_WELCOME] = ":" + SERVER_NAME + " 001 %s :Welcome to the Internet Relay Network %s!";
+// 	_replyTemplates[RPL_YOURHOST] = ":" + SERVER_NAME + " 002 %s :Your host is %s, running version %s";
+// 	_replyTemplates[RPL_CREATED] = ":" + SERVER_NAME + " 003 %s :This server was created %s";
+// 	_replyTemplates[RPL_MYINFO] = ":" + SERVER_NAME + " 004 %s %s %s %s %s";
 
-	// Error replies
-	_replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s %s :Not enough parameters.";
-	_replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 %s :You may not reregister.";
-	_replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 * %s :Nickname is already in use.";
-	_replyTemplates[ERR_NOTONCHANNEL] = ":" + SERVER_NAME + " 442 %s %s :You're not on that channel.";
-	_replyTemplates[ERR_NOSUCHCHANNEL] = ":" + SERVER_NAME + " 403 %s :No such channel.";
-	_replyTemplates[ERR_NOTREGISTERED] = ":" + SERVER_NAME + " 451 %s :You have not registered.";
-	_replyTemplates[ERR_CHANOPRIVSNEEDED] = ":" + SERVER_NAME + " 482 %s %s :You're not a channel operator.";
-	_replyTemplates[ERR_UNKNOWNMODE] = ":" + SERVER_NAME + " 472 %s :is unknown mode char to me.";
-	_replyTemplates[ERR_INVITEONLYCHAN] = ":" + SERVER_NAME + " 473 %s :Cannot join channel (+i).";
-	_replyTemplates[ERR_BADCHANNELKEY] = ":" + SERVER_NAME + " 475 %s :Cannot join channel (+k).";
-	_replyTemplates[ERR_CHANNELISFULL] = ":" + SERVER_NAME + " 471 %s :Cannot join channel (+l).";
-	_replyTemplates[ERR_USERNOTINCHANNEL] = ":" + SERVER_NAME + " 441 %s %s :They aren't on that channel.";
-	_replyTemplates[ERR_CANNOTSENDTOCHAN] = ":" + SERVER_NAME + " 404 %s %s :Cannot send to channel.";
-	_replyTemplates[ERR_USERONCHANNEL] = ":" + SERVER_NAME + " 443 %s %s :is already on channel.";
-	_replyTemplates[ERR_UNKNOWNCOMMAND] = ":" + SERVER_NAME + " 421 %s %s :Unknown command.";
-}
+// 	_replyTemplates[ERR_NONICKNAMEGIVEN] = ":" + SERVER_NAME + " 431 :No nickname given";
+// 	_replyTemplates[ERR_ERRONEUSNICKNAME] = ":" + SERVER_NAME + " 432 * %s :Erroneous nickname";
+// 	_replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 * %s :Nickname is already in use";
+// 	_replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s :Not enough parameters";
+// 	_replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 :You may not reregister";
+
+// 	// ==========================
+// 	// CHANNEL MANAGEMENT COMMANDS
+// 	// ==========================
+// 	_replyTemplates[RPL_CHANNELMODEIS] = ":" + SERVER_NAME + " 324 %s :%s";
+// 	_replyTemplates[RPL_NOTOPIC] = ":" + SERVER_NAME + " 331 %s :No topic is set";
+// 	_replyTemplates[RPL_TOPIC] = ":" + SERVER_NAME + " 332 %s %s :%s";
+// 	_replyTemplates[RPL_INVITING] = ":" + SERVER_NAME + " 341 %s %s";
+
+// 	_replyTemplates[ERR_NOSUCHCHANNEL] = ":" + SERVER_NAME + " 403 %s :No such channel";
+// 	_replyTemplates[ERR_CANNOTSENDTOCHAN] = ":" + SERVER_NAME + " 404 %s :Cannot send to channel";
+// 	_replyTemplates[ERR_TOOMANYCHANNELS] = ":" + SERVER_NAME + " 405 %s :You have joined too many channels";
+// 	_replyTemplates[ERR_TOOMANYTARGETS] = ":" + SERVER_NAME + " 407 %s :Duplicate recipients. No message delivered";
+// 	_replyTemplates[ERR_USERNOTINCHANNEL] = ":" + SERVER_NAME + " 441 %s %s :They aren't on that channel";
+// 	_replyTemplates[ERR_NOTONCHANNEL] = ":" + SERVER_NAME + " 442 %s :You're not on that channel";
+// 	_replyTemplates[ERR_USERONCHANNEL] = ":" + SERVER_NAME + " 443 %s %s :is already on channel";
+
+// 	_replyTemplates[ERR_KEYSET] = ":" + SERVER_NAME + " 467 %s :Channel key already set";
+// 	_replyTemplates[ERR_CHANNELISFULL] = ":" + SERVER_NAME + " 471 %s :Cannot join channel (+l)";
+// 	_replyTemplates[ERR_UNKNOWNMODE] = ":" + SERVER_NAME + " 472 %s :is unknown mode char to me";
+// 	_replyTemplates[ERR_INVITEONLYCHAN] = ":" + SERVER_NAME + " 473 %s :Cannot join channel (+i)";
+// 	_replyTemplates[ERR_BADCHANNELKEY] = ":" + SERVER_NAME + " 475 %s :Cannot join channel (+k)";
+// 	_replyTemplates[ERR_BADCHANMASK] = ":" + SERVER_NAME + " 476 %s :Bad channel mask";
+// 	_replyTemplates[ERR_CHANOPRIVSNEEDED] = ":" + SERVER_NAME + " 482 %s :You're not channel operator";
+
+// 	// =======================
+// 	// MESSAGING COMMANDS
+// 	// =======================
+// 	_replyTemplates[ERR_NOSUCHNICK] = ":" + SERVER_NAME + " 401 %s :No such nick/channel";
+	// _replyTemplates[ERR_NORECIPIENT] = ":" + SERVER_NAME + " 411 :No recipient given (%s)";
+	// _replyTemplates[ERR_NOTEXTTOSEND] = ":" + SERVER_NAME + " 412 :No text to send";
+
+
+// 	// =======================
+// 	// OTHER ?
+// 	// =======================
+	// _replyTemplates[ERR_UNKNOWNCOMMAND] = ":" + SERVER_NAME + " 421 %s :Unknown command.";
+
+// }
 
 /*
 format a reply based on the template and arguments
@@ -273,6 +134,8 @@ std::string	Reply::generateReply(ReplyType key, const std::vector<std::string> &
 
 /* ************************************************************************** */ // General replies
 
+// Authentication
+
 std::string	Reply::welcome(const std::string &userNickname) const
 {
 	// std::vector<std::string>	args;
@@ -281,103 +144,189 @@ std::string	Reply::welcome(const std::string &userNickname) const
 	// return (generateReply(RPL_WELCOME, args));
 	
 	return (generateReply(RPL_WELCOME, makeArgs(userNickname, userNickname)));
-	// return (_formatReply(_replyTemplates[RPL_WELCOME], makeArgs(userNickname, userNickname)))
 }
 
-std::string	Reply::authenticationFailed(const std::string &reason) const
+std::string Reply::yourHost(const std::string &userNickname, const std::string &serverName, const std::string &version) const
 {
-	return (generateReply(RPL_AUTH_FAILED, makeArgs(reason)));
+    return (generateReply(RPL_YOURHOST, makeArgs(userNickname, serverName, version)));
 }
 
-std::string	Reply::joinSuccess(const std::string &channelName) const
+std::string Reply::serverCreated(const std::string &userNickname, const std::string &creationDate) const
 {
-	return (generateReply(RPL_JOIN_SUCCESS, makeArgs(channelName)));
+    return (generateReply(RPL_CREATED, makeArgs(userNickname, creationDate)));
 }
 
-std::string	Reply::privateMessage(const std::string &sender, const std::string &receiver, const std::string &message) const
+std::string Reply::myInfo(const std::string &userNickname, const std::string &serverName, const std::string &version,
+                           const std::string &availableUserModes, const std::string &availableChannelModes) const
 {
-	return (generateReply(RPL_PRIVATE_MSG, makeArgs(sender, receiver, message)));
+    return (generateReply(RPL_MYINFO, makeArgs(userNickname, serverName, version, availableUserModes + " " + availableChannelModes)));
 }
 
-std::string	Reply::channelMessage(const std::string &sender, const std::string &channel, const std::string &message) const
+
+// Channel management
+
+std::string Reply::channelModeIs(const std::string &channel, const std::string &modes) const
 {
-	return (generateReply(RPL_CHANNEL_MSG, makeArgs(sender, channel, message)));
+    return (generateReply(RPL_CHANNELMODEIS, makeArgs(channel, modes)));
 }
 
-// std::string	Reply::kickMessage(const std::string &operatorName, const std::string &target, const std::string &channel, const std::string &reason) const;
-
-// std::string	Reply::inviteMessage(const std::string &operatorName, const std::string &target, const std::string &channel) const;
-
-// std::string	Reply::topicMessage(const std::string &channel, const std::string &topic) const;
-
-// std::string	Reply::modeChange(const std::string &channel, const std::string &mode, const std::string &parameter) const;
-
-
-/* ************************************************************************** */ // Error replies
-
-/*
-Returned by the server by numerous commands to indicate to the client
-that it didn't supply enough parameters
-*/
-std::string	Reply::needMoreParams(const std::string &command) const
+std::string Reply::noTopic(const std::string &channel) const
 {
-	return (generateReply(ERR_NEEDMOREPARAMS, makeArgs(command)));
+    return (generateReply(RPL_NOTOPIC, makeArgs(channel)));
 }
 
-/*
-Returned by the server to any link which tries to change
-part of the registered details (such as password or user details from second USER message).
-*/
-// std::string	Reply::alreadyRegistered(const std::string &userNickname) const;
-
-/*
-Returned when a NICK message is processed that result in an attempt to change to a currently existing nickname
-*/
-std::string	Reply::nicknameInUse(const std::string &userNickname) const
+std::string Reply::topic(const std::string &channel, const std::string &topic) const
 {
-	return (generateReply(ERR_NICKNAMEINUSE, makeArgs(userNickname)));
+    return (generateReply(RPL_TOPIC, makeArgs(channel, topic)));
 }
 
-/*
-Returned by the server whenever a client tries to
-perform a channel affecting command  or which the client isn't a member
-*/
-// std::string	Reply::notOnChannel(const std::string &channel) const;
-
-// std::string	Reply::noSuchChannel(const std::string &channel) const;
-
-/*
-Returned by the server to indicate that the client MUST be registered
-before the server will allow it to be parsed in detail
-*/
-// std::string	Reply::notRegistered(const std::string &userNickname) const;
-
-std::string	Reply::chanOpPrivsNeeded(const std::string &channelName) const
+std::string Reply::inviting(const std::string &inviter, const std::string &invitee) const
 {
-	return (generateReply(ERR_CHANOPRIVSNEEDED, makeArgs(channelName)));
+    return (generateReply(RPL_INVITING, makeArgs(inviter, invitee)));
 }
 
-// std::string	Reply::unknownMode(const std::string &mode) const;
 
-// std::string	Reply::inviteOnlyChannel(const std::string &channel) const;
+// Messaging ** these are not numeric replies, but lets try this for now..
 
-// std::string	Reply::badChannelKey(const std::string &channel) const;
+std::string Reply::privateMessage(const std::string &sender, const std::string &receiver, const std::string &message) const
+{
+	return (":" + sender + " PRIVMSG " + receiver + " :" + message);
+	
+}
 
-// std::string	Reply::channelIsFull(const std::string &channel) const;
+std::string Reply::channelMessage(const std::string &sender, const std::string &channel, const std::string &message) const
+{
+	return (":" + sender + " PRIVMSG " + channel + " :" + message);
+}
 
-/*
-Returned by the server to indicate that the target user of the command is not on the given channel.
-*/
-// std::string	Reply::userNotInChannel(const std::string &target, const std::string &channel) const;
 
-// std::string	Reply::cannotSendToChannel(const std::string &channel) const;
+// Error replies (authentication)
 
-/*
-Returned when a client tries to invite a user to a channel they are already on
-*/
-// std::string	Reply::userOnChannel(const std::string &user, const std::string &channel) const;
+std::string Reply::noNicknameGiven() const
+{
+    return (generateReply(ERR_NONICKNAMEGIVEN, makeArgs()));
+}
 
-// std::string	Reply::unknownCommand(const std::string &command) const;
+std::string Reply::erroneousNickname(const std::string &nickname) const
+{
+    return (generateReply(ERR_ERRONEUSNICKNAME, makeArgs(nickname)));
+}
+
+std::string Reply::nicknameInUse(const std::string &nickname) const
+{
+    return (generateReply(ERR_NICKNAMEINUSE, makeArgs(nickname)));
+}
+
+std::string Reply::needMoreParams(const std::string &command) const
+{
+    return (generateReply(ERR_NEEDMOREPARAMS, makeArgs(command)));
+}
+
+std::string Reply::alreadyRegistered() const
+{
+    return (generateReply(ERR_ALREADYREGISTERED, makeArgs()));
+}
+
+
+// Error replies (channel management)
+
+std::string Reply::noSuchChannel(const std::string &channel) const
+{
+    return (generateReply(ERR_NOSUCHCHANNEL, makeArgs(channel)));
+}
+
+std::string Reply::cannotSendToChannel(const std::string &channel) const
+{
+    return (generateReply(ERR_CANNOTSENDTOCHAN, makeArgs(channel)));
+}
+
+std::string Reply::tooManyChannels(const std::string &channel) const
+{
+    return (generateReply(ERR_TOOMANYCHANNELS, makeArgs(channel)));
+}
+
+std::string Reply::tooManyTargets(const std::string &target) const
+{
+    return (generateReply(ERR_TOOMANYTARGETS, makeArgs(target)));
+}
+
+std::string Reply::userNotInChannel(const std::string &user, const std::string &channel) const
+{
+    return (generateReply(ERR_USERNOTINCHANNEL, makeArgs(user, channel)));
+}
+
+std::string Reply::notOnChannel(const std::string &channel) const
+{
+    return (generateReply(ERR_NOTONCHANNEL, makeArgs(channel)));
+}
+
+std::string Reply::userOnChannel(const std::string &user, const std::string &channel) const
+{
+    return (generateReply(ERR_USERONCHANNEL, makeArgs(user, channel)));
+}
+
+std::string Reply::keySet(const std::string &channel) const
+{
+    return (generateReply(ERR_KEYSET, makeArgs(channel)));
+}
+
+std::string Reply::channelIsFull(const std::string &channel) const
+{
+    return (generateReply(ERR_CHANNELISFULL, makeArgs(channel)));
+}
+
+std::string Reply::unknownMode(const std::string &mode) const
+{
+    return (generateReply(ERR_UNKNOWNMODE, makeArgs(mode)));
+}
+
+std::string Reply::inviteOnlyChannel(const std::string &channel) const
+{
+    return (generateReply(ERR_INVITEONLYCHAN, makeArgs(channel)));
+}
+
+std::string Reply::badChannelKey(const std::string &channel) const
+{
+    return (generateReply(ERR_BADCHANNELKEY, makeArgs(channel)));
+}
+
+std::string Reply::badChannelMask(const std::string &channel) const
+{
+    return (generateReply(ERR_BADCHANMASK, makeArgs(channel)));
+}
+
+std::string Reply::chanOpPrivsNeeded(const std::string &channel) const
+{
+    return (generateReply(ERR_CHANOPRIVSNEEDED, makeArgs(channel)));
+}
+
+
+// Error replies (messaging)
+
+std::string Reply::noSuchNick(const std::string &nickname) const
+{
+    return (generateReply(ERR_NOSUCHNICK, makeArgs(nickname)));
+}
+
+std::string Reply::noRecipient(const std::string &command) const
+{
+    return (generateReply(ERR_NORECIPIENT, makeArgs(command)));
+}
+
+
+std::string Reply::noTextToSend() const
+{
+    return (generateReply(ERR_NOTEXTTOSEND, makeArgs()));
+}
+
+// other ?
+
+std::string	Reply::unknownCommand(const std::string &command) const
+{
+	return (generateReply(ERR_UNKNOWNCOMMAND, makeArgs(command)));
+}
+
+/* ************************************************************************** */ // helper functions
 
 /*
 Helper function to build argument list

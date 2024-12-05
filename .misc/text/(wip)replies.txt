@@ -9,8 +9,6 @@ PASS:	Client provides the connection password.
 NICK:	Client sets their nickname.
 USER:	Client sets their username.
 
-*? OPER: 
-
 Channel Management Commands:
 
 JOIN:	Join a specific channel.
