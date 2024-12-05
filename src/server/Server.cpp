@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <unistd.h> // for close()
 #include <ctime>
+#include <fcntl.h>
 
 ft::Server::Server(const std::string &port, const std::string &password) \
 : _port(port), _password(password), _isRunning(false), _serverFd(-1)
@@ -22,6 +23,7 @@ void	ft::Server::_initSocket(void)
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
 		throw (std::runtime_error(std::string("Socket creation failed: ").append(strerror(errno))));
+	fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 
 	int	opt = 1;
 	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -53,15 +55,17 @@ void	ft::Server::start(void)
 
 	while (_isRunning)
 	{
+		std::cout << PURPLE << "[DEBUG] Polling... " << _pollFds.size() << RESET << std::endl;
 		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
 			throw (std::runtime_error("Poll failed: " + std::string(strerror(errno))));
+		std::cout << PURPLE << "[DEBUG] Polling complete! " << _pollFds.size() << RESET << std::endl;
 
 		size_t	i = 0;
 		while (i < _pollFds.size())
 		{
 			if (_pollFds[i].fd == _serverFd)
 				_acceptConnection();
-			else
+			else if (_pollFds[i].revents & POLLIN)
 				_handleClient(_pollFds[i].fd);
 			++i;
 		}
@@ -91,12 +95,10 @@ void	ft::Server::_acceptConnection(void)
 	socklen_t	clientLen = sizeof(clientAddr);
 
 	int	clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientLen);
+	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
 	if (clientFd < 0)
-	{
-		std::cout << "Failed to accept connection: " << strerror(errno) << std::endl;
 		return ;
-	}
 
 	pollfd	clientPollFd = {clientFd, POLLIN, 0};
 	_pollFds.push_back(clientPollFd);
@@ -111,8 +113,9 @@ void	ft::Server::_handleClient(int clientFd)
 	char	buffer[1024];
 	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
 
-	if (bytesRead <= 0)
+	if (bytesRead < 0)
 	{
+		std::cout << "   HERE?" << std::endl;
 		_disconnectClient(clientFd, "Disconnected");
 		return ;
 	}
@@ -120,16 +123,31 @@ void	ft::Server::_handleClient(int clientFd)
 	buffer[bytesRead] = '\0';
 	std::string	data(buffer);
 	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << data << std::flush;
-	try
+
+	size_t start = 0;
+	size_t end = data.find("\r\n", 0);
+	std::string command;
+	while (end != std::string::npos)
 	{
-		Message	message = _parser.parse(data);
-		_handleCommand(clientFd, message);
+		command = data.substr(start, end - start);
+		start = end + 2;
+		end = data.find("\r\n", start);
+		if (command == "CAP LS 302")
+			continue;
+		try
+		{
+			Message	message = _parser.parse(command);
+			std::cout << "    Command: " << message.str();
+			_handleCommand(clientFd, message);
+		}
+		catch (const std::exception& e)
+		{
+			_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
+			_disconnectClient(clientFd, e.what());
+			break;
+		}
 	}
-	catch (const std::exception& e)
-	{
-		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
-		_disconnectClient(clientFd, e.what());
-	}
+	std::cout << PURPLE << "END OF _handleClient loop" << RESET << std::endl;
 	
 	// std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
 	// size_t	i = 0;
@@ -198,8 +216,15 @@ void	ft::Server::_handleCommand(int clientFd, const Message &message)
 	}
 	else if (!client.isAuthenticated())
 	{
-		client.sendMessage(":ft-irc 464 Password is wrong/not supplied");
+		client.sendMessage(":ft-irc 464 :Password is wrong/not supplied");
 		throw std::logic_error("Password error");
+	}
+	else if (command == "NICK")
+		client.setNickname(message.getParams());
+	else if (command == "USER")
+	{
+		const std::string& params = message.getParams();
+		client.setUsername(params.substr(0, params.find(' ')));
 	}
 	else if (command == "PING")
 	{
@@ -209,16 +234,17 @@ void	ft::Server::_handleCommand(int clientFd, const Message &message)
 	{
 		_broadcast(message.getTrailing(), clientFd);
 	}
-	else
-	{
-		_sendMessage(clientFd, "ERROR: Unknown command");
-	}
+	// else
+	// {
+	// 	_sendMessage(clientFd, "ERROR: Unknown command");
+	// }
 }
 
 void	ft::Server::_authenticateClient(int clientFd, const Message &message)
 {
 	if (message.getParams() == _password)
 	{
+		_clients[clientFd].setAuthenticated(true);
 		std::cout << "Client authenticated (fd: " << clientFd << ")." << std::endl;
 	}
 	else
