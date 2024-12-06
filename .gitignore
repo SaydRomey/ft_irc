@@ -21,3 +21,7 @@ ircserv
 
 # Default executable
 a.out
+
+# **(tmp) files/folders we want to stay on our local machine a.k.a. personnal or secret stuff
+.ced_local/
+tmp.cpp
