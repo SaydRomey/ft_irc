@@ -2,6 +2,13 @@
 #include "Aggregator.hpp"
 #include <sstream>
 
+/*
+TODO: check if we put aggregator in each user object instead of server
+so change map<fd, str> to just a str (for the buffer)
+
+
+*/
+
 Aggregator::Aggregator(void) : _buffer() {}
 
 std::vector<std::string>	Aggregator::processData(int clientFd, const std::string &data)

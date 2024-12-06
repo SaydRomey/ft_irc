@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/02 00:25:35 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 21:12:13 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@
 
 void	test_parser(void);
 void	test_tokenizer(int argc, char *argv[]);
-void	test_validator(void);
 void	test_reply(void);
 
 #endif // TEST_HEADER_HPP

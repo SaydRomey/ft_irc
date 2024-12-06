@@ -1,0 +1,11 @@
+
+
+Change structure of data parsing: use only Message(std::string input) **!!
+
+ignore CAP command
+
+password rules
+
+cout or cerr ?
+
+atoi if we overflow all the way back to valid range.. ?
