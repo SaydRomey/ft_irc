@@ -18,6 +18,21 @@
 #include <iostream>
 #include <stdexcept>
 
+static const std::pair<std::string, int> cmdArr[11] = {
+	{"PASS", PASS},
+	{"NICK", NICK},
+	{"USER", USER},
+	{"JOIN", JOIN},
+	{"PART", PART},
+	{"TOPIC", TOPIC},
+	{"MODE", MODE},
+	{"KICK", KICK},
+	{"INVITE", INVITE},
+	{"PRIVMSG", PRIVMSG},
+	{"NOTICE", NOTICE},
+};
+std::map<std::string, int> Validator::commandMap(cmdArr, cmdArr + sizeof(cmdArr) / sizeof(std::pair<std::string, int>));
+
 const size_t Validator::MAX_NICKNAME_LENGTH = 9;
 const size_t Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
 // ...other validations (for password or allowed chars ?)

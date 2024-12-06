@@ -30,6 +30,21 @@ change validateCommand to isValidSemantic ?
 # include <sstream>
 # include <vector>
 
+enum e_commands
+{
+	PASS = 1,
+	NICK,
+	USER,
+	JOIN,
+	PART,
+	TOPIC,
+	MODE,
+	KICK,
+	INVITE,
+	PRIVMSG,
+	NOTICE,
+};
+
 class Validator
 {
 	public:
@@ -45,6 +60,8 @@ class Validator
 		
 		ReplyType						getError(void) const;
 		const std::vector<std::string>	&getErrorArgs(void) const;
+
+		static std::map<std::string, int> commandMap;
 	
 	private:
 		bool	_validatePassCommand(const std::map<std::string, std::string> &command) const;

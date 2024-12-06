@@ -50,6 +50,11 @@ void Server::run(void)
 	_isRunning = true;
 	while (_isRunning)
 	{
+		for (t_pollfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
+		{
+			if (_clients[it->fd].pending.size() > 0)
+				it->events |= POLLOUT;
+		}
 		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
 			throw std::runtime_error("Poll failed");
 		if (_pollFds[0].revents & POLLIN)
@@ -68,7 +73,6 @@ void Server::run(void)
 					_clients[it->fd].addToMsgBuffer(std::string(buffer, bytes));
 				else
 					_clients[it->fd].resetMsgBuffer("QUIT :Connection reset by peer\r\n");
-				it->revents ^= POLLIN;
 			}
 			if (it->revents & POLLOUT)
 			{
@@ -78,7 +82,7 @@ void Server::run(void)
 					send(it->fd, msg.c_str(), msg.size(), 0);
 					_clients[it->fd].pending.pop();
 				}
-				it->revents ^= POLLOUT;
+				it->events ^= POLLOUT;
 			}
 			// TODO: handle other revents flags maybe
 		}
@@ -114,5 +118,38 @@ void Server::_acceptConnection()
 	_pollFds.push_back({clientFd, POLLIN, 0});
 	_clients[clientFd] = ft::Client(clientFd);
 
+	_pollFds[0].revents = 0;
 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
+}
+
+void Server::_messageRoundabout(const Message& msg)
+{
+	switch (Validator::commandMap[msg.getCommand()])
+	{
+	case PASS:
+		// TODO
+		break;
+	case NICK:
+		break;
+	case USER:
+		break;
+	case JOIN:
+		break;
+	case PART:
+		break;
+	case TOPIC:
+		break;
+	case MODE:
+		break;
+	case KICK:
+		break;
+	case INVITE:
+		break;
+	case PRIVMSG:
+		break;
+	case NOTICE:
+		break;
+	default:
+		break;
+	}
 }

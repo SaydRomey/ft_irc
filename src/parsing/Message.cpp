@@ -11,9 +11,6 @@
 /* ************************************************************************** */
 
 #include "Message.hpp"
-
-Message::Message(void): _prefix(), _command(), _params(), _trailing()
-{}
 #include "parsing_utils.hpp"
 
 // Message::Message(void) {}

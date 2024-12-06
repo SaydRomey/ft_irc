@@ -1,11 +1,12 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 # include "Client.hpp"
-# include "Parser.hpp"
+# include "Message.hpp"
 # include <string>
 # include <stdexcept>
 # include <vector>
 # include <map>
+#include <utility>
 # include <poll.h>
 
 typedef std::map<int, ft::Client> t_clientMap;
@@ -26,7 +27,8 @@ private:
 
 	t_pollfdVect	_pollFds;
 	t_clientMap		_clients;
-	Parser			parser;
+
+	static std::map<std::string, int>	commandMap;
 
 	void	_acceptConnection();
 	void	_messageRoundabout(const Message& msg);
