@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 22:45:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 00:19:16 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 12:03:45 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ void	test_message(void)
 		":nickname PART", // Missing channel name
 		":nickname TOPIC", // Missing channel and topic
 		":nickname MODE #channel +unknown_mode", // Invalid mode
+		":nickname MODE #channel +itZ", // Invalid mode after valid mode
 		":nickname KICK #channel", // Missing user and reason
 		":nickname INVITE user", // Missing channel
 		":nickname PRIVMSG", // Missing recipient and trailing

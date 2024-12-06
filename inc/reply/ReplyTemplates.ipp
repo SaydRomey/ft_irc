@@ -14,7 +14,7 @@ _replyTemplates[ERR_NONICKNAMEGIVEN] = ":" + SERVER_NAME + " 431 :No nickname gi
 _replyTemplates[ERR_ERRONEUSNICKNAME] = ":" + SERVER_NAME + " 432 * %s :Erroneous nickname";
 _replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 * %s :Nickname is already in use";
 _replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s :Not enough parameters";
-_replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 :You may not reregister";
+_replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 %s:You may not reregister";
 
 // ==========================
 // CHANNEL MANAGEMENT COMMANDS
@@ -50,4 +50,5 @@ _replyTemplates[ERR_NOTEXTTOSEND] = ":" + SERVER_NAME + " 412 %s :No text to sen
 // =======================
 // OTHER ??
 // =======================
+_replyTemplates[ERR_UNKNOWNERROR] = ":" + SERVER_NAME + " 400 %s %s :%s";
 _replyTemplates[ERR_UNKNOWNCOMMAND] = ":" + SERVER_NAME + " 421 %s :Unknown command.";

@@ -6,7 +6,7 @@
 #    By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/29 15:30:03 by cdumais           #+#    #+#              #
-#    Updated: 2024/11/29 15:30:23 by cdumais          ###   ########.fr        #
+#    Updated: 2024/12/06 13:39:08 by cdumais          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -56,3 +56,16 @@ title: ## Print ft_irc's logo in ASCII art
 		$(CYAN)$(TIME)$(RESET)\n"
 
 .PHONY: title
+
+# sound
+WAV_DIR		:= .misc/wav
+WAV_WELCOME	:= $(WAV_DIR)/welcome.wav
+WAV_PUSHIT	:= $(WAV_DIR)/push.wav
+
+pushit: ## push it to the limit
+	@aplay $(WAV_PUSHIT)
+
+welcome: ## what can i say
+	@aplay $(WAV_WELCOME)
+
+.PHONY: pushit welcome

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 00:27:27 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 12:35:58 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ Use command-specific methods (e.g., ValidateJoinCommand) to verify proper usage
 bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
 {
 	const std::string	&cmd = command.at("command");
-
+	
 	if (cmd == "PASS")
 		return (_validatePassCommand(command));
 	else if (cmd == "NICK")
@@ -114,7 +114,7 @@ bool	Validator::validateCommand(const std::map<std::string, std::string> &comman
 	// handle CAP (ignore, do not throw error)..
 	// ... ?
 	
-	return (false); // unknown commands
+	return (_setError(ERR_UNKNOWNCOMMAND, command.at("command")));
 }
 
 /* ************************************************************************** */ // syntax validation
@@ -216,10 +216,19 @@ bool	Validator::_validatePassCommand(const std::map<std::string, std::string> &c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NEEDMOREPARAMS, "PASS"));
 
-	// Check if the client has already registered (handled in higher-level logic)
+	// Check if the client has already registered (handled in higher-level logic) 462
 	return (_noError());
 }
 
+/*
+Nicknames are non-empty strings with the following restrictions:
+
+They MUST NOT contain any of the following characters: space (' ', 0x20), comma (',', 0x2C), asterisk ('*', 0x2A), question mark ('?', 0x3F), exclamation mark ('!', 0x21), at sign ('@', 0x40).
+They MUST NOT start with any of the following characters: dollar ('$', 0x24), colon (':', 0x3A).
+They MUST NOT start with a character listed as a channel type, channel membership prefix, or prefix listed in the IRCv3 multi-prefix Extension.
+They SHOULD NOT contain any dot character ('.', 0x2E).
+Servers MAY have additional implementation-specific nickname restrictions and SHOULD avoid the use of nicknames which are ambiguous with commands or command parameters where this could lead to confusion or error.
+*/
 /*
 Validate "NICK" command
 
@@ -238,7 +247,7 @@ bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &c
 	if (!isValidNickname(command.at("params")))
 		return (_setError(ERR_ERRONEUSNICKNAME, command.at("params")));
 
-	// Check if nickname is already in use (higher-level logic)
+	// Check if nickname is already in use (higher-level logic) 462
 	return (_noError());
 }
 
@@ -255,7 +264,7 @@ Errors:
 bool Validator::_validateUserCommand(const std::map<std::string, std::string> &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return(_setError(ERR_NEEDMOREPARAMS, "USER!!!"));
+		return(_setError(ERR_NEEDMOREPARAMS, "USER"));
 
 	// tokenize parameters
 	std::vector<std::string> params = tokenize(command.at("params"));
@@ -362,29 +371,6 @@ bool Validator::_validateModeCommand(const std::map<std::string, std::string>& c
 }
 
 /*
-Validate "PRIVMSG" command
-
-	"params" must exist and contain the recipient
-	"trailing" must exist and contain the message body
-
-Errors:
-	401 ERR_NOSUCHNICK: No such nick/channel
-	411 ERR_NORECIPIENT: No recipient given (PRIVMSG)
-	412 ERR_NOTEXTTOSEND: No text to send
-*/
-bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string> &command) const
-{
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NORECIPIENT, command.at("command")));
-
-	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setError(ERR_NOTEXTTOSEND, command.at("command")));
-	
-	// Additional checks for recipient existence can be handled elsewhere
-	return (_noError());
-}
-
-/*
 Validate "KICK" command
 
 	"params" must exist and contain the target and channel
@@ -429,15 +415,44 @@ bool Validator::_validateInviteCommand(const std::map<std::string, std::string>&
 }
 
 /*
+Validate "PRIVMSG" command
+
+	"params" must exist and contain the recipient
+	"trailing" must exist and contain the message body
+
+Errors:
+	401 ERR_NOSUCHNICK: No such nick/channel
+	411 ERR_NORECIPIENT: No recipient given (PRIVMSG)
+	412 ERR_NOTEXTTOSEND: No text to send
+*/
+bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string> &command) const
+{
+	if (command.find("params") == command.end() || command.at("params").empty())
+		return (_setError(ERR_NORECIPIENT, command.at("prefix"), command.at("command"))); // second arg is to be the nickname..?
+
+	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+		return (_setError(ERR_NOTEXTTOSEND, command.at("command")));
+	
+	const std::string	&recipient = command.at("params");
+	if (!isValidNickname(recipient) && !isValidChannelName(recipient))
+		return (_setError(ERR_NOSUCHNICK, recipient));
+	
+	// Additional checks for recipient existence can be handled elsewhere
+	// same for channel existence..
+	
+	return (_noError());
+}
+
+/*
 similar to privmsg but does not return (errors to the sender
 */
 bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NORECIPIENT, "NOTICE")); // or "PRIVMSG" ?
+		return (_setError(ERR_NORECIPIENT, "NOTICE"));
 
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setError(ERR_NOTEXTTOSEND));
+		return (_setError(ERR_NOTEXTTOSEND, "NOTICE"));
 
 	return (_noError());
 }
@@ -453,6 +468,8 @@ bool	Validator::_setError(ReplyType error, const std::string &arg1, const std::s
 		_errorArgs.push_back(arg1);
 	if (!arg2.empty())
 		_errorArgs.push_back(arg2);
+
+	// std::cout << "_setError: " << error << " Args: " << arg1 << ", " << arg2 << std::endl;
 
 	return (false);
 }

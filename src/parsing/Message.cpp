@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 23:48:27 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 11:58:34 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@
 
 Message::Message(const std::string &input) : _input(input), _reply(), _parser(), _validator()
 {
-	_processInput(input);
+	_processInput(normalizeInput(input));
+	// _processInput(trim(normalizeInput(input)));
 }
 
 void	Message::_processInput(const std::string &input)
@@ -59,17 +60,29 @@ void	Message::_processInput(const std::string &input)
 
 	// validate the parsed command
 	Reply	rpl;
-	if (!_validator.isValidCommand(_parsedMessage)) // syntax validation
+	try
 	{
-		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, _parsedMessage["command"]);
-		return ;
+		if (input.empty())
+		{
+			_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "*");
+			return ;
+		}
+		if (!_validator.isValidCommand(_parsedMessage)) // syntax validation
+		{
+			_reply = rpl.reply(ERR_UNKNOWNCOMMAND, _parsedMessage["command"]);
+			return ;
+		}
+		if (!_validator.validateCommand(_parsedMessage)) // semantic validation
+		{
+			ReplyType	errorCode = _validator.getError();
+			const std::vector<std::string>	&args = _validator.getErrorArgs();
+			_reply = rpl.reply(errorCode, args);
+			return ;
+		}
 	}
-	if (!_validator.validateCommand(_parsedMessage)) // semantic validation
+	catch (const std::exception &e)
 	{
-		ReplyType	errorCode = _validator.getError();
-		const std::vector<std::string>	&args = _validator.getErrorArgs();
-		_reply = rpl.reply(errorCode, args);
-		return ;
+		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "PROCESSING", "ERROR", e.what());
 	}
 	
 	// if everything is valid
@@ -86,12 +99,12 @@ const std::string	&Message::getReply(void) const {	return (_reply); }
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
 	oss << "Message Details:\n"
-		<< "  Input: " << message.getInput() << "\n"
-		<< "  Prefix: " << message.getPrefix() << "\n"
-		<< "  Command: " << message.getCommand() << "\n"
-		<< "  Params: " << message.getParams() << "\n"
-		<< "  Trailing: " << message.getTrailing() << "\n"
-		<< "  Reply: " << message.getReply();
+		<< "  Input:\t\"" << message.getInput() << "\"\n"
+		<< "  Prefix:\t" << message.getPrefix() << "\n"
+		<< "  Command:\t" << message.getCommand() << "\n"
+		<< "  Params:\t" << message.getParams() << "\n"
+		<< "  Trailing:\t" << message.getTrailing() << "\n"
+		<< "  Reply:\t" << message.getReply();
 	
 	return (oss);
 }

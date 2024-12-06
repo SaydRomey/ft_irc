@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 20:30:27 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 11:44:05 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,7 @@ std::string trim(const std::string &str)
 	return (str.substr(start, end - start + 1));
 }
 
-/*	** check if trim() is needed ..
-
+/*
 Reformat a string by replacing multiple space char (' ') by a single space
 ex: 
 	":nickname   JOIN    #channel   :Hello    world!"
