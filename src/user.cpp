@@ -10,7 +10,7 @@ User::User(std::string username, std::string nickname) : _username(username), _n
 
 //}
 
-std::string User::getNickname()
+std::string User::getNickname() const //
 {
 	return this->_nickname;
 }
