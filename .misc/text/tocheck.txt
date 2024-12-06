@@ -1,6 +1,5 @@
 
 
-Change structure of data parsing: use only Message(std::string input) **!!
 
 ignore CAP command
 

@@ -207,3 +207,56 @@ tocheck:
 		for which a password was required and was either not given or incorrect.
 
 */
+
+/*
+Authentication Commands
+PASS:
+No specific reply is defined in IRC for a successful PASS command, but it’s implied as part of the connection process. Ensure errors like ERR_NEEDMOREPARAMS or ERR_ALREADYREGISTERED are handled.
+
+NICK:
+Success Reply: None specified for successful NICK changes, but server behavior should update the nickname state.
+
+USER:
+Success Reply: None specified, but errors like ERR_ALREADYREGISTERED should be handled.
+
+Channel Management Commands
+JOIN:
+Success Reply:
+
+RPL_TOPIC (332): Sent after joining a channel to notify the client of the topic.
+RPL_NOTOPIC (331): Sent if there is no topic for the channel.
+PART:
+Success Reply:
+
+Typically no numeric reply); success is implied by a PART message broadcasted to the channel.
+TOPIC:
+Success Reply:
+
+RPL_TOPIC (332): Sent when the topic is successfully set or retrieved.
+RPL_NOTOPIC (331): Sent if there is no topic.
+MODE:
+Success Reply:
+
+RPL_CHANNELMODEIS (324): Sent to show the current mode of the channel.
+Broadcast mode changes to the channel as appropriate.
+KICK:
+Success Reply:
+
+No specific numeric reply); success is implied by broadcasting the KICK message to the channel.
+INVITE:
+Success Reply:
+
+RPL_INVITING (341): Sent to acknowledge a successful invite.
+Optionally notify the invitee with a server message.
+Messaging Commands
+PRIVMSG:
+Success Reply:
+
+No numeric reply); success is implied by delivering the message. Handle errors like ERR_NOSUCHNICK.
+NOTICE:
+Success Reply:
+
+No numeric reply); success is implied by delivering the notice. Avoid acknowledgment per IRC protocol rules.
+*/
+
+
