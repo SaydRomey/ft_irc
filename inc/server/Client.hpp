@@ -1,6 +1,7 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 # include <string>
+# include <queue>
 # include <stdexcept>
 # include <sys/socket.h>
 
@@ -41,12 +42,22 @@ public:
 	// TODO: move the following methods from Server into Client
 	void	sendMessage(const std::string& msg);
 
+	// December 5th: new methods for User class (WIP)
+	void	addToMsgBuffer(const std::string& packet);
+	void	resetMsgBuffer(const std::string& msg);
+	std::string extractFromBuffer();
+	std::queue<std::string> pending;
+
 private:
 	int			_fd;
 	std::string	_username;
 	std::string	_nickname;
 	bool		_registered;
 	bool		_authenticated;
+
+	// December 5th: new attributes for User class (WIP)
+	std::string _msgBuffer;
+
 };
 
 }

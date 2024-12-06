@@ -20,11 +20,11 @@
 namespace ft
 {
 
-class Server
+class OldServer
 {
 	public:
-		Server(const std::string &port, const std::string &password);
-		~Server(void);
+		OldServer(const std::string &port, const std::string &password);
+		~OldServer(void);
 
 		void	start(void);
 		void	stop(void);

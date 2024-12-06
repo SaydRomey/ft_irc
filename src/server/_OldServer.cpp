@@ -7,18 +7,18 @@
 #include <ctime>
 #include <fcntl.h>
 
-ft::Server::Server(const std::string &port, const std::string &password) \
+ft::OldServer::OldServer(const std::string &port, const std::string &password) \
 : _port(port), _password(password), _isRunning(false), _serverFd(-1)
 {
 	// 
 }
 
-ft::Server::~Server(void)
+ft::OldServer::~OldServer(void)
 {
 	stop();
 }
 
-void	ft::Server::_initSocket(void)
+void	ft::OldServer::_initSocket(void)
 {
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
@@ -41,10 +41,10 @@ void	ft::Server::_initSocket(void)
 	if (listen(_serverFd, SOMAXCONN) < 0)
 		throw (std::runtime_error("Listen failed: " + std::string(strerror(errno))));
 
-	std::cout << "Server initialized and listening on port " << _port << std::endl;
+	std::cout << "OldServer initialized and listening on port " << _port << std::endl;
 }
 
-void	ft::Server::start(void)
+void	ft::OldServer::start(void)
 {
 	_isRunning = true;
 	_initSocket();
@@ -72,7 +72,7 @@ void	ft::Server::start(void)
 	}
 }
 
-void	ft::Server::stop(void)
+void	ft::OldServer::stop(void)
 {
 	_isRunning = false;
 
@@ -85,11 +85,11 @@ void	ft::Server::stop(void)
 	if (_serverFd >= 0)
 		close(_serverFd);
 
-	std::cout << "Server stropped." << std::endl;
+	std::cout << "OldServer stropped." << std::endl;
 }
 
 
-void	ft::Server::_acceptConnection(void)
+void	ft::OldServer::_acceptConnection(void)
 {
 	sockaddr_in	clientAddr;
 	socklen_t	clientLen = sizeof(clientAddr);
@@ -108,7 +108,7 @@ void	ft::Server::_acceptConnection(void)
 	// _handleClient(clientFd);
 }
 
-void	ft::Server::_handleClient(int clientFd)
+void	ft::OldServer::_handleClient(int clientFd)
 {
 	char	buffer[1024];
 	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
@@ -169,7 +169,7 @@ void	ft::Server::_handleClient(int clientFd)
 	// }
 }
 
-void	ft::Server::_broadcast(const std::string &message, int senderFd)
+void	ft::OldServer::_broadcast(const std::string &message, int senderFd)
 {
 	size_t	i = 0;
 
@@ -182,7 +182,7 @@ void	ft::Server::_broadcast(const std::string &message, int senderFd)
 	}
 }
 
-void ft::Server::_welcomeClient(int clientFd)
+void ft::OldServer::_welcomeClient(int clientFd)
 {
 	Client&	client = _clients[clientFd];
 	Message	msg;
@@ -203,7 +203,7 @@ void ft::Server::_welcomeClient(int clientFd)
 	client.sendMessage(msg.str());
 }
 
-void	ft::Server::_handleCommand(int clientFd, const Message &message)
+void	ft::OldServer::_handleCommand(int clientFd, const Message &message)
 {
 	const std::string	&command = message.getCommand();
 	ft::Client&			client = _clients[clientFd];
@@ -240,7 +240,7 @@ void	ft::Server::_handleCommand(int clientFd, const Message &message)
 	// }
 }
 
-void	ft::Server::_authenticateClient(int clientFd, const Message &message)
+void	ft::OldServer::_authenticateClient(int clientFd, const Message &message)
 {
 	if (message.getParams() == _password)
 	{
@@ -253,13 +253,13 @@ void	ft::Server::_authenticateClient(int clientFd, const Message &message)
 	}
 }
 
-void	ft::Server::_sendMessage(int clientFd, const std::string &message)
+void	ft::OldServer::_sendMessage(int clientFd, const std::string &message)
 {
 	std::string	formattedMessage = message + "\r\n";
 	send(clientFd, formattedMessage.c_str(), formattedMessage.size(), 0);
 }
 
-void	ft::Server::_disconnectClient(int clientFd, const std::string &reason)
+void	ft::OldServer::_disconnectClient(int clientFd, const std::string &reason)
 {
 	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
 	_clients.erase(clientFd);
