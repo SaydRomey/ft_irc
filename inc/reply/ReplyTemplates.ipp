@@ -44,8 +44,8 @@ _replyTemplates[ERR_CHANOPRIVSNEEDED] = ":" + SERVER_NAME + " 482 %s :You're not
 // MESSAGING COMMANDS
 // =======================
 _replyTemplates[ERR_NOSUCHNICK] = ":" + SERVER_NAME + " 401 %s :No such nick/channel";
-_replyTemplates[ERR_NORECIPIENT] = ":" + SERVER_NAME + " 411 :No recipient given (%s)";
-_replyTemplates[ERR_NOTEXTTOSEND] = ":" + SERVER_NAME + " 412 :No text to send";
+_replyTemplates[ERR_NORECIPIENT] = ":" + SERVER_NAME + " 411 %s :No recipient given (%s)";
+_replyTemplates[ERR_NOTEXTTOSEND] = ":" + SERVER_NAME + " 412 %s :No text to send";
 
 // =======================
 // OTHER ??

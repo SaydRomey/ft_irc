@@ -6,13 +6,12 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 20:52:17 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 23:31:54 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include "Reply.hpp"
-#include "parsing_utils.hpp"
 
 #include <stdexcept>
 
@@ -29,28 +28,28 @@ Validating:	validate command-specific details
 Returns a Message object for valid inputs.
 Throws a formatted reply for invalid inputs.
 */
-Message	Parser::parse(const std::string &input)
-{
-	std::vector<std::string>	tokens = tokenize(input);
-	std::map<std::string, std::string>	command = _parseCommand(tokens);
+// Message	Parser::parse(const std::string &input)
+// {
+// 	std::vector<std::string>	tokens = tokenize(input);
+// 	std::map<std::string, std::string>	command = _parseCommand(tokens);
 	
-	Validator	validator;
-	Reply		rpl;
+// 	Validator	validator;
+// 	Reply		rpl;
 
-	if (!validator.isValidCommand(command)) // syntax validation
-	{
-		throw (std::invalid_argument(rpl.reply(ERR_UNKNOWNCOMMAND, command["command"])));
-	}
-	if (!validator.validateCommand(command)) // semantic validation
-	{
-		ReplyType	errorCode = validator.getError();
-		const std::vector<std::string>	&args = validator.getErrorArgs();
+// 	if (!validator.isValidCommand(command)) // syntax validation
+// 	{
+// 		throw (std::invalid_argument(rpl.reply(ERR_UNKNOWNCOMMAND, command["command"])));
+// 	}
+// 	if (!validator.validateCommand(command)) // semantic validation
+// 	{
+// 		ReplyType	errorCode = validator.getError();
+// 		const std::vector<std::string>	&args = validator.getErrorArgs();
 		
-		throw (std::invalid_argument(rpl.reply(errorCode, args)));
-	}
+// 		throw (std::invalid_argument(rpl.reply(errorCode, args)));
+// 	}
 	
-	return (Message(command));
-}
+// 	return (Message(command));
+// }
 
 /*
 Extracts and organize command data
@@ -59,7 +58,7 @@ Extracts and organize command data
 	parameters
 	trailing message if ':' is found after the command
 */
-std::map<std::string, std::string>	Parser::_parseCommand(const std::vector<std::string> &tokens)
+std::map<std::string, std::string>	Parser::parseCommand(const std::vector<std::string> &tokens) const
 {
 	std::map<std::string, std::string>	command;
 	
@@ -67,6 +66,7 @@ std::map<std::string, std::string>	Parser::_parseCommand(const std::vector<std::
 		return (command);
 	
 	size_t	index = 0;
+	
 	// extract prefix if present
 	if (tokens[index][0] == ':')
 	{

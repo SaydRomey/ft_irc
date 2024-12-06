@@ -6,71 +6,92 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 20:28:55 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 23:48:27 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Message.hpp"
+#include "parsing_utils.hpp"
 
-// Message::Message(const std::string &input)
+// Message::Message(void) {}
+// Message::~Message(void) {}
+
+// Message::Message(const Message &other)
 // {
-// 	// 
+// 	*this = other;
 // }
 
-Message::Message(const std::map<std::string, std::string> &parsedCommand)
-{
-	if (parsedCommand.find("prefix") != parsedCommand.end())
-		_prefix = parsedCommand.at("prefix");
-	else
-		_prefix = "";
-
-	if (parsedCommand.find("command") != parsedCommand.end())
-		_command = parsedCommand.at("command");
-	else
-		_command = "";
-
-	if (parsedCommand.find("params") != parsedCommand.end())
-		_params = parsedCommand.at("params");
-	else
-		_params = "";
-
-	if (parsedCommand.find("trailing") != parsedCommand.end())
-		_trailing = parsedCommand.at("trailing");
-	else
-		_trailing = "";
-}
-
-// const std::string&	Message::getMessageStr(void) const
+// Message&	Message::operator=(const Message &other)
 // {
-// 	return (_MessageStr);
+// 	if (this != &other)
+// 	{
+// 		// 
+// 	}
+// 	return (*this);
 // }
 
-const std::string&	Message::getPrefix(void) const
+Message::Message(const std::string &input) : _input(input), _reply(), _parser(), _validator()
 {
-	return (_prefix);
+	_processInput(input);
 }
 
-const std::string&	Message::getCommand(void) const
+void	Message::_processInput(const std::string &input)
 {
-	return (_command);
-}
+	// init keys with default values
+	_parsedMessage["prefix"] = "";
+	_parsedMessage["command"] = "";
+	_parsedMessage["params"] = "";
+	_parsedMessage["trailing"] = "";
 
-const std::string&	Message::getParams(void) const
-{
-	return (_params);
-}
-
-const std::string&	Message::getTrailing(void) const
-{
-	return (_trailing);
-}
-
-std::ostream&	operator<<(std::ostream &out, const Message &message)
-{
-	out << "Prefix: " << message.getPrefix() << "\n"
-	   << "Command: " << message.getCommand() << "\n"
-	   << "Params: " << message.getParams() << "\n"
-	   << "Trailing: " << message.getTrailing();
+	// tokenize the input
+	std::vector<std::string>	tokens = tokenize(input);
 	
-	return (out);
+	// parse the tokens into the map
+	std::map<std::string, std::string>	parsedCommand = _parser.parseCommand(tokens);
+
+	// merge parsedCommand into _parsedMessage, keeping defaults for missing keys
+	std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
+	while (it != parsedCommand.end())
+	{
+		_parsedMessage[it->first] = it->second;
+		++it;
+	}
+
+	// validate the parsed command
+	Reply	rpl;
+	if (!_validator.isValidCommand(_parsedMessage)) // syntax validation
+	{
+		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, _parsedMessage["command"]);
+		return ;
+	}
+	if (!_validator.validateCommand(_parsedMessage)) // semantic validation
+	{
+		ReplyType	errorCode = _validator.getError();
+		const std::vector<std::string>	&args = _validator.getErrorArgs();
+		_reply = rpl.reply(errorCode, args);
+		return ;
+	}
+	
+	// if everything is valid
+	_reply.clear();
+}
+
+const std::string	&Message::getInput(void) const {	return (_input); }
+const std::string	&Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
+const std::string	&Message::getCommand(void) const { return (_parsedMessage.at("command")); }
+const std::string	&Message::getParams(void) const { return (_parsedMessage.at("params")); }
+const std::string	&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
+const std::string	&Message::getReply(void) const {	return (_reply); }
+
+std::ostream	&operator<<(std::ostream &oss, const Message &message)
+{
+	oss << "Message Details:\n"
+		<< "  Input: " << message.getInput() << "\n"
+		<< "  Prefix: " << message.getPrefix() << "\n"
+		<< "  Command: " << message.getCommand() << "\n"
+		<< "  Params: " << message.getParams() << "\n"
+		<< "  Trailing: " << message.getTrailing() << "\n"
+		<< "  Reply: " << message.getReply();
+	
+	return (oss);
 }

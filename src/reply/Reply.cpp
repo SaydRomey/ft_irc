@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 19:33:46 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 00:18:05 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,9 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
 		{
 			if (argIndex >= args.size())
-				throw (std::runtime_error("Not enough arguments for reply template: " + templateStr));
+				return (":ircserv 400 :Reply formatting error (too few arguments)");
+				// return ("ircserv 400 :Reply formatting error (too few arguments): " + templateStr);
+			
 			oss << args[argIndex++];
 			++i; // skip 's' after '%'
 		}
@@ -105,7 +107,8 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 		++i;
 	}
 	if (argIndex < args.size())
-		throw (std::runtime_error("Too many arguments for reply template: " + templateStr));
+		return (":ircserv 400 :Reply formatting error (too many arguments)");
+		// return ("ircserv 400 :Reply formatting error (too many arguments): " + templateStr);
 
 	return (oss.str());
 }

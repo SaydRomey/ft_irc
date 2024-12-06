@@ -6,18 +6,15 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:48:34 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 21:17:05 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 23:30:41 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Reply.hpp"
+#include "_test_header.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <string>
-
-# define RESET		"\033[0m"
-# define UNDERLINE	"\033[4m"
-# define GRAYTALIC	"\033[3;90m"
 
 void	printRpl(const std::string &reply, const std::string &numeric="[reply]")
 {

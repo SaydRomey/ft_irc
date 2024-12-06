@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 20:47:18 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 00:27:27 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ static std::set<std::string> _initValidCommands(void)
 
 const std::set<std::string>	Validator::_validCommands = _initValidCommands();
 
-Validator::Validator(void) : _error(RPL_VALID) {}
+Validator::Validator(void) : _error(RPL_VALID), _errorArgs() {}
 Validator::~Validator(void) {}
 
 /*
@@ -68,8 +68,11 @@ bool	Validator::isValidCommand(const std::map<std::string, std::string> &command
 	if (_validCommands.find(cmd) == _validCommands.end())
 		return (false);
 	
-	if (command.find("prefix") != command.end() && !isValidNickname(command.at("prefix")))
+	if (command.find("prefix") != command.end() && !command.at("prefix").empty())
+	{
+		if (!isValidNickname(command.at("prefix")))
 		return (false); // invalid prefix (no specific error code..)
+	}
 	
 	// ... additional validation as needed
 	
@@ -342,7 +345,17 @@ params must exist and specify a channel or user?
 bool Validator::_validateModeCommand(const std::map<std::string, std::string>& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NEEDMOREPARAMS));
+		return (_setError(ERR_NEEDMOREPARAMS, command.at("command")));
+
+	std::vector<std::string>	params = tokenize(command.at("params"));
+
+	// ensure channel or user is specified
+	if (params.size() < 2)
+		return (_setError(ERR_NEEDMOREPARAMS, "MODE"));
+
+	const std::string	&mode = params[1];
+	if (mode.find_first_not_of("+-itkol") != std::string::npos) // allowed mode chars
+		return (_setError(ERR_UNKNOWNMODE, mode));
 
 	// Validate mode syntax and permissions (additional logic needed)
 	return (_noError());
@@ -362,10 +375,10 @@ Errors:
 bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string> &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NORECIPIENT, "PRIVMSG"));
+		return (_setError(ERR_NORECIPIENT, command.at("command")));
 
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setError(ERR_NOTEXTTOSEND, "PRIVMSG"));
+		return (_setError(ERR_NOTEXTTOSEND, command.at("command")));
 	
 	// Additional checks for recipient existence can be handled elsewhere
 	return (_noError());
@@ -384,11 +397,11 @@ Errors:
 bool Validator::_validateKickCommand(const std::map<std::string, std::string> &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NEEDMOREPARAMS));
+		return (_setError(ERR_NEEDMOREPARAMS, "KICK"));
 
 	std::vector<std::string> params = tokenize(command.at("params"));
 	if (params.size() < 2)
-		return (_setError(ERR_NEEDMOREPARAMS));
+		return (_setError(ERR_NEEDMOREPARAMS, "KICK"));
 
 	if (!isValidChannelName(params[0]))
 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
@@ -404,7 +417,12 @@ params must exist and specify the target user and channel
 bool Validator::_validateInviteCommand(const std::map<std::string, std::string>& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NEEDMOREPARAMS));
+		return (_setError(ERR_NEEDMOREPARAMS, "INVITE"));
+
+	std::vector<std::string>	params = tokenize(command.at("params"));
+
+	if (params.size() < 2)
+		return (_setError(ERR_NEEDMOREPARAMS, "INVITE"));
 
 	// Validate that the user and channel exist (additional logic needed)
 	return (_noError());

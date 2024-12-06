@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 21:12:13 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/05 23:38:25 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 # define ORANGE		"\033[38;5;208m"
 # define GRAYTALIC	"\033[3;90m"
 
-void	test_parser(void);
+void	test_message(void);
 void	test_tokenizer(int argc, char *argv[]);
 void	test_reply(void);
 

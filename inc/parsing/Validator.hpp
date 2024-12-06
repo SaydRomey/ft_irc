@@ -6,9 +6,18 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 19:10:08 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 00:06:40 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*	TOCHECK:
+
+change isValidCommand to isValidSyntax ?
+change validateCommand to isValidSemantic ?
+
+*(does not handle chanop privileges related issues..)
+
+*/
 
 #ifndef VALIDATOR_HPP
 # define VALIDATOR_HPP
@@ -20,15 +29,6 @@
 # include <string>
 # include <sstream>
 # include <vector>
-
-/*	TOCHECK:
-
-change isValidCommand to isValidSyntax ?
-change validateCommand to isValidSemantic ?
-
-*(does not handle chanop privileges related issues..)
-
-*/
 
 class Validator
 {
@@ -44,7 +44,7 @@ class Validator
 		// ... other syntax validation ?
 		
 		ReplyType						getError(void) const;
-		const std::vector<std::string>&	getErrorArgs(void) const;
+		const std::vector<std::string>	&getErrorArgs(void) const;
 	
 	private:
 		bool	_validatePassCommand(const std::map<std::string, std::string> &command) const;
