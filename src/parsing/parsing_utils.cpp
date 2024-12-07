@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 11:44:05 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 17:17:15 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,12 @@
 /*
 Create a vector of string tokens using ' ' as delimiter
 */
-std::vector<std::string>	tokenize(const std::string &input)
+std::vector<std::string>	tokenize(const std::string &input, char delimiter)
 {
 	std::vector<std::string>	tokens;
 
 	std::stringstream	ss(input);
 	std::string			token;
-	char				delimiter = ' ';
 
 	while (std::getline(ss, token, delimiter))
 	{

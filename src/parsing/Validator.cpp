@@ -6,9 +6,15 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 12:35:58 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 20:51:40 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*
+** add edge cases where a command should not return false even if not implemented ?
+		-> handle CAP (ignore, do not throw error)..
+
+*/
 
 #include "Validator.hpp"
 #include "parsing_utils.hpp"
@@ -20,102 +26,222 @@
 
 const size_t Validator::MAX_NICKNAME_LENGTH = 9;
 const size_t Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
-// ...other validations (for password or allowed chars ?)
+const std::string	Validator::VALID_MODE_FLAGS = "+-itkol";
 
-static std::set<std::string> _initValidCommands(void)
+// ...other validations (for password rules, limits or allowed chars ?)
+
+static std::map<std::string, CommandType>	initCommandMap(void)
 {
-	std::set<std::string>	commands;
-	
-	commands.insert("PASS");
-	commands.insert("NICK");
-	commands.insert("USER");
-	commands.insert("JOIN");
-	commands.insert("PART");
-	commands.insert("TOPIC");
-	commands.insert("MODE");
-	commands.insert("KICK");
-	commands.insert("INVITE");
-	commands.insert("PRIVMSG");
-	commands.insert("NOTICE");
-	
-	return (commands);
+	std::map<std::string, CommandType>	cmdMap;
+
+	cmdMap["PASS"] = PASS;
+	cmdMap["NICK"] = NICK;
+	cmdMap["USER"] = USER;
+	cmdMap["JOIN"] = JOIN;
+	cmdMap["PART"] = PART;
+	cmdMap["TOPIC"] = TOPIC;
+	cmdMap["MODE"] = MODE;
+	cmdMap["KICK"] = KICK;
+	cmdMap["INVITE"] = INVITE;
+	cmdMap["PRIVMSG"] = PRIVMSG;
+	cmdMap["NOTICE"] = NOTICE;
+
+	return (cmdMap);
 }
 
-const std::set<std::string>	Validator::_validCommands = _initValidCommands();
+const std::map<std::string, CommandType>	Validator::_commandMap = initCommandMap();
 
-Validator::Validator(void) : _error(RPL_VALID), _errorArgs() {}
+/* ************************************************************************** */
+
+const Validator::ValidatorFunc	Validator::_validators[] = {
+	&Validator::_validatePassCommand,   // PASS
+	&Validator::_validateNickCommand,   // NICK
+	&Validator::_validateUserCommand,   // USER
+	&Validator::_validateJoinCommand,   // JOIN
+	&Validator::_validatePartCommand,   // PART
+	&Validator::_validateTopicCommand,  // TOPIC
+	&Validator::_validateModeCommand,   // MODE
+	&Validator::_validateKickCommand,   // KICK
+	&Validator::_validateInviteCommand, // INVITE
+	&Validator::_validatePrivmsgCommand,// PRIVMSG
+	&Validator::_validateNoticeCommand  // NOTICE
+};
+
+/* ************************************************************************** */
+
+// static std::map<ReplyType, std::string>	initErrorMessages(void)
+// {
+// 	std::map<ReplyType, std::string>	errMsgs;
+
+// 	errMsgs[ERR_NONICKNAMEGIVEN] = "No nickname given";
+// 	errMsgs[ERR_ERRONEUSNICKNAME] = "Erroneous nickname";
+// 	// ...
+	
+// 	return (errMsgs);
+// };
+
+// const std::map<ReplyType, std::string>	Validator::_errorMessages = initErrorMessages();
+
+
+/* ************************************************************************** */
+
+Validator::Validator(void) : _error(static_cast<ReplyType>(0)), _errorArgs() {}
 Validator::~Validator(void) {}
 
-/*
-Validate the structure and validity of a command
+/* ************************************************************************** */
 
-	Checks:
-	"command" must exist and be valid
+const std::map<std::string, CommandType>& Validator::getCommandMap(void)
+{
+	return (_commandMap);
+}
+
+ReplyType	Validator::getError(void) const
+{
+	return (_error);
+}
+
+const std::vector<std::string>&	Validator::getErrorArgs(void) const
+{
+	return (_errorArgs);
+}
+
+// CommandType	Validator::getCommandType(const std::string &cmd)
+// {
+// 	std::map<std::string, CommandType>::const_iterator	it = cmdMapPtr.find(cmd);
+	
+// 	if (it != cmdMapPtr.end())
+// 		return (it->second);
+// 	return (UNKNOWN);
+// }
+
+// std::string	Validator::getErrorReply(void) const
+// {
+// 	return (Reply().reply(_error.first, _error.second));
+// } // missing some logic here...
+
+/* ************************************************************************** */
+
+/*	
+Validates the syntax (structure and validity) of a command,
+tokenized in a map of string key and values
+
+Checks:
+	"command" must exist and be a non-empty string,
+	
 	optional "prefix" must be a valid nickname
 	validates the command syntax
+	... ?
 
 Errors:
 	421 ERR_UNKNOWNCOMMAND: Unknown command
 */
-bool	Validator::isValidCommand(const std::map<std::string, std::string> &command) const
-{
-	// check if "command" exists and is non-empty
-	if (command.find("command") == command.end() || command.at("command").empty())
-		return (false);
+// bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
+// {
+// 	// check if "command" key exists and has non-empty value
+// 	if (command.find("command") == command.end() || command.at("command").empty())
+// 	// if (_parsedMessage["command"].empty())
+// 		return (_setError(ERR_UNKNOWNCOMMAND, "*"));
+	
+// 	const std::string	&cmd = command.at("command");
 
+// 	// validate if the command exists in the map
+// 	CommandType	cmdType = _getCommandType(cmd);
+// 	if (cmdType == CMD_UNKNOWN)
+// 		return (_setError(ERR_UNKNOWNCOMMAND, cmd));
+
+// 	// validate optional prefix
+// 	if (command.find("prefix") != command.end() && !command.at("prefix").empty())
+// 	// if (!_parsedMessage["prefix"].empty())
+// 	{
+// 		if (!_isValidNickname(command.at("prefix")))
+// 		// if (!_isValidNickname(_parsedMessage["prefix"])
+// 		return (_setError(ERR_ERRONEUSNICKNAME, command.at("prefix"))); //?
+// 	}
+	
+// 	// ... additional validation as needed
+	
+// 	return (validateCommandByType(cmdType, command));
+// }
+
+
+/* ************************************************************************** */
+
+bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
+{
+	// check if "command" key exists and is non-empty
+	if (command.find("command") == command.end() || command.at("command").empty())
+	// if (_parsedMessage["command"].empty())
+		return (_setError(ERR_UNKNOWNCOMMAND, "*"));
+	
 	const std::string	&cmd = command.at("command");
+
+	// lookup the command type in the command map
+	std::map<std::string, CommandType>::const_iterator	it = _commandMap.find(cmd);
+
+	if (it == _commandMap.end())
+		return (_setError(ERR_UNKNOWNCOMMAND, cmd));
+
+	CommandType	cmdType = it->second;
 	
-	if (_validCommands.find(cmd) == _validCommands.end())
-		return (false);
-	
+	// validate optional prefix
 	if (command.find("prefix") != command.end() && !command.at("prefix").empty())
+	// if (!_parsedMessage["prefix"].empty())
 	{
-		if (!isValidNickname(command.at("prefix")))
-		return (false); // invalid prefix (no specific error code..)
+		if (!_isValidNickname(command.at("prefix")))
+		// if (!_isValidNickname(_parsedMessage["prefix"])
+		return (_setError(ERR_ERRONEUSNICKNAME, command.at("prefix"))); //?
 	}
 	
 	// ... additional validation as needed
 	
-	return (true);
+	return (_validateCommandByType(cmdType, command));
 }
 
-/*	** add edge cases where a command should not return false even if not implemented ?
-
-Validate the command semantically based on its type
-Use command-specific methods (e.g., ValidateJoinCommand) to verify proper usage
-*/
-bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
+bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const
 {
-	const std::string	&cmd = command.at("command");
-	
-	if (cmd == "PASS")
-		return (_validatePassCommand(command));
-	else if (cmd == "NICK")
-		return (_validateNickCommand(command));
-	else if (cmd == "USER")
-		return (_validateUserCommand(command));
-	else if (cmd == "JOIN")
-		return (_validateJoinCommand(command));
-	else if (cmd == "PART")
-		return (_validatePartCommand(command));
-	else if (cmd == "TOPIC")
-		return (_validateTopicCommand(command));
-	else if (cmd == "MODE")
-		return (_validateModeCommand(command));
-	else if (cmd == "KICK")
-		return (_validateKickCommand(command));
-	else if (cmd == "INVITE")
-		return (_validateInviteCommand(command));
-	else if (cmd == "PRIVMSG")
-		return (_validatePrivmsgCommand(command));
-	else if (cmd == "NOTICE")
-		return (_validateNoticeCommand(command));
-	
-	// handle CAP (ignore, do not throw error)..
-	// ... ?
-	
-	return (_setError(ERR_UNKNOWNCOMMAND, command.at("command")));
+	// if (cmdType == CMD_UNKNOWN && cmd == "CAP")
+		// return (_noError()); // CAP command is ignored without error ??
+
+	if (cmdType < PASS || cmdType > NOTICE)
+		return (_setError(ERR_UNKNOWNCOMMAND, command.at("command")));
+
+	return ((this->*(_validators[cmdType]))(command));
 }
+
+/*
+Validates the command semantically based on its type
+Uses command-specific methods (e.g., ValidateJoinCommand)
+*/
+// bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const
+// {
+// 	switch (cmdType)
+// 	{
+// 		case PASS:
+// 			return (_validatePassCommand(command));
+// 		case NICK:
+// 			return (_validateNickCommand(command));
+// 		case USER:
+// 			return (_validateUserCommand(command));
+// 		case JOIN:
+// 			return (_validateJoinCommand(command));
+// 		case PART:
+// 			return (_validatePartCommand(command));
+// 		case TOPIC:
+// 			return (_validateTopicCommand(command));
+// 		case MODE:
+// 			return (_validateModeCommand(command));
+// 		case KICK:
+// 			return (_validateKickCommand(command));
+// 		case INVITE:
+// 			return (_validateInviteCommand(command));
+// 		case PRIVMSG:
+// 			return (_validatePrivmsgCommand(command));
+// 		case NOTICE:
+// 			return (_validateNoticeCommand(command));
+// 		default:
+// 			return (_setError(ERR_UNKNOWNCOMMAND, command.at("command")));
+// 	}
+// }
 
 /* ************************************************************************** */ // syntax validation
 
@@ -126,10 +252,13 @@ Validate IRC nicknames
 	Must contain only alphanumeric characters, underscores, or dashes
 
 */
-bool	Validator::isValidNickname(const std::string &nickname) const
+bool	Validator::_isValidNickname(const std::string &nickname) const
 {
 	if (nickname.empty() || nickname.length() > MAX_NICKNAME_LENGTH)
 		return (false);
+
+	// if (nickname.size() > 10)
+		// return (false); // 432
 
 	if (!std::isalpha(nickname[0]))
 		return (false);
@@ -153,7 +282,7 @@ Validate IRC channel names
 	(' ', ','. '\r', '\n') 
 
 */
-bool	Validator::isValidChannelName(const std::string &channel) const
+bool	Validator::_isValidChannelName(const std::string &channel) const
 {
 	if (channel.empty() || channel.length() > MAX_CHANNEL_NAME_LENGTH)
 		return (false);
@@ -177,18 +306,6 @@ bool	Validator::isValidChannelName(const std::string &channel) const
 // 	// 
 // 	return (_setError(ERR_PASSWDMISMATCH));
 // }
-
-/* ************************************************************************** */
-
-ReplyType	Validator::getError(void) const
-{
-	return (_error);
-}
-
-const std::vector<std::string>&	Validator::getErrorArgs(void) const
-{
-	return (_errorArgs);
-}
 
 /* ************************************************************************** */
 
@@ -244,7 +361,7 @@ bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NONICKNAMEGIVEN));
 
-	if (!isValidNickname(command.at("params")))
+	if (!_isValidNickname(command.at("params")))
 		return (_setError(ERR_ERRONEUSNICKNAME, command.at("params")));
 
 	// Check if nickname is already in use (higher-level logic) 462
@@ -294,7 +411,7 @@ bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return(_setError(ERR_NEEDMOREPARAMS, "JOIN"));
 	
-	if (!isValidChannelName(command.at("params")))
+	if (!_isValidChannelName(command.at("params")))
 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
 
 	// Additional checks like invite-only or channel limits can be implemented elsewhere
@@ -317,7 +434,7 @@ bool Validator::_validatePartCommand(const std::map<std::string, std::string>& c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NEEDMOREPARAMS, "PART"));
 	
-	if (!isValidChannelName(command.at("params")))
+	if (!_isValidChannelName(command.at("params")))
 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
 
 	// Check if the user is on the channel (handled in higher-level logic)
@@ -340,7 +457,7 @@ bool Validator::_validateTopicCommand(const std::map<std::string, std::string>& 
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NEEDMOREPARAMS, "TOPIC"));
 	
-	if (!isValidChannelName(command.at("params")))
+	if (!_isValidChannelName(command.at("params")))
 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
 
 	// Check if the user is on the channel (higher-level logic)
@@ -363,8 +480,35 @@ bool Validator::_validateModeCommand(const std::map<std::string, std::string>& c
 		return (_setError(ERR_NEEDMOREPARAMS, "MODE"));
 
 	const std::string	&mode = params[1];
+	std::string			invalidChars;
+
+	// to return the first invalid char encountered
+	size_t	i = 0;
+	while (i < mode.size())
+	{
+		if (VALID_MODE_FLAGS.find(mode[i]) == std::string::npos) // if char is not in VALID_MODE_FLAGS
+			return (_setError(ERR_UNKNOWNMODE, std::string(1, mode[i])));
+		++i;
+	}
+	
+	// to return only the invalid chars
+	/*
+	size_t	i = 0;
+	while (i < mode.size())
+	{
+		if (VALID_MODE_FLAGS.find(mode[i]) == std::string::npos) // if char is not in VALID_MODE_FLAGS
+			invalidChars += mode[i];
+		++i;
+	}
+	if (!invalidChars.empty())
+		return (_setError(ERR_UNKNOWNMODE, invalidChars));
+	*/
+	
+	// to return the whole mode if one is invalid
+	/*
 	if (mode.find_first_not_of("+-itkol") != std::string::npos) // allowed mode chars
 		return (_setError(ERR_UNKNOWNMODE, mode));
+	*/
 
 	// Validate mode syntax and permissions (additional logic needed)
 	return (_noError());
@@ -389,7 +533,7 @@ bool Validator::_validateKickCommand(const std::map<std::string, std::string> &c
 	if (params.size() < 2)
 		return (_setError(ERR_NEEDMOREPARAMS, "KICK"));
 
-	if (!isValidChannelName(params[0]))
+	if (!_isValidChannelName(params[0]))
 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
 
 	// Check if the target user is in the channel (higher-level logic)
@@ -434,7 +578,7 @@ bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string>
 		return (_setError(ERR_NOTEXTTOSEND, command.at("command")));
 	
 	const std::string	&recipient = command.at("params");
-	if (!isValidNickname(recipient) && !isValidChannelName(recipient))
+	if (!_isValidNickname(recipient) && !_isValidChannelName(recipient))
 		return (_setError(ERR_NOSUCHNICK, recipient));
 	
 	// Additional checks for recipient existence can be handled elsewhere
@@ -449,7 +593,7 @@ similar to privmsg but does not return (errors to the sender
 bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setError(ERR_NORECIPIENT, "NOTICE"));
+		return (_setError(ERR_NORECIPIENT,command.at("prefix"), "NOTICE")); // second arg is to be the nickname..?
 
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
 		return (_setError(ERR_NOTEXTTOSEND, "NOTICE"));
@@ -457,8 +601,12 @@ bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>&
 	return (_noError());
 }
 
+
 /* ************************************************************************** */
 
+/*
+*/
+// bool	Validator::_setError(int error, const std::string &arg1, const std::string &arg2) const
 bool	Validator::_setError(ReplyType error, const std::string &arg1, const std::string &arg2) const
 {
 	_error = error;
@@ -469,15 +617,66 @@ bool	Validator::_setError(ReplyType error, const std::string &arg1, const std::s
 	if (!arg2.empty())
 		_errorArgs.push_back(arg2);
 
-	// std::cout << "_setError: " << error << " Args: " << arg1 << ", " << arg2 << std::endl;
-
 	return (false);
 }
 
+/*
+Resets the error state
+*/
 bool	Validator::_noError(void) const
 {
-	_error = RPL_VALID;
+	_error = static_cast<ReplyType>(0);
 	_errorArgs.clear();
 
 	return (true);
 }
+
+/* ************************************************************************** */ // ideas
+
+// bool Validator::_validateNonEmpty(const std::string &valie, ReplyType error) const
+// {
+// 	if (value.empty())
+// 	{
+// 		return (_setError(error, "Value cannot be empty"));
+// 	}
+// 	return (true);
+// }
+
+// bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &command) const
+// {
+// 	return (_validateNonEmpty(command["nickname"], ERR_NONICKNAMEGIVEN) \
+// 	&& command["nickname"].size <= MAX_NICKNAME_LENGTH);
+// }
+
+/* ************************************************************************** */
+
+/*
+#include "Validator.hpp"
+#include <map>
+#include <string>
+#include <iostream>
+
+int main(void)
+{
+	Validator	validator;
+	std::map<std::string, std::string>	command;
+
+	// Test valid PASS command
+	command["command"] = "PASS";
+	command["argument"] = "password";
+	if (validator.validateCommand(command))
+		std::cout << "PASS command validated successfully!\n";
+	else
+		std::cout << "Error: " << validator.getError() << "\n";
+
+	// Test invalid NICK command
+	command["command"] = "NICK";
+	command["argument"] = "verylongnickname";
+	if (validator.validateCommand(command))
+		std::cout << "NICK command validated successfully!\n";
+	else
+		std::cout << "Error: " << validator.getError() << "\n";
+
+	return (0);
+}
+*/

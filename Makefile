@@ -1,4 +1,9 @@
 
+# %.o: %.cpp
+# 	$(CXX) $(CXXFLAGS) -MMD -o $@ -c $<
+
+# -include $(OBJ:.o=.d)
+
 NAME	:= ircserv
 AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"

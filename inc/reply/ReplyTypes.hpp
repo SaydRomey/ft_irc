@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/04 21:30:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 02:00:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 18:22:15 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 
 enum ReplyType
 {
-	// tmp to test, to reset the _error in Validator class
-	RPL_VALID = 0,
+	
+	// RPL_VALID = 0,
 	
 	// ==========================
 	// AUTHENTICATION COMMANDS
