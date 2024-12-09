@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:39:23 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/08 21:13:56 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,14 @@ void	Message::_processInput(const std::string &input)
 	{
 		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "PROCESSING", "ERROR", e.what());
 	}
+
+	// // (wip) if the command is "JOIN", parse channels and keys // other commands also ?
+	// if (_parsedMessage["command"] == "JOIN")
+	// {
+	// 	std::string	params = _parsedMessage["params"];
+	// 	std::string	trailing = _parsedMessage["trailing"];
+	// 	_channelsAndKeys = parseChannelsAndKeys(params, trailing);
+	// }
 	
 	_reply.clear(); // if everything is valid
 }
@@ -89,6 +97,11 @@ const std::string	&Message::getCommand(void) const { return (_parsedMessage.at("
 const std::string	&Message::getParams(void) const { return (_parsedMessage.at("params")); }
 const std::string	&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
 const std::string	&Message::getReply(void) const { return (_reply); }
+
+// const std::vector<std::pair<std::string, std::string> >	&Message::getChannelsAndKeys(void) const
+// {
+// 	return (_channelsAndKeys);
+// }
 
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
@@ -104,3 +117,33 @@ std::ostream	&operator<<(std::ostream &oss, const Message &message)
 	
 	return (oss);
 }
+
+// /*
+// Once the Message object is populated, higher-level components (Channel, User, etc.) can retrieve the parsed data and apply business logic.
+// */
+// void	ChannelManager::processJoin(const Message &message)
+// {
+// 	const std::vector<std::pair<std::string, std::string> >	&channelsAndKeys = message.getChannelsAndKeys();
+
+// 	size_t i = 0;
+// 	while (i < channelsAndKeys.size())
+// 	{
+// 		const std::string	&channel = channelsAndKeys[i].first;
+// 		const std::string	&key = channelsAndKeys[i].second;
+
+// 		if (!channelExists(channel))
+// 		{
+// 			createChannel(channel);
+// 		}
+
+// 		if (isValidKey(channel, key))
+// 		{
+// 			addUserToChannel(channel, message.getPrefix());
+// 		}
+// 		else
+// 		{
+// 			sendError(ERR_BADCHANNELKEY, channel);
+// 		}
+// 		++i;
+// 	}
+// }

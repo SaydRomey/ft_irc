@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:51:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/08 20:06:55 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -417,6 +417,36 @@ bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &c
 	// Additional checks like invite-only or channel limits can be implemented elsewhere
 	return (_noError());
 }
+
+// bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
+// {
+// 	if (command.find("params") == command.end() || command.at("params").empty())
+// 		return(_setError(ERR_NEEDMOREPARAMS, "JOIN"));
+
+// 	const std::string	&params = command.at("params");
+// 	const std::string	trailing = "";
+	
+// 	if (command.find("trailing") != command.end())
+// 		trailing = command.at("trailing");
+
+// 	std::vector<std::pair<std::string, std::string> >	channelsAndKeys = parseChannelsAndKeys(params, trailing);
+	
+// 	size_t	i = 0;
+// 	while (i < channelsAndKeys.size())
+// 	{
+// 		const std::string	&channel = channelsAndKeys[i].first;
+// 		const std::string	&key = channelsAndKeys[i].second;
+
+// 		if (!_isValidChannelName(channel))
+// 			return (_setError(ERR_NOSUCHCHANNEL, channel));
+
+// 		// channel existence and keys validation ?
+		
+// 		++i;
+// 	}
+
+// 	return (_noError());
+// }
 
 /*
 Validate "PART" command

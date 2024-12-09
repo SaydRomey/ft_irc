@@ -33,6 +33,7 @@ MK_DIR  := ./.makefiles
 include  $(MK_DIR)/utils.mk
 include  $(MK_DIR)/doc.mk
 include  $(MK_DIR)/deco.mk
+include  $(MK_DIR)/tests.mk
 
 .DEFAULT_GOAL	:= all
 
