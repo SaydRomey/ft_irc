@@ -61,7 +61,17 @@ bool User::isRegistered(void) const
 	return this->_isRegistred;
 }
 
-void User::sendMessage(const std::string& msg)
+void User::addToMsgBuffer(const std::string &packet)
 {
+	this->_msgBuffer += packet;
+}
 
+void User::resetMsgBuffer(const std::string &msg)
+{
+	this->_msgBuffer = msg;
+}
+
+std::string User::extractFromBuffer()
+{
+	
 }

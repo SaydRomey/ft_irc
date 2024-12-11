@@ -2,6 +2,7 @@
 # define USER_HPP
 
 # include <iostream>
+# include <queue>
 
 class User
 {
@@ -11,7 +12,8 @@ class User
 		int			_fd;
 		bool		_isRegistred;
 		bool		_isAuthentified;
-		//à voir pour aussi mettre la liste des channels en map pour voir si il est admin ou pas. Voir si c'est pertinent car deja visible dans le channel
+		std::string _msgBuffer;
+		std::queue<std::string> pending;
 	public:
 		User(void);
 		User(std::string username, std::string nickname);
@@ -26,8 +28,12 @@ class User
 		std::string getNickname() const;
 		const std::string getUsername(void) const;
 		bool isRegistered(void) const;
-		bool isAuthentified;
-		void sendMessage(const std::string& msg);
+		bool isAuthentified(void) const;
+
+		//for server
+		void addToMsgBuffer(const std::string& packet);
+		void resetMsgBuffer(const std::string& msg);
+		std::string extractFromBuffer();
 };
 
 #endif
