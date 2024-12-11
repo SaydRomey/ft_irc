@@ -6,7 +6,8 @@
 #include <cstring>
 #include <fcntl.h>
 
-Server::Server(const std::string &port, const std::string &password)
+Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
+	_isRunning(false), _clients(), _nickMap(), _chanMap(), _rplGenerator()
 {
 	long tmp_port = std::strtol(port.c_str(), NULL, 10);
 	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
@@ -38,8 +39,6 @@ Server::Server(const std::string &port, const std::string &password)
 		throw std::runtime_error("Server::setsockopt_failed");
 
 	_pollFds.push_back({sockfd, POLLIN, 0});
-	time(&_time);
-	_isRunning = false;
 }
 
 void Server::run(void)
@@ -89,16 +88,13 @@ void Server::run(void)
 		for (t_clientMap::iterator it=_clients.begin(); it != _clients.end(); it++)
 		{
 			std::string msg_str = it->second.extractFromBuffer();
-			while (msg_str != "")
+			while (!msg_str.empty())
 			{
-				try
-				{
-					Message msg(msg_str);
-					_messageRoundabout(msg);
-				} catch (std::invalid_argument& e)
-				{
-					std::cout << "Invalid argument: " << e.what() << std::endl;
-				}
+				Message msg(msg_str);
+				if (msg.getReply().empty())
+					_messageRoundabout(it->second, msg);
+				else
+					it->second.pending.push(msg.getReply());
 				msg_str = it->second.extractFromBuffer();
 			}
 		}
@@ -122,20 +118,21 @@ void Server::_acceptConnection()
 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
 }
 
-void Server::_messageRoundabout(const Message& msg)
+void Server::_messageRoundabout(ft::Client& client, const Message& msg)
 {
 	switch (Validator::commandMap[msg.getCommand()])
 	{
 	case PASS:
-		// TODO
+	case USER:
+		client.pending.push(_rplGenerator.reply(462, client.getNickname()));
 		break;
 	case NICK:
-		break;
-	case USER:
+		nick_cmd(client, msg.getParams());
 		break;
 	case JOIN:
 		break;
 	case PART:
+		chanManager.part(client, msg);
 		break;
 	case TOPIC:
 		break;
@@ -151,5 +148,26 @@ void Server::_messageRoundabout(const Message& msg)
 		break;
 	default:
 		break;
+	}
+}
+
+void Server::nick_cmd(ft::Client& client, const std::string& nick)
+{
+	static const std::string leadCharBan = "#&:0123456789";
+
+	std::string oldNick = client.getNickname();
+	if (nick.size() == 0)
+		client.pending.push(_rplGenerator.reply(431, oldNick));
+	else if (_nickMap.count(nick) == 1)
+		client.pending.push(_rplGenerator.reply(433, oldNick, nick));
+	else if (leadCharBan.find(nick[0]) != std::string::npos
+			|| nick.find(' ') != std::string::npos)
+		client.pending.push(_rplGenerator.reply(432, oldNick, nick));
+	else
+	{
+		_nickMap.erase(oldNick);
+		_nickMap[nick] = client.getFd();
+		client.setNickname(nick);
+		std::
 	}
 }

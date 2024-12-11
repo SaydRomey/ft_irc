@@ -1,12 +1,14 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 # include "Client.hpp"
+# include "ChannelManager.hpp"
 # include "Message.hpp"
 # include <string>
 # include <stdexcept>
 # include <vector>
 # include <map>
-#include <utility>
+# include <list>
+# include <utility>
 # include <poll.h>
 
 typedef std::map<int, ft::Client> t_clientMap;
@@ -27,11 +29,15 @@ private:
 
 	t_pollfdVect	_pollFds;
 	t_clientMap		_clients;
+	std::map<std::string, int>		_nickMap;
+	ChannelManager chanManager;
 
-	static std::map<std::string, int>	commandMap;
+	Reply	_rplGenerator;
 
 	void	_acceptConnection();
-	void	_messageRoundabout(const Message& msg);
+	void	_messageRoundabout(ft::Client& client, const Message& msg);
+
+	void	nick_cmd(ft::Client& client, const std::string& nick);
 };
 
 #endif
