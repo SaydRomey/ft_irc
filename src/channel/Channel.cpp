@@ -37,7 +37,7 @@ bool	Channel::addMember(User& user, std::string pswIfNeeded)
 	return true;
 }
 
-bool	Channel::removeMember(User& user) //voir pour garder bool et retourner un si on doit supp le channel car vide
+bool	Channel::removeMember(User& user, const std::string& reason = "") //voir pour garder bool et retourner un si on doit supp le channel car vide
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
@@ -46,12 +46,17 @@ bool	Channel::removeMember(User& user) //voir pour garder bool et retourner un s
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		std::cout << ":" << user.getNickname() << "!user@host PART " << this->_name << " :User has left the channel" << std::endl;
+	{
+		std::cout << ":" << user.getNickname() << "!user@localhost PART " << this->_name;
+		if (!reason.empty())
+			std::cout << " :" << reason;
+		std::cout << std::endl;
+	}
 	return true;
 	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
-bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat envoie si c'Est string vide
+bool	Channel::setTopic(User& user, const std::string& topic) //voir ce que weechat envoie si c'Est string vide
 {
 	//par defaut sur false tout le monde peut modifier le topic.
 	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
@@ -60,14 +65,14 @@ bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat env
 		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	if (topic == NULL)
-	{
-		if (this->_topic.empty()) //ERR_NOTOPIC
-			std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
-		else
-			std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
-		return true;
-	}
+	// if (topic == NULL)
+	// {
+	// 	if (this->_topic.empty()) //ERR_NOTOPIC
+	// 		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+	// 	else
+	// 		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+	// 	return true;
+	// }
 	if (_modes['t'] == true)
 	{
 		if (_members[&user] != true) //ERR_CHANOPRIVSNEEDED
@@ -75,14 +80,28 @@ bool	Channel::setTopic(User& user, std::string* topic) //voir ce que weechat env
 			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 			return false;
 		}
-		_topic = *topic;
+		_topic = topic;
 		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	}
 	else
 	{
-		_topic = *topic;
+		_topic = topic;
 		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	}
+	return true;
+}
+
+bool Channel::getTopic(User& user)
+{
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
+	{
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	if (this->_topic.empty()) //ERR_NOTOPIC
+		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+	else
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	return true;
 }
 
