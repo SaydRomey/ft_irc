@@ -18,14 +18,14 @@ void ChannelTest::setModeTest()
 	naruto.printMembers();
 	naruto.setTopic(anboisve);
 	naruto.setTopic(anboisve, &topic1);
-	naruto.setMode("+t", anboisve, "", NULL);
+	naruto.setMode("+t", anboisve, "", "", NULL);
 	naruto.printMode();
 	naruto.setTopic(anboisve, &topic2);
-	naruto.setMode("+t", naddy, "", NULL);
+	naruto.setMode("+t", naddy, "", "", NULL);
 	naruto.printMode();
 	naruto.setTopic(anboisve, &topic1);
 	naruto.setTopic(naddy, &topic1);
-	naruto.setMode("+tk", naddy, "psw", NULL);
+	naruto.setMode("+tk", naddy, "psw", "", NULL);
 	naruto.printMode();
 	naruto.addMember(gcrepin);
 	naruto.addMember(gcrepin, "blaaaaa");
@@ -33,26 +33,28 @@ void ChannelTest::setModeTest()
 	naruto.printMembers();
 	naruto.removeMember(gcrepin);
 	naruto.printMembers();
-	naruto.setMode("+il", naddy, "3", NULL);
+	naruto.setMode("+il", naddy, "", "3", NULL);
 	naruto.printMode();
 	naruto.invite(gcrepin, naddy);
-	naruto.setMode("+l", naddy, "4", NULL);
+	naruto.setMode("+l", naddy, "", "4", NULL);
 	naruto.printMode();
 	naruto.invite(gcrepin, naddy);
 	naruto.printMembers();
 	naruto.kick(jdemers, naddy, "was bad with Gabi");
 	naruto.printMembers();
-	naruto.setMode("-ik", anboisve, "", NULL);
+	naruto.setMode("-ik", anboisve, "", "", NULL);
 	naruto.printMode();
-	naruto.setMode("-ik", naddy, "", NULL);
+	naruto.setMode("-ik", naddy, "", "", NULL);
 	naruto.printMode();
-	naruto.setMode("+l", naddy, "3", NULL);
+	naruto.setMode("+l", naddy, "", "3", NULL);
 	naruto.printMode();
 	naruto.addMember(jdemers);
-	naruto.setMode("+o", naddy, "", &gcrepin);
+	naruto.setMode("+o-l", naddy, "", "", &gcrepin);
 	naruto.printMode();
 	naruto.printMembers();
 	naruto.setTopic(gcrepin, &topic1);
+	naruto.setMode("+m-l", naddy, "", "", &gcrepin);
+	naruto.setMode("o-l", naddy, "", "", &gcrepin);
 }
 
 void ChannelTest::addRemoveTests()

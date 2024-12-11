@@ -30,7 +30,7 @@ class Channel
 		bool	kick(User &user, User& op, std::string reason);
 		bool	invite(User &user, User& op);
 		// bool	isValidNb(const std::string& str);
-		bool	setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user);
+		bool	setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user);
 		bool	addOperator(User *user, const char addOrRemove);
 
 		void	printMembers();

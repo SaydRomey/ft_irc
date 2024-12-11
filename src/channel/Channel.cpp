@@ -144,74 +144,133 @@ static bool	isValidNb(const std::string& str)
 	return true;
 }
 
-bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user)
+// bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user)
+// {
+// 	const std::string validMod = "itkol";
+// 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
+// 	{
+// 		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+// 		return false;
+// 	}
+// 	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+// 	{
+// 		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+// 		return false;
+// 	}
+// 	if (mode[0] == '+')
+// 	{
+// 		for (size_t i = 1; i < mode.size(); i++)
+// 		{
+// 			if (validMod.find(mode[i]) != std::string::npos)
+// 			{
+// 				this->_modes[mode[i]] = true;
+// 				if (mode[i] == 'k')
+// 					if (!pswOrLimit.empty())
+// 						this->_password = pswOrLimit;
+// 				if (mode[i] == 'o')
+// 					if (user != NULL)
+// 						addOperator(user, '+');
+// 				if (mode[i] == 'l')
+// 					if (isValidNb(pswOrLimit) != false)
+// 						this->_memberLimit = std::atoi(pswOrLimit.c_str());
+// 			}
+// 			else
+// 			{
+// 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+// 				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+// 				return false;
+// 			}
+// 		}
+// 	}
+// 	else if (mode[0] == '-')
+// 	{
+// 		for (size_t i = 1; i < mode.size(); i++)
+// 		{
+// 			if (validMod.find(mode[i]) != std::string::npos)
+// 			{
+// 				this->_modes[mode[i]] = false;
+// 				if (mode[i] == 'k')
+// 					this->_password = "";
+// 				if (mode[i] == 'o')
+// 					if (user != NULL)
+// 						addOperator(user, '-');
+// 				if (mode[i] == 'l')
+// 					_memberLimit = 0;
+// 			}
+// 			else
+// 			{
+// 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+// 				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+// 				return false;
+// 			}
+// 		}
+// 	}
+// 	else //ERR_UNKNOWNMODE 
+// 	{
+// 		std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
+// 		return false;
+// 	}
+// 	return true;
+// }
+
+bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user)
 {
 	const std::string validMod = "itkol";
-	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
-	{
+	if (_members.find(&op) == _members.end())
+	{ // ERR_NOTONCHANNEL
 		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
-	{
-		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+	if (_members[&op] != true)
+	{ // ERR_CHANOPRIVSNEEDED
+		std::cout << ":server 482 " << op.getNickname() << " " << this->_name << " :You're not channel operator" << std::endl;
 		return false;
 	}
-	if (mode[0] == '+')
+
+	char currentSign = '\0'; // Pour garder la trace de + ou -
+	for (size_t i = 0; i < mode.size(); ++i)
 	{
-		for (size_t i = 1; i < mode.size(); i++)
+		if (mode[i] == '+' || mode[i] == '-')
+			currentSign = mode[i];
+		else if (validMod.find(mode[i]) != std::string::npos)
 		{
-			if (validMod.find(mode[i]) != std::string::npos)
+			// Mode valide
+			if (currentSign == '\0') //ERR_UNKNOWNMODE 
 			{
-				this->_modes[mode[i]] = true;
-				if (mode[i] == 'k')
-					if (!pswOrLimit.empty())
-						this->_password = pswOrLimit;
-				if (mode[i] == 'o')
-					if (user != NULL)
-						addOperator(user, '+');
-				if (mode[i] == 'l')
-					if (isValidNb(pswOrLimit) != false)
-						this->_memberLimit = std::atoi(pswOrLimit.c_str());
-			}
-			else
-			{
-				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+				std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
 				return false;
 			}
-		}
-	}
-	else if (mode[0] == '-')
-	{
-		for (size_t i = 1; i < mode.size(); i++)
-		{
-			if (validMod.find(mode[i]) != std::string::npos)
+			bool enable = (currentSign == '+');
+			_modes[mode[i]] = enable;
+			if (mode[i] == 'k')
 			{
-				this->_modes[mode[i]] = false;
-				if (mode[i] == 'k')
-					this->_password = "";
-				if (mode[i] == 'o')
-					if (user != NULL)
-						addOperator(user, '-');
-				if (mode[i] == 'l')
+				if (enable && !pwd.empty())
+					_password = pwd;
+				else if (!enable)
+					_password.clear();
+			}
+			else if (mode[i] == 'o')
+			{
+				if (user != NULL)
+					addOperator(user, enable ? '+' : '-');
+			}
+			else if (mode[i] == 'l')
+			{
+				if (enable && isValidNb(limit))
+					_memberLimit = std::atoi(limit.c_str());
+				else if (!enable)
 					_memberLimit = 0;
 			}
-			else
-			{
-				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
-				return false;
-			}
 		}
-	}
-	else //ERR_UNKNOWNMODE 
-	{
-		std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
-		return false;
+		else //Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+		{
+			std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+			return false;
+		}
 	}
 	return true;
 }
+
 
 bool	Channel::addOperator(User *user, const char addOrRemove)
 {

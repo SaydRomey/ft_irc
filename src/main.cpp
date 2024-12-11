@@ -6,7 +6,7 @@
 /*   By: namoisan <namoisan@student.42quebec.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/11 10:23:49 by namoisan         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:43:49 by namoisan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,11 @@ int	main(int ac, char **av)
 	(void)av;
 	
 	
-	test_parser();
+	// test_parser();
 	ChannelTest test;
 	test.channelTests();
 	// test_tokenizer(argc, argv);
-	test_reply();
+	// test_reply();
 
 	return (0);
 }
