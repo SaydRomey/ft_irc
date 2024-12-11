@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 23:31:54 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 20:40:47 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,3 +105,17 @@ std::map<std::string, std::string>	Parser::parseCommand(const std::vector<std::s
 
 	return (command);
 }
+
+// std::map<std::string, std::string>	Parser::parse(const std::string> &input) const
+// {
+// 	std::vector<std::string>	tokens = tokenize(input);
+// 	std::map<std::string, std::string>	parsed;
+
+// 	if (!tokens.empty())
+// 		parsed["command"] = tokens[0];
+// 	if (tokens.size() > 1)
+// 		parsed["params"] = tokens[1];
+// 	if (tokens.size() > 2)
+// 		parsed["trailing"] = tokens[2];
+// 	return (parsed);
+// }

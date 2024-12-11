@@ -6,9 +6,15 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 23:48:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/08 20:08:45 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*	*TOCHECK:
+	
+	should the getters be inline to access parsed data ?
+		inline const std::string &getPrefix() const { return _parsedMessage["prefix"]; }
+*/
 
 #ifndef MESSAGE_HPP
 # define MESSAGE_HPP
@@ -20,6 +26,7 @@
 # include <iostream>
 # include <map>
 # include <string>
+// # include <utility> // For std::pair
 
 class Message
 {
@@ -37,11 +44,14 @@ class Message
 		const std::string	&getParams(void) const;
 		const std::string	&getTrailing(void) const;
 		const std::string	&getReply(void) const;
-	
+
+		// const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const;
+		
 	private:
 		std::string	_input;
 		std::map<std::string, std::string>	_parsedMessage;
 		std::string	_reply;
+		// std::vector<std::pair<std::string, std::string> >	_channelsAndKeys;
 	
 		Parser		_parser;
 		Validator	_validator;

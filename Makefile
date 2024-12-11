@@ -1,4 +1,9 @@
 
+# %.o: %.cpp
+# 	$(CXX) $(CXXFLAGS) -MMD -o $@ -c $<
+
+# -include $(OBJ:.o=.d)
+
 NAME	:= ircserv
 AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"
@@ -28,6 +33,7 @@ MK_DIR  := ./.makefiles
 include  $(MK_DIR)/utils.mk
 include  $(MK_DIR)/doc.mk
 include  $(MK_DIR)/deco.mk
+include  $(MK_DIR)/tests.mk
 
 .DEFAULT_GOAL	:= all
 

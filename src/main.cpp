@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jdemers <jdemers@student.42quebec.com>     +#+  +:+       +#+        */
+/*   By: namoisan <namoisan@student.42quebec.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
 /*   Updated: 2024/12/06 02:12:27 by cdumais          ###   ########.fr       */
@@ -33,7 +33,9 @@ int	main(int ac, char **av)
 	(void)argv;
 	
 	
-	test_message();
+	// test_parser();
+	ChannelTest test;
+	test.channelTests();
 	// test_tokenizer(argc, argv);
 	test_reply();
 

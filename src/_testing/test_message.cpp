@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 22:45:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 12:03:45 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 20:14:39 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ static void printMsg(const Message &message, size_t i, bool success)
 		result = std::string(std::string(GREEN) + "SUCCESS!");
 	else
 		result = std::string(std::string(RED) + "FAILURE!");
+
 
 	std::cout << GRAYTALIC << "\"" << message.getInput() << "\"" << RESET << std::endl;
 	std::cout << "Test " << (i + 1) << ": " << result << RESET << std::endl;
@@ -49,9 +50,10 @@ void	runTests(const std::string messages[], size_t count, const std::string &tes
 		}
 		catch (const std::exception &e)
 		{
-			std::cout << "Unexpected exception: " << e.what() << "\n"; // std::endl;
+			std::cout << "Unexpected exception: " << e.what(); // std::endl;
 		}
 		++i;
+		std::cout << ORANGE << "/* ************************************* */\n" << RESET << std::endl;
 	}
 }
 

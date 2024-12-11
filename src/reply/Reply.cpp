@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 11:52:31 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/06 15:57:49 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,9 @@ std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) co
 
 	if (it == _replyTemplates.end())
 	{
-		throw (std::runtime_error("Unknown reply key" + key));
+		std::ostringstream	oss;
+		oss << "UNKNOWN_REPLY_TYPE(" << static_cast<int>(key) << ")";
+		throw (std::runtime_error(oss.str()));
 	}
 	
 	return (_formatReply(it->second, args));

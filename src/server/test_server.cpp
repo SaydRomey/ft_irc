@@ -1,16 +1,16 @@
-// /* ************************************************************************** */
-// /*                                                                            */
-// /*                                                        :::      ::::::::   */
-// /*   test_server.cpp                                    :+:      :+:    :+:   */
-// /*                                                    +:+ +:+         +:+     */
-// /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
-// /*                                                +#+#+#+#+#+   +#+           */
-// /*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
-// /*   Updated: 2024/12/06 01:50:22 by cdumais          ###   ########.fr       */
-// /*                                                                            */
-// /* ************************************************************************** */
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   test_server.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: namoisan <namoisan@student.42quebec.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/14 15:47:25 by cdumais           #+#    #+#             */
+/*   Updated: 2024/12/11 10:45:21 by namoisan         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-// // https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
+// https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
 
 // #include "test_server.hpp"
 
@@ -45,10 +45,12 @@
 // /* ************************************************************************** */
 
 // TestServer::TestServer()
+// TestServer::TestServer()
 // {
 // 	_serSocketFd = -1;
 // }
 
+// void	TestServer::ClearClients(int fd)
 // void	TestServer::ClearClients(int fd)
 // {
 // 	size_t	i = 0;
@@ -76,14 +78,18 @@
 // }
 
 // bool	TestServer::_signal = false; // initialize the static boolean
+// bool	TestServer::_signal = false; // initialize the static boolean
 
+// void	TestServer::SignalHandler(int signum)
 // void	TestServer::SignalHandler(int signum)
 // {
 // 	(void)signum;
 // 	std::cout << "\n" << "Signal Recieved!" << std::endl;
 // 	TestServer::_signal = true; // set the static boolean to true to stop the server
+// 	TestServer::_signal = true; // set the static boolean to true to stop the server
 // }
 
+// void	TestServer::CloseFds()
 // void	TestServer::CloseFds()
 // {
 // 	size_t	i = 0;
@@ -101,6 +107,7 @@
 // 	}
 // }
 
+// void	TestServer::SerSocket()
 // void	TestServer::SerSocket()
 // {
 // 	struct sockaddr_in	add;
@@ -140,6 +147,7 @@
 // }
 
 // void	TestServer::TestServerInit()
+// void	TestServer::TestServerInit()
 // {
 // 	this->_port = 6667;
 // 	SerSocket(); // create the server socket
@@ -148,8 +156,8 @@
 // 	std::cout << "Waiting to accept a connection..." << std::endl;
 
 // 	while (TestServer::_signal == false) // run the server until the signal is recieved
+// 	while (TestServer::_signal == false) // run the server until the signal is recieved
 // 	{
-// 		std::cout << PURPLE << "[DEBUG] Polling..." << RESET << std::endl;
 // 		if ((poll(&_fds[0], _fds.size(), -1) == -1) && TestServer::_signal == false) // wait for an event
 // 			throw (std::runtime_error("poll() failed"));
 // 		std::cout << PURPLE << "[DEBUG] Polling complete!" << RESET << std::endl;
@@ -171,6 +179,7 @@
 // 	CloseFds(); // close the file descriptor when the server stops
 // }
 
+// void	TestServer::AcceptNewClient()
 // void	TestServer::AcceptNewClient()
 // {
 // 	Client	client;
@@ -204,6 +213,7 @@
 // }
 
 // void	TestServer::RecieveNewData(int fd)
+// void	TestServer::RecieveNewData(int fd)
 // {
 // 	char	buff[1024]; // buffer for the recieved data
 // 	memset(buff, 0, sizeof(buff)); // clear the buffer
@@ -233,10 +243,14 @@
 // void	test_server(void)
 // {
 // 	TestServer	server;
+// 	TestServer	server;
 	
 // 	std::cout << "---- SERVER ----" << std::endl;
 // 	try
 // 	{
+// 		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
+// 		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
+// 		server.TestServerInit(); // initialize the server
 // 		signal(SIGINT, TestServer::SignalHandler); // catch the signal (CTRL + c)
 // 		signal(SIGQUIT, TestServer::SignalHandler); // catch the signal (CTRL + \)
 // 		server.TestServerInit(); // initialize the server

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 11:44:05 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/08 20:07:47 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,12 @@
 /*
 Create a vector of string tokens using ' ' as delimiter
 */
-std::vector<std::string>	tokenize(const std::string &input)
+std::vector<std::string>	tokenize(const std::string &input, char delimiter)
 {
 	std::vector<std::string>	tokens;
 
 	std::stringstream	ss(input);
 	std::string			token;
-	char				delimiter = ' ';
 
 	while (std::getline(ss, token, delimiter))
 	{
@@ -124,4 +123,32 @@ void	printMap(const std::map<std::string, std::string> &parsedCommand, const std
 	}
 }
 
+/////
+
+#include <utility> // For std::pair
+
+std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params, const std::string &trailing)
+{
+	std::vector<std::pair<std::string, std::string> >	result;
+	std::vector<std::string>	channels = tokenize(params, ',');
+	std::vector<std::string>	keys = tokenize(trailing, ',');
+
+	size_t	i = 0;
+	while (i < channels.size())
+	{
+		std::string	key;
+		
+		if (i < keys.size())
+		{
+			key = keys[i];
+		}
+		else
+		{
+			key = "";
+		}
+		result.push_back(std::make_pair(channels[i], key));
+		++i;
+	}
+	return (result);
+}
 
