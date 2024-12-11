@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nadege <nadege@student.42.fr>              +#+  +:+       +#+        */
+/*   By: namoisan <namoisan@student.42quebec.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/04 16:19:05 by nadege           ###   ########.fr       */
+/*   Updated: 2024/12/11 10:23:49 by namoisan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,7 @@ int	main(int ac, char **av)
 	ChannelTest test;
 	test.channelTests();
 	// test_tokenizer(argc, argv);
-	// test_validator();
-	// test_reply();
+	test_reply();
 
 	return (0);
 }

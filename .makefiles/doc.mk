@@ -6,7 +6,7 @@
 #    By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/29 15:17:43 by cdumais           #+#    #+#              #
-#    Updated: 2024/11/29 17:38:05 by cdumais          ###   ########.fr        #
+#    Updated: 2024/12/03 20:07:13 by cdumais          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,6 +43,8 @@ URL_RFC2811	:= https://datatracker.ietf.org/doc/html/rfc2811
 URL_RFC2812	:= https://datatracker.ietf.org/doc/html/rfc2812
 URL_RFC2813	:= https://datatracker.ietf.org/doc/html/rfc2813
 URL_RFC7194	:= https://datatracker.ietf.org/doc/html/rfc7194
+URL_MODERN	:= https://modern.ircdocs.horse/
+
 # ...
 
 doc: ## Offer a list of documentation URL links
@@ -63,6 +65,7 @@ doc: ## Offer a list of documentation URL links
 	@echo "  2812. Client Protocol"
 	@echo "  2813. Server Protocol"
 	@echo "  7194. Default Port for IRC via TLS/SS"
+	@echo "  999.  Numerics (Details on numeric replies)"
 
 	@read url_choice; \
 	case $$url_choice in \
@@ -78,6 +81,7 @@ doc: ## Offer a list of documentation URL links
 		2812) CHOICE=$(URL_RFC2812);; \
 		2813) CHOICE=$(URL_RFC2813);; \
 		7194) CHOICE=$(URL_RFC7194);; \
+		999) CHOICE=$(URL_MODERN)/#numerics;; \
 		*) echo "Invalid choice. Exiting." ; exit 1;; \
 	esac; \
 	open $$CHOICE

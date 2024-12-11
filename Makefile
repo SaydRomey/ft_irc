@@ -1,14 +1,21 @@
 
+# %.o: %.cpp
+# 	$(CXX) $(CXXFLAGS) -MMD -o $@ -c $<
+
+# -include $(OBJ:.o=.d)
+
 NAME	:= ircserv
 AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"
 
 COMPILE	:= c++
-CFLAGS	:= -Wall -Werror -Wextra # -pedantic
-STD		:= -std=c++98
+CFLAGS	:= -Wall -Werror -Wextra
+# CFLAGS	+= -pedantic
+CFLAGS	+= -std=c++98
 
-# Header files
+# Header files (including .ipp)
 INC_DIR		:= inc
+HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
 INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
 # Source code files
@@ -21,11 +28,12 @@ OBJS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
 
 # Helper makefiles
-MK_DIR		:= ./.makefiles
+MK_DIR  := ./.makefiles
 
 include  $(MK_DIR)/utils.mk
 include  $(MK_DIR)/doc.mk
 include  $(MK_DIR)/deco.mk
+include  $(MK_DIR)/tests.mk
 
 .DEFAULT_GOAL	:= all
 
@@ -37,13 +45,13 @@ include  $(MK_DIR)/deco.mk
 all: $(NAME) ## Compile the Project and create the executable
 
 $(NAME): $(OBJS)
-	@$(COMPILE) $(C_FLAGS) $(STD) $(OBJS) $(INCLUDES) -o $@
+	@$(COMPILE) $(C_FLAGS) $(OBJS) $(INCLUDES) -o $@
 	@echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)]\\t$(GREEN)ready$(RESET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
 	@echo "$(CYAN)Compiling...$(ORANGE)\t$(notdir $<)$(RESET)"
-	@$(COMPILE) $(C_FLAGS) $(STD) $(INCLUDES) -c $< -o $@
+	@$(COMPILE) $(C_FLAGS) $(INCLUDES) -c $< -o $@
 	@printf "$(UP)$(ERASE_LINE)"
 
 clean: ## Remove folder containing object files

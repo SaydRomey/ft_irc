@@ -19,6 +19,8 @@ class Aggregator
 
 		// helper to split commands from raw data
 		std::vector<std::string>	_splitCommands(const std::string &raw);
+
+		static const size_t	MAX_COMMAND_LENGTH;
 };
 
 #endif // AGGREGATOR_HPP
