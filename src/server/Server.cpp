@@ -7,7 +7,7 @@
 #include <fcntl.h>
 
 Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
-	_isRunning(false), _clients(), _nickMap(), _chanMap(), _rplGenerator()
+	_isRunning(false), _clients(), _nickMap(), _rplGenerator()
 {
 	long tmp_port = std::strtol(port.c_str(), NULL, 10);
 	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
@@ -51,7 +51,7 @@ void Server::run(void)
 	{
 		for (t_pollfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
 		{
-			if (_clients[it->fd].pending.size() > 0)
+			if (_clients[it->fd].pendingSize() > 0)
 				it->events |= POLLOUT;
 		}
 		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
@@ -75,11 +75,10 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
-				while (_clients[it->fd].pending.size() > 0)
+				for (size_t n=_clients[it->fd].pendingSize(); n > 0; n--)
 				{
-					std::string msg = _clients[it->fd].pending.front();
+					std::string msg = _clients[it->fd].pendingPop();
 					send(it->fd, msg.c_str(), msg.size(), 0);
-					_clients[it->fd].pending.pop();
 				}
 				it->events ^= POLLOUT;
 			}
@@ -94,7 +93,7 @@ void Server::run(void)
 				if (msg.getReply().empty())
 					_messageRoundabout(it->second, msg);
 				else
-					it->second.pending.push(msg.getReply());
+					it->second.pendingPush(msg.getReply());
 				msg_str = it->second.extractFromBuffer();
 			}
 		}
@@ -112,19 +111,19 @@ void Server::_acceptConnection()
 
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	_pollFds.push_back({clientFd, POLLIN, 0});
-	_clients[clientFd] = ft::Client(clientFd);
+	_clients[clientFd] = User(clientFd);
 
 	_pollFds[0].revents = 0;
 	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
 }
 
-void Server::_messageRoundabout(ft::Client& client, const Message& msg)
+void Server::_messageRoundabout(User& client, const Message& msg)
 {
 	switch (Validator::commandMap[msg.getCommand()])
 	{
 	case PASS:
 	case USER:
-		client.pending.push(_rplGenerator.reply(462, client.getNickname()));
+		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
 		break;
 	case NICK:
 		nick_cmd(client, msg.getParams());
@@ -151,18 +150,18 @@ void Server::_messageRoundabout(ft::Client& client, const Message& msg)
 	}
 }
 
-void Server::nick_cmd(ft::Client& client, const std::string& nick)
+void Server::nick_cmd(User& client, const std::string& nick)
 {
 	static const std::string leadCharBan = "#&:0123456789";
 
 	std::string oldNick = client.getNickname();
 	if (nick.size() == 0)
-		client.pending.push(_rplGenerator.reply(431, oldNick));
+		client.pendingPush(_rplGenerator.reply(431, oldNick));
 	else if (_nickMap.count(nick) == 1)
-		client.pending.push(_rplGenerator.reply(433, oldNick, nick));
+		client.pendingPush(_rplGenerator.reply(433, oldNick, nick));
 	else if (leadCharBan.find(nick[0]) != std::string::npos
 			|| nick.find(' ') != std::string::npos)
-		client.pending.push(_rplGenerator.reply(432, oldNick, nick));
+		client.pendingPush(_rplGenerator.reply(432, oldNick, nick));
 	else
 	{
 		_nickMap.erase(oldNick);

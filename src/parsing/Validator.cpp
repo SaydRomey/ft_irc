@@ -23,6 +23,21 @@
 #include <cctype> // isalnum, isalpha
 #include <iostream>
 #include <stdexcept>
+// #include <utility>
+
+// static const std::pair<std::string, int> cmdArr[11] = {
+// 	std::make_pair("PASS", PASS),
+// 	std::make_pair("NICK", NICK),
+// 	std::make_pair("USER", USER),
+// 	std::make_pair("JOIN", JOIN),
+// 	std::make_pair("PART", PART),
+// 	std::make_pair("TOPIC", TOPIC),
+// 	std::make_pair("MODE", MODE),
+// 	std::make_pair("KICK", KICK),
+// 	std::make_pair("INVITE", INVITE),
+// 	std::make_pair("PRIVMSG", PRIVMSG),
+// 	std::make_pair("NOTICE", NOTICE),
+// };
 
 static const std::pair<std::string, int> cmdArr[11] = {
 	{"PASS", PASS},

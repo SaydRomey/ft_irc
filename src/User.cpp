@@ -1,19 +1,7 @@
 #include "User.hpp"
 
-User::User(void) : _fd(0), _isRegistred(false)
-{
-
-}
-
-User::User(std::string username, std::string nickname) : _username(username), _nickname(nickname), _fd(0), _isRegistred(false)
-{
-
-}
-
-User::User(int fd) : _fd(fd), _isRegistred(false)
-{
-
-}
+User::User(void): _fd(-1)
+{}
 
 void User::setNickname(const std::string& nickname)
 {
@@ -31,19 +19,9 @@ void User::setUsername(const std::string& username)
 		std::cout << "The supplied string cannot be empty" << std::endl;
 }
 
-void User::setFd(const int& fd)
+void User::setFd(int fd)
 {
 	this->_fd = fd;
-}
-
-void User::setRegistered(void)
-{
-	this->_isRegistred = true;
-}
-
-void setAuthentified(void)
-{
-	
 }
 
 std::string User::getNickname() const
@@ -56,11 +34,6 @@ const std::string User::getUsername(void) const
 	return this->_username;
 }
 
-bool User::isRegistered(void) const
-{
-	return this->_isRegistred;
-}
-
 void User::addToMsgBuffer(const std::string &packet)
 {
 	this->_msgBuffer += packet;
@@ -71,7 +44,30 @@ void User::resetMsgBuffer(const std::string &msg)
 	this->_msgBuffer = msg;
 }
 
-std::string User::extractFromBuffer()
+const std::string& User::extractFromBuffer(void)
 {
-	
+	size_t pos = _msgBuffer.find("\r\n");
+	if (pos == std::string::npos)
+		return "";
+	pos += 2;
+	std::string extract = _msgBuffer.substr(0, pos);
+	_msgBuffer.erase(0, pos);
+	return extract;
+}
+
+size_t User::pendingSize(void) const
+{
+	return _pending.size();
+}
+
+void User::pendingPush(const std::string& msg)
+{
+	_pending.push(msg);
+}
+
+const std::string& User::pendingPop(void)
+{
+	std::string msg = _pending.front();
+	_pending.pop();
+	return msg;
 }

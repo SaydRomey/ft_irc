@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <queue>
+# include <string>
 
 class User
 {
@@ -10,10 +11,9 @@ class User
 		std::string	_username;
 		std::string	_nickname;
 		int			_fd;
-		bool		_isRegistred;
-		bool		_isAuthentified;
-		std::string _msgBuffer;
-		std::queue<std::string> pending;
+
+		std::string				_msgBuffer;
+		std::queue<std::string>	_pending;
 	public:
 		User(void);
 		User(std::string username, std::string nickname);
@@ -22,18 +22,19 @@ class User
 
 		void setNickname(const std::string& nickname);
 		void setUsername(const std::string& username);
-		void setFd(const int& fd);
-		void setRegistered(void); // Throws logic_error if nickname or username isn't set
-		void setAuthentified(void);
-		std::string getNickname() const;
+		void setFd(int fd);
+		std::string getNickname(void) const;
 		const std::string getUsername(void) const;
-		bool isRegistered(void) const;
-		bool isAuthentified(void) const;
+		int getFd(void) const;
 
 		//for server
-		void addToMsgBuffer(const std::string& packet);
-		void resetMsgBuffer(const std::string& msg);
-		std::string extractFromBuffer();
+		void				addToMsgBuffer(const std::string& packet);
+		void				resetMsgBuffer(const std::string& msg);
+		const std::string&	extractFromBuffer(void);
+
+		size_t				pendingSize(void) const;
+		void				pendingPush(const std::string& msg);
+		const std::string&	pendingPop(void);
 };
 
 #endif
