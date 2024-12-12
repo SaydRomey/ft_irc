@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:41:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 11:24:52 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 13:56:13 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,10 @@
 # include <iostream>
 # include <map>
 # include <sstream>
+# include <string>
 # include <vector>
-# include <utility> // For std::pair (in parseChannelsAndKeys())
+# include <utility>		// For std::pair (in parseChannelsAndKeys() and print)
+# include <stdexcept>	// std::invalid_argument (in processChannelsAndKeys)
 
 # define RESET		"\033[0m"
 # define BOLD		"\033[1m"
@@ -35,13 +37,17 @@
 
 std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 std::vector<std::string>	tokenize(const std::string &input, char delimiter = ' ');
-std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys);
+
+bool	hasMultipleEntries(const std::string &param);
+
+// std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys);
 
 std::string trim(const std::string &str);
 std::string	normalizeInput(const std::string &input);
 std::string	crlf(const std::string &str);
 
 void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg = "");
+void	printChannelKeyPairs(const std::vector<std::pair<std::string, std::string> > &pairs);
 
 #endif // PARSING_UTILS_HPP
 

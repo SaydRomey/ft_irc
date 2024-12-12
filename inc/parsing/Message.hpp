@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 23:13:17 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 14:58:02 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,15 @@
 # include <string>
 // # include <utility> // For std::pair ? or std::make_pair()
 
+// typedef std::vector<std::pair<std::string, std::string> >	vecPairStrStr; // ?
+
 class Message
 {
 	public:
-		// Message(void);
-		// ~Message(void);
-		// Message(const Message &other);
-		// Message& operator=(const Message &other);
+		Message(void);
+		~Message(void);
+		Message(const Message &other);
+		Message& operator=(const Message &other);
 		
 		Message(const std::string &input);
 		
@@ -38,15 +40,17 @@ class Message
 		const std::string	&getParams(void) const;
 		const std::string	&getTrailing(void) const;
 		const std::string	&getReply(void) const;
+		const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const; // ? if tokenized access is required, else implement tools to be used..
 
-		// const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const; // ? if tokenized access is required, else implement tools to be used..
+		bool	isValid(void) const;
 		
 	private:
-		std::string							_input;
-		std::map<std::string, std::string>	_parsedMessage;
-		std::string							_reply;
-		
-		// std::vector<std::pair<std::string, std::string> >	_channelsAndKeys; // ? if we want to store channel/key pairs for edge case of "CMD #ch1,#ch2 key1,key2"
+		bool												_valid;
+		std::string											_input;
+		std::map<std::string, std::string>					_parsedMessage;
+		std::string											_reply;
+		std::vector<std::pair<std::string, std::string> >	_channelsAndKeys;
+
 	
 		Parser		_parser;
 		Validator	_validator;
@@ -54,6 +58,7 @@ class Message
 		// Reply		&_rpl; // (if we pass it as an external single Reply object (in constructor) (TOCHECK))
 
 		void	_processInput(const std::string &input);
+		void	_processChannelsAndKeys(const std::string &params);
 };
 
 std::ostream	&operator<<(std::ostream &out, const Message &message);

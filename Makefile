@@ -1,4 +1,7 @@
 
+# TODO: modify file structure:
+# instead of inc/section and src/section, use ./section/[*.hpp, *.cpp] **(still inc and src or not?)
+
 NAME	:= ircserv
 AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"

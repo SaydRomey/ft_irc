@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 22:45:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:14:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 14:11:32 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,10 @@ void	runTests(const std::string messages[], size_t count, const std::string &tes
 			std::cout << "Unexpected exception: " << e.what(); // std::endl;
 		}
 		++i;
-		std::cout << ORANGE << "/* ************************************* */\n" << RESET << std::endl;
+		if (expectSuccess)
+			std::cout << CYAN << "/* ************************************* */\n" << RESET << std::endl;
+		else
+			std::cout << ORANGE << "/* ************************************* */\n" << RESET << std::endl;
 	}
 }
 
@@ -64,6 +67,7 @@ void	test_message(void)
 		"NICK SomeNick",
 		"USER username * * :Real Name",
 		":nickname JOIN #channel",
+		":nickname JOIN #channel,#channel2,#channel3,#channel4 pass1,,pass3,*",
 		":nickname PART #channel :Goodbye!",
 		":nickname TOPIC #channel :New topic",
 		":nickname MODE #channel +it",

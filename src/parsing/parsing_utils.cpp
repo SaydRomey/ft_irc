@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 11:44:43 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 13:57:38 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,61 +51,62 @@ std::vector<std::string>	tokenize(const std::string &input, char delimiter)
 	return (tokens);
 }
 
-inline bool	isWildcardKey(const std::string &key)
-{
-	return (key == "*");
-}
 
 bool	hasMultipleEntries(const std::string &param)
 {
 	return (param.find(',') != std::string::npos);
 }
 
-
-
-/*	**TOCHECK:
-		maybe put in Parser class ?
-		change name of function ? (and params names to more generic ?) *** TOCHECK!!! is it two strings in "params" or one in "trailing" ?
-	
-Creates a vector of pairs of strings, unsing ',' as a delimiter,
-Pairs tokens from 'params' with tokens from 'trailing'
-* Used to tokenize an input of multiple channels and keys,
-formated like so:
-	"#channel1,#channel2,#channel3 pass1,pass2,pass3"
-or
-	"#channel1,#channel2,#channel3 pass1,,pass3"
-
-(key inputs can be empty)
+/*
+** assumes params contains multiple entries (previously checked in higher level with 'hasMultipleEntries()')
 */
-std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys)
-{
-	std::vector<std::string>	channelTokens = tokenize(channels, ',');
-	std::vector<std::string>	keyTokens = tokenize(keys, ',');
+// std::vector<std::pair<std::string, std::string> >	processChannelsAndKeys(const std::string &params)
+// {
+// 	// check anyways?
+// 	if (!hasMultipleEntries(params))
+// 		throw (std::invalid_argument("Invalid params: Missing or malformed entries for channels and keys."));
+	
+// 	// tokenize params into two parts
+// 	std::vector<std::string>	paramTokens = tokenize(params);
+// 	if (paramTokens.size() != 2)
+// 		throw (std::invalid_argument("Invalid params in processChannelsAndKeys: Expected two entries (channels and keys)."));
+	
+// 	std::string	channels = paramTokens[0];
+// 	std::string	keys = paramTokens[1];
 
-	std::vector<std::pair<std::string, std::string> >	result;
-	result.reserve(channelTokens.size()); // to avoid reallocation
+// 	return (pairChannelsAndKeys(channels, keys));
+// }
 
-	size_t	i = 0;
-	while (i < channelTokens.size())
-	{
-		std::string	key = ""; // default to an empty key
+
+
+// std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys)
+// {
+// 	std::vector<std::string>	channelTokens = tokenize(channels, ',');
+// 	std::vector<std::string>	keyTokens = tokenize(keys, ',');
+
+// 	std::vector<std::pair<std::string, std::string> >	result;
+// 	result.reserve(channelTokens.size()); // to avoid reallocation
+
+// 	size_t	i = 0;
+// 	while (i < channelTokens.size())
+// 	{
+// 		std::string	key = ""; // default to an empty key
 		
-		if (i < keyTokens.size())
-		{
-			key = keyTokens[i];
+// 		if (i < keyTokens.size())
+// 		{
+// 			key = keyTokens[i];
 			
-			// if (isWildcardKey(key))
-			if (key == "*")
-			{
-				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
-			}
-		}
+// 			if (key == "*")
+// 			{
+// 				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
+// 			}
+// 		}
 		
-		result.push_back(std::make_pair(channelTokens[i], key));
-		++i;
-	}
-	return (result);
-}
+// 		result.push_back(std::make_pair(channelTokens[i], key));
+// 		++i;
+// 	}
+// 	return (result);
+// }
 
 /*
 Remove leading and trailing whitespace
@@ -190,3 +191,24 @@ void	printMap(const std::map<std::string, std::string> &parsedCommand, const std
 		++it;
 	}
 }
+
+void	printChannelKeyPairs(const std::vector<std::pair<std::string, std::string> > &pairs)
+{
+	// Print each pair in a readable format
+	size_t	i = 0;
+	while (i < pairs.size())
+	{
+		std::cout << "Channel: " << pairs[i].first;
+		if (!pairs[i].second.empty())
+		{
+			std::cout << ", Key: " << pairs[i].second;
+		}
+		else
+		{
+			std::cout << ", Key: <none>";
+		}
+		std::cout << std::endl;
+		++i;
+	}
+}
+

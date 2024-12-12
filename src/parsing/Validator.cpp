@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 11:44:02 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 15:32:55 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,6 +183,8 @@ Errors:
 
 /* ************************************************************************** */
 
+/*	**TODO: validateCommand is to return 'true' if command is valid, and still set a valid reply !!!
+*/
 bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
 {
 	// check if "command" key exists and is non-empty
@@ -444,47 +446,44 @@ Errors:
 	461 ERR_NEEDMOREPARAMS: Not enough parameters
 	403 ERR_NOSUCHCHANNEL: No such channel
 */
-bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
-{
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return(_setError(ERR_NEEDMOREPARAMS, "JOIN"));
-	
-	if (!_isValidChannelName(command.at("params")))
-		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
-
-	// Additional checks like invite-only or channel limits can be implemented elsewhere
-	return (_noError());
-}
-
 // bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
 // {
 // 	if (command.find("params") == command.end() || command.at("params").empty())
 // 		return(_setError(ERR_NEEDMOREPARAMS, "JOIN"));
-
-// 	const std::string	&params = command.at("params");
-// 	const std::string	trailing = "";
 	
-// 	if (command.find("trailing") != command.end())
-// 		trailing = command.at("trailing");
+// 	if (!_isValidChannelName(command.at("params")))
+// 		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
 
-// 	std::vector<std::pair<std::string, std::string> >	channelsAndKeys = parseChannelsAndKeys(params, trailing);
-	
-// 	size_t	i = 0;
-// 	while (i < channelsAndKeys.size())
-// 	{
-// 		const std::string	&channel = channelsAndKeys[i].first;
-// 		const std::string	&key = channelsAndKeys[i].second;
-
-// 		if (!_isValidChannelName(channel))
-// 			return (_setError(ERR_NOSUCHCHANNEL, channel));
-
-// 		// channel existence and keys validation ?
-		
-// 		++i;
-// 	}
-
+// 	// Additional checks like invite-only or channel limits can be implemented elsewhere
 // 	return (_noError());
 // }
+
+bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
+{
+	if (command.find("params") == command.end() || command.at("params").empty())
+		return(_setError(ERR_NEEDMOREPARAMS, "JOIN"));
+
+	// should we ignore trailing if present, or flag the error?
+
+	std::string	params = command.at("params");
+	std::vector<std::string>	paramsTokens = tokenize(params, ' ');
+	
+	if (paramsTokens.size() > 2)
+		return (_setError(ERR_UNKNOWNCOMMAND, "JOIN"));
+
+	// validate channels (first parameter)
+	std::vector<std::string>	channelTokens = tokenize(paramsTokens[0], ',');
+
+	size_t	i = 0;
+	while (i < channelTokens.size())
+	{
+		if (!_isValidChannelName(channelTokens[i]))
+			return (_setError(ERR_NOSUCHCHANNEL, channelTokens[i]));
+		++i;
+	}
+
+	return (_noError());
+}
 
 /*
 Validate "PART" command
@@ -501,9 +500,18 @@ bool Validator::_validatePartCommand(const std::map<std::string, std::string>& c
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NEEDMOREPARAMS, "PART"));
-	
-	if (!_isValidChannelName(command.at("params")))
-		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
+
+	std::string	params = command.at("params");
+
+	std::vector<std::string>	channelTokens = tokenize(params, ','); // limit?
+
+	size_t	i = 0;
+	while (i < channelTokens.size())
+	{
+		if (!_isValidChannelName(channelTokens[i]))
+			return (_setError(ERR_NOSUCHCHANNEL, channelTokens[i]));
+		++i;
+	}
 
 	// Check if the user is on the channel (handled in higher-level logic)
 	return (_noError());
@@ -597,12 +605,31 @@ bool Validator::_validateKickCommand(const std::map<std::string, std::string> &c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setError(ERR_NEEDMOREPARAMS, "KICK"));
 
-	std::vector<std::string> params = tokenize(command.at("params"));
-	if (params.size() < 2)
+	std::vector<std::string> paramsTokens = tokenize(command.at("params"));
+	
+	if (paramsTokens.size() < 2)
 		return (_setError(ERR_NEEDMOREPARAMS, "KICK"));
 
-	if (!_isValidChannelName(params[0]))
-		return (_setError(ERR_NOSUCHCHANNEL, command.at("params")));
+	std::string	channels = paramsTokens[0];
+	std::string	users = paramsTokens[1];
+
+	std::vector<std::string>	channelTokens = tokenize(channels, ',');
+	size_t	i = 0;
+	while (i < channelTokens.size())
+	{
+		if (!_isValidChannelName(channelTokens[i]))
+			return (_setError(ERR_NOSUCHCHANNEL, channelTokens[i]));
+		++i;
+	}
+	
+	std::vector<std::string>	userTokens = tokenize(users, ',');
+	size_t	j = 0;
+	while (j < userTokens.size())
+	{
+		if (!_isValidNickname(userTokens[j]))
+			return (_setError(ERR_NONICKNAMEGIVEN, userTokens[j]));
+		++j;
+	}
 
 	// Check if the target user is in the channel (higher-level logic)
 	return (_noError());
@@ -644,11 +671,19 @@ bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string>
 
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
 		return (_setError(ERR_NOTEXTTOSEND, command.at("command")));
-	
-	const std::string	&recipient = command.at("params");
-	if (!_isValidNickname(recipient) && !_isValidChannelName(recipient))
-		return (_setError(ERR_NOSUCHNICK, recipient));
-	
+
+	std::string	params = command.at("params");
+	std::vector<std::string>	recipients = tokenize(params, ',');
+
+	size_t	i = 0;
+	while (i < recipients.size())
+	{
+		const std::string	&recipient = recipients[i];
+		if (!_isValidNickname(recipient) && !_isValidChannelName(recipient))
+			return (_setError(ERR_NOSUCHNICK, recipient)); // separate reply for each case ?
+		++i;
+	}
+		
 	// Additional checks for recipient existence can be handled elsewhere
 	// same for channel existence..
 	
@@ -664,13 +699,34 @@ bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>&
 		return (_setError(ERR_NORECIPIENT,command.at("prefix"), "NOTICE")); // second arg is to be the nickname..?
 
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setError(ERR_NOTEXTTOSEND, "NOTICE"));
+		// return (_setError(ERR_NOTEXTTOSEND, "NOTICE"));
+		return (_noError()); // silently ignore the error
 
-	return (_noError());
+	std::string	params = command.at("params");
+	std::vector<std::string>	recipients = tokenize(params, ',');
+
+	size_t	i = 0;
+	while (i < recipients.size())
+	{
+		const std::string	&recipient = recipients[i];
+		if (!_isValidNickname(recipient) && !_isValidChannelName(recipient))
+		{
+			return (_noError()); // silently ignore invalid recipient
+		}
+		++i;
+	}
+
+	return (_noError()); // todo: find a higher level way of ignoring silently instead if cmd is invalid..
 }
 
 
 /* ************************************************************************** */
+
+// bool	Validator::_setReply(ReplyType reply, const std::string &arg1, const std::string &arg2) const
+// {
+	
+// 	return (true);
+// }
 
 /*
 */

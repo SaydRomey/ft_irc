@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 10:33:41 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 15:16:03 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ class Validator
 		ReplyType						getError(void) const;
 		const std::vector<std::string>	&getErrorArgs(void) const;
 		// CommandType						getCommandType(const std::string &cmd);
+		
+		// const std::string	&getReply(void) const;
 	
 	private:
 	
@@ -97,9 +99,9 @@ class Validator
 
 		bool	_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const;
 
-		static const size_t			MAX_NICKNAME_LENGTH;
-		static const size_t			MAX_CHANNEL_NAME_LENGTH;
-		static const std::string	VALID_MODE_FLAGS;
+		static const size_t			MAX_NICKNAME_LENGTH;		// 9
+		static const size_t			MAX_CHANNEL_NAME_LENGTH;	// 42
+		static const std::string	VALID_MODE_FLAGS;			// "+-itkol"
 };
 
 bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck);
