@@ -56,6 +56,11 @@ bool	Channel::removeMember(User& user, const std::string& reason = "") //voir po
 	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
+std::map<User*,bool> Channel::getMembers()
+{
+	return _members;
+}
+
 bool	Channel::setTopic(User& user, const std::string& topic) //voir ce que weechat envoie si c'Est string vide
 {
 	//par defaut sur false tout le monde peut modifier le topic.
