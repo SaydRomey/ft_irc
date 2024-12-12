@@ -5,29 +5,36 @@
 # include <queue>
 # include <string>
 
+# define PERM_PASS 0x00f
+# define PERM_NICK 0x0f0
+# define PERM_USER 0xf00
+# define PERM_ALL  0xfff
+
 class User
 {
 	private:
 		std::string	_username;
 		std::string	_nickname;
 		int			_fd;
+		short		_perms;
 
 		std::string				_msgBuffer;
 		std::queue<std::string>	_pending;
 	public:
 		User(void);
-		User(std::string username, std::string nickname);
 		User(int fd);
 		User& operator=(const User& other);
 
 		void setNickname(const std::string& nickname);
 		void setUsername(const std::string& username);
 		void setFd(int fd);
-		std::string getNickname(void) const;
-		const std::string getUsername(void) const;
+		const std::string& getNickname(void) const;
+		const std::string& getUsername(void) const;
 		int getFd(void) const;
 
-		//for server
+		short		getPerms(void) const;
+		void		setPass(bool valid);
+
 		void				addToMsgBuffer(const std::string& packet);
 		void				resetMsgBuffer(const std::string& msg);
 		const std::string&	extractFromBuffer(void);

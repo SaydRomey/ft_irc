@@ -35,6 +35,9 @@ private:
 	void	_acceptConnection();
 	void	_messageRoundabout(User& client, const Message& msg);
 
+	void	broadcast(const std::string& msg, int senderFd=-1);
+	void	pass_cmd(User& client, const std::string& pass);
+	void	user_cmd(User& client, const std::string& username);
 	void	nick_cmd(User& client, const std::string& nick);
 };
 

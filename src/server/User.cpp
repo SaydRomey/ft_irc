@@ -13,10 +13,8 @@ void User::setNickname(const std::string& nickname)
 
 void User::setUsername(const std::string& username)
 {
-	if(!username.empty())
-		this->_username = username;
-	else
-		std::cout << "The supplied string cannot be empty" << std::endl;
+	this->_username = username;
+	_perms |= PERM_USER;
 }
 
 void User::setFd(int fd)
@@ -24,14 +22,27 @@ void User::setFd(int fd)
 	this->_fd = fd;
 }
 
-std::string User::getNickname() const
+const std::string& User::getNickname() const
 {
 	return this->_nickname;
 }
 
-const std::string User::getUsername(void) const
+const std::string& User::getUsername(void) const
 {
 	return this->_username;
+}
+
+short User::getPerms(void) const
+{
+	return _perms;
+}
+
+void User::setPass(bool valid)
+{
+	if (valid)
+		_perms |= PERM_PASS;
+	else
+		_perms &= ~PERM_PASS;
 }
 
 void User::addToMsgBuffer(const std::string &packet)
@@ -49,9 +60,8 @@ const std::string& User::extractFromBuffer(void)
 	size_t pos = _msgBuffer.find("\r\n");
 	if (pos == std::string::npos)
 		return "";
-	pos += 2;
 	std::string extract = _msgBuffer.substr(0, pos);
-	_msgBuffer.erase(0, pos);
+	_msgBuffer.erase(0, pos + 2);
 	return extract;
 }
 

@@ -89,10 +89,11 @@ void Server::run(void)
 			std::string msg_str = it->second.extractFromBuffer();
 			while (!msg_str.empty())
 			{
+				std::cout << YELLOW << "Message: <" << RESET << msg_str << YELLOW << ">" << RESET << std::endl;
 				Message msg(msg_str);
 				if (msg.getReply().empty())
 					_messageRoundabout(it->second, msg);
-				else
+				else if (msg.getCommand() != "NOTICE")
 					it->second.pendingPush(msg.getReply());
 				msg_str = it->second.extractFromBuffer();
 			}
@@ -122,8 +123,10 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	switch (Validator::commandMap[msg.getCommand()])
 	{
 	case PASS:
+		pass_cmd(client, msg.getParams());
+		break;
 	case USER:
-		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
+		user_cmd(client, msg.getParams());
 		break;
 	case NICK:
 		nick_cmd(client, msg.getParams());
@@ -131,7 +134,7 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case JOIN:
 		break;
 	case PART:
-		chanManager.part(client, msg);
+		_chanManager.part(client, msg);
 		break;
 	case TOPIC:
 		break;
@@ -150,14 +153,51 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	}
 }
 
-void Server::nick_cmd(User& client, const std::string& nick)
+void Server::broadcast(const std::string &msg, int senderFd)
+{
+	for (t_clientMap::iterator it=_clients.begin(); it != _clients.end(); it++)
+	{
+		if (it->first == senderFd)
+			it->second.pendingPush(msg);
+	}
+}
+
+void Server::pass_cmd(User &client, const std::string &pass)
+{
+	short perms = client.getPerms();
+	if (perms == PERM_ALL)
+		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
+	else
+		client.setPass(pass == _password);
+}
+
+void Server::user_cmd(User &client, const std::string &username)
+{
+	short perms = client.getPerms();
+	if (perms == PERM_ALL)
+		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
+	else if (perms == PERM_NICK)
+		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
+	else
+	{
+		client.setUsername(username);
+		if (client.getPerms() == PERM_ALL)
+			return;// Send welcome replies HERE
+	}
+}
+
+void Server::nick_cmd(User &client, const std::string &nick)
 {
 	static const std::string leadCharBan = "#&:0123456789";
 
+	short perms = client.getPerms();
+	if (perms == PERM_USER)
+	{
+		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
+		return;
+	}
 	std::string oldNick = client.getNickname();
-	if (nick.size() == 0)
-		client.pendingPush(_rplGenerator.reply(431, oldNick));
-	else if (_nickMap.count(nick) == 1)
+	if (_nickMap.count(nick) == 1)
 		client.pendingPush(_rplGenerator.reply(433, oldNick, nick));
 	else if (leadCharBan.find(nick[0]) != std::string::npos
 			|| nick.find(' ') != std::string::npos)
@@ -167,6 +207,9 @@ void Server::nick_cmd(User& client, const std::string& nick)
 		_nickMap.erase(oldNick);
 		_nickMap[nick] = client.getFd();
 		client.setNickname(nick);
-		std::
+		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@ft-irc NICK " + nick;
+		broadcast(msg);
+		if (perms == ~PERM_NICK)
+			return; // Send welcome replies HERE
 	}
 }
