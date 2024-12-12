@@ -5,7 +5,8 @@
 # include "Message.hpp"
 # include "parsing_utils.hpp"
 
-typedef void(Server::*t_chanFunc)(User&, const Message&);
+class ChannelManager;
+typedef void(ChannelManager::*t_chanFunc)(User&, const Message&);
 
 class ChannelManager
 {

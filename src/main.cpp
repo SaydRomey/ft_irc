@@ -3,41 +3,44 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: namoisan <namoisan@student.42quebec.com    +#+  +:+       +#+        */
+/*   By: jdemers <jdemers@student.42quebec.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 02:12:27 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 16:37:30 by jdemers          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "_test_header.hpp"
-// #include "Server.hpp"
+#include "Server.hpp"
 
-// int	test_server(int ac, char **av)
-// {
-// 	if (ac != 3)
-// 	{
-// 		return (1);
-// 	}
-// 	ft::Server	serv(av[1], av[2]);
-// 	serv.start();
+int	test_server(int ac, char **av)
+{
+	if (ac != 3)
+		return 1;
+	try
+	{
+		Server serv(av[1], av[2]);
+		serv.run();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "main-catch:" << e.what() << std::endl;
+		return 1;
+	}
 
-// 	return (0);
-// }
+	return (0);
+}
 
 int	main(int ac, char **av)
 {
-	// test_server(argc, argv);
+	int val = 0;
 
-	(void)argc;
-	(void)argv;
-	
-	
+	val = test_server(ac, av);
 	// test_parser();
-	ChannelTest test;
-	test.channelTests();
+	// ChannelTest test;
+	// test.channelTests();
 	// test_tokenizer(argc, argv);
-	test_reply();
+	// test_reply();
 
-	return (0);
+	return (val);
 }

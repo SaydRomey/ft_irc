@@ -38,7 +38,8 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 		throw std::runtime_error("Server::setsockopt_failed");
 
-	_pollFds.push_back({sockfd, POLLIN, 0});
+	pollfd pfd = {sockfd, POLLIN, 0};
+	_pollFds.push_back(pfd);
 	_initRoundabout();
 }
 
@@ -90,8 +91,8 @@ void Server::run(void)
 			std::string msg_str = it->second.extractFromBuffer();
 			while (!msg_str.empty())
 			{
-				std::cout << YELLOW << "Message: <" << RESET << msg_str << YELLOW << ">" << RESET << std::endl;
 				Message msg(msg_str);
+				std::cout << msg << std::endl;
 				if (msg.getReply().empty())
 					_messageRoundabout(it->second, msg);
 				else if (msg.getCommand() != "NOTICE")
@@ -104,10 +105,10 @@ void Server::run(void)
 
 void Server::_initRoundabout()
 {
-	_serverRoundabout["PASS"] = pass_cmd;
-	_serverRoundabout["USER"] = user_cmd;
-	_serverRoundabout["NICK"] = nick_cmd;
-	_serverRoundabout["PRIVMSG"] = privmsg_cmd;
+	_serverRoundabout["PASS"] = &Server::pass_cmd;
+	_serverRoundabout["USER"] = &Server::user_cmd;
+	_serverRoundabout["NICK"] = &Server::nick_cmd;
+	_serverRoundabout["PRIVMSG"] = &Server::privmsg_cmd;
 }
 
 void Server::_acceptConnection()
@@ -119,8 +120,9 @@ void Server::_acceptConnection()
 	if (clientFd < 0)
 		return ;
 
+	pollfd pfd = {clientFd, POLLIN, 0};
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
-	_pollFds.push_back({clientFd, POLLIN, 0});
+	_pollFds.push_back(pfd);
 	_clients[clientFd] = User(clientFd);
 
 	_pollFds[0].revents = 0;
@@ -129,16 +131,17 @@ void Server::_acceptConnection()
 
 void Server::_messageRoundabout(User& client, const Message& msg)
 {
+	// _serverRoundabout[msg.getCommand()](client, msg);
 	switch (Validator::commandMap[msg.getCommand()])
 	{
 	case PASS:
-		pass_cmd(client, msg.getParams());
+		pass_cmd(client, msg);
 		break;
 	case USER:
-		user_cmd(client, msg.getParams());
+		user_cmd(client, msg);
 		break;
 	case NICK:
-		nick_cmd(client, msg.getParams());
+		nick_cmd(client, msg);
 		break;
 	case JOIN:
 		break;
@@ -173,6 +176,7 @@ void Server::broadcast(const std::string &msg, int senderFd)
 
 void Server::pass_cmd(User &client, const Message& msg)
 {
+	std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
 		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
@@ -184,14 +188,14 @@ void Server::user_cmd(User &client, const Message& msg)
 {
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
-		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
+		client.pendingPush(_rplGenerator.reply(462));
 	else if (perms == PERM_NICK)
-		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
+		client.pendingPush(_rplGenerator.reply(464));
 	else
 	{
 		client.setUsername(msg.getParams());
 		if (client.getPerms() == PERM_ALL)
-			return;// Send welcome replies HERE
+			client.pendingPush(_rplGenerator.reply(1, client.getNickname(), client.getNickname()));
 	}
 }
 
@@ -202,7 +206,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 	short perms = client.getPerms();
 	if (perms == PERM_USER)
 	{
-		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
+		client.pendingPush(_rplGenerator.reply(464));
 		return;
 	}
 
@@ -221,7 +225,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@ft-irc NICK " + nick;
 		broadcast(msg);
 		if (perms == ~PERM_NICK)
-			return; // Send welcome replies HERE
+			client.pendingPush(_rplGenerator.reply(1, nick, nick));
 	}
 }
 

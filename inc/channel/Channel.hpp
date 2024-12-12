@@ -21,6 +21,7 @@ class Channel
 		std::string _password;
 		size_t _memberLimit;
 	public:
+		Channel();
 		Channel(std::string name, User& op);
 		~Channel();
 
@@ -37,6 +38,7 @@ class Channel
 		void	printMembers();
 		void	printMode();
 		//ajouter un getmember et getmode (car MODE sans parametres retourne les mode activés "Mode du channel xx activé : +i +o etc")
+		const std::map<User*,bool>& getMembers(void) const;
 };
 
 #endif

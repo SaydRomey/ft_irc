@@ -11,7 +11,6 @@
 
 typedef std::map<int, User> t_clientMap;
 typedef std::vector<pollfd> t_pollfdVect;
-typedef void(Server::*t_servFunc)(User&, const Message&);
 
 class Server
 {
@@ -19,6 +18,7 @@ public:
 	Server(const std::string& port, const std::string& password);
 
 	void run();
+	typedef void(Server::*t_servFunc)(User&, const Message&);
 
 private:
 	int			_port;

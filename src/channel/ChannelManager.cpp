@@ -53,10 +53,10 @@ void ChannelManager::privmsg(User &sender, const std::string &chan, const std::s
 	if (_channels.count(chan) == 0)
 		return sender.pendingPush("INSERT REPLY 403 HERE");
 
-	std::vector<User*>& chanMembers(_channels[chan].getMembers());
-	for (std::vector<User*>::iterator it=chanMembers.begin(); it != chanMembers.end(); it++)
+	const std::map<User*,bool> members(_channels[chan].getMembers());
+	for (std::map<User*,bool>::const_iterator it=members.begin(); it != members.end(); it++)
 	{
-		if (*it != &sender)
-		(*it)->pendingPush(reply);
+		if (it->first != &sender)
+			it->first->pendingPush(reply);
 	}
 }

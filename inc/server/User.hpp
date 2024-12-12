@@ -37,11 +37,11 @@ class User
 
 		void				addToMsgBuffer(const std::string& packet);
 		void				resetMsgBuffer(const std::string& msg);
-		const std::string&	extractFromBuffer(void);
+		const std::string	extractFromBuffer(void);
 
 		size_t				pendingSize(void) const;
 		void				pendingPush(const std::string& msg);
-		const std::string&	pendingPop(void);
+		const std::string	pendingPop(void);
 };
 
 #endif

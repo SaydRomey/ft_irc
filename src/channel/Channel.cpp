@@ -1,6 +1,9 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, User& op) : _name(name), _topic(""), _password(""), _memberLimit(0)
+Channel::Channel()
+{}
+
+Channel::Channel(std::string name, User &op) : _name(name), _topic(""), _password(""), _memberLimit(0)
 {
 	_modes['i'] = false;
 	_modes['t'] = false;
@@ -37,7 +40,7 @@ bool	Channel::addMember(User& user, std::string pswIfNeeded)
 	return true;
 }
 
-bool	Channel::removeMember(User& user, const std::string& reason = "") //voir pour garder bool et retourner un si on doit supp le channel car vide
+bool	Channel::removeMember(User& user, const std::string& reason) //voir pour garder bool et retourner un si on doit supp le channel car vide
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
@@ -318,4 +321,9 @@ void	Channel::printMode()
 	std::cout << "Modes list: " << std::endl;
 	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
 		std::cout << "-> " << it->first << " : " << it->second << std::endl;
+}
+
+const std::map<User *, bool> &Channel::getMembers(void) const
+{
+	return _members;
 }
