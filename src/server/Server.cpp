@@ -7,7 +7,7 @@
 #include <fcntl.h>
 
 Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
-	_isRunning(false), _clients(), _nickMap(), _rplGenerator()
+	_isRunning(false), _clients(), _nickMap(), _chanManager(), _rplGenerator()
 {
 	long tmp_port = std::strtol(port.c_str(), NULL, 10);
 	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
@@ -39,6 +39,7 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 		throw std::runtime_error("Server::setsockopt_failed");
 
 	_pollFds.push_back({sockfd, POLLIN, 0});
+	_initRoundabout();
 }
 
 void Server::run(void)
@@ -99,6 +100,14 @@ void Server::run(void)
 			}
 		}
 	}
+}
+
+void Server::_initRoundabout()
+{
+	_serverRoundabout["PASS"] = pass_cmd;
+	_serverRoundabout["USER"] = user_cmd;
+	_serverRoundabout["NICK"] = nick_cmd;
+	_serverRoundabout["PRIVMSG"] = privmsg_cmd;
 }
 
 void Server::_acceptConnection()
@@ -162,16 +171,16 @@ void Server::broadcast(const std::string &msg, int senderFd)
 	}
 }
 
-void Server::pass_cmd(User &client, const std::string &pass)
+void Server::pass_cmd(User &client, const Message& msg)
 {
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
 		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
 	else
-		client.setPass(pass == _password);
+		client.setPass(msg.getParams() == _password);
 }
 
-void Server::user_cmd(User &client, const std::string &username)
+void Server::user_cmd(User &client, const Message& msg)
 {
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
@@ -180,13 +189,13 @@ void Server::user_cmd(User &client, const std::string &username)
 		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
 	else
 	{
-		client.setUsername(username);
+		client.setUsername(msg.getParams());
 		if (client.getPerms() == PERM_ALL)
 			return;// Send welcome replies HERE
 	}
 }
 
-void Server::nick_cmd(User &client, const std::string &nick)
+void Server::nick_cmd(User &client, const Message& msg)
 {
 	static const std::string leadCharBan = "#&:0123456789";
 
@@ -196,6 +205,8 @@ void Server::nick_cmd(User &client, const std::string &nick)
 		client.pendingPush(_rplGenerator.reply(464, client.getNickname()));
 		return;
 	}
+
+	const std::string& nick = msg.getParams();
 	std::string oldNick = client.getNickname();
 	if (_nickMap.count(nick) == 1)
 		client.pendingPush(_rplGenerator.reply(433, oldNick, nick));
@@ -211,5 +222,20 @@ void Server::nick_cmd(User &client, const std::string &nick)
 		broadcast(msg);
 		if (perms == ~PERM_NICK)
 			return; // Send welcome replies HERE
+	}
+}
+
+void Server::privmsg_cmd(User &client, const Message &msg)
+{
+	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
+
+	for (size_t i=0; i < targets.size(); i++)
+	{
+		if (targets[i][0] == '#')
+			_chanManager.privmsg(client, targets[i], msg.getReply());
+		else if (_nickMap.count(targets[i]) == 0)
+			client.pendingPush(_rplGenerator.reply(401, targets[i]));
+		else if (_nickMap[targets[i]] != client.getFd())
+			_clients[_nickMap[targets[i]]].pendingPush(msg.getReply());
 	}
 }

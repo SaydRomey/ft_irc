@@ -5,10 +5,14 @@
 # include "Message.hpp"
 # include "parsing_utils.hpp"
 
+typedef void(Server::*t_chanFunc)(User&, const Message&);
+
 class ChannelManager
 {
 	private:
 		std::map<std::string, Channel> _channels; //ERR_NOSUCHCHANNEL (403)
+
+		void _initRoundabout(void);
 	public:
 		ChannelManager();
 		~ChannelManager();
@@ -20,6 +24,9 @@ class ChannelManager
 		void kick(User& sender, const Message& msg);
 		void mode(User& sender, const Message& msg);
 		void topic(User& sender, const Message& msg);
+
+		void privmsg(User& sender, const std::string& chan, const std::string& reply);
+		std::map<std::string, t_chanFunc>	chanRoundabout;
 };
 
 #endif

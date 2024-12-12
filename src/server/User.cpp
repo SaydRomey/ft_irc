@@ -1,14 +1,15 @@
 #include "User.hpp"
 
-User::User(void): _fd(-1)
+User::User(void): _fd(-1), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
+{}
+
+User::User(int fd): _fd(fd), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
 {}
 
 void User::setNickname(const std::string& nickname)
 {
-	if(!nickname.empty())
-		this->_nickname = nickname;
-	else
-		std::cout << "The supplied string cannot be empty" << std::endl;
+	this->_nickname = nickname;
+	_perms |= PERM_NICK;
 }
 
 void User::setUsername(const std::string& username)

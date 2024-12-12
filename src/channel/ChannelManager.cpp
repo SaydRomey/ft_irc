@@ -47,3 +47,16 @@ void ChannelManager::topic(User &sender, const Message &msg)
 		_channels[chan].setTopic(sender, msg.getTrailing());
 	}
 }
+
+void ChannelManager::privmsg(User &sender, const std::string &chan, const std::string &reply)
+{
+	if (_channels.count(chan) == 0)
+		return sender.pendingPush("INSERT REPLY 403 HERE");
+
+	std::vector<User*>& chanMembers(_channels[chan].getMembers());
+	for (std::vector<User*>::iterator it=chanMembers.begin(); it != chanMembers.end(); it++)
+	{
+		if (*it != &sender)
+		(*it)->pendingPush(reply);
+	}
+}

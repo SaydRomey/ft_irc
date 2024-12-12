@@ -11,6 +11,7 @@
 
 typedef std::map<int, User> t_clientMap;
 typedef std::vector<pollfd> t_pollfdVect;
+typedef void(Server::*t_servFunc)(User&, const Message&);
 
 class Server
 {
@@ -25,20 +26,22 @@ private:
 	time_t		_time;
 	bool		_isRunning;
 
-	t_pollfdVect					_pollFds;
-	t_clientMap						_clients;
-	std::map<std::string, int>		_nickMap;
-	ChannelManager					_chanManager;
+	t_pollfdVect						_pollFds;
+	t_clientMap							_clients;
+	std::map<std::string, int>			_nickMap;
+	ChannelManager						_chanManager;
+	std::map<std::string, t_servFunc>	_serverRoundabout;
+	Reply								_rplGenerator;
 
-	Reply	_rplGenerator;
-
+	void	_initRoundabout();
 	void	_acceptConnection();
 	void	_messageRoundabout(User& client, const Message& msg);
 
 	void	broadcast(const std::string& msg, int senderFd=-1);
-	void	pass_cmd(User& client, const std::string& pass);
-	void	user_cmd(User& client, const std::string& username);
-	void	nick_cmd(User& client, const std::string& nick);
+	void	pass_cmd(User& client, const Message& msg);
+	void	user_cmd(User& client, const Message& msg);
+	void	nick_cmd(User& client, const Message& msg);
+	void	privmsg_cmd(User& client, const Message& msg);
 };
 
 #endif

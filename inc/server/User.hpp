@@ -13,9 +13,9 @@
 class User
 {
 	private:
+		int			_fd;
 		std::string	_username;
 		std::string	_nickname;
-		int			_fd;
 		short		_perms;
 
 		std::string				_msgBuffer;
