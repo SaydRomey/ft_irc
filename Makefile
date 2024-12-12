@@ -22,11 +22,6 @@ OBJ_DIR		:= obj
 OBJS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
 
-# Dependencies
-DEP_DIR		:= $(OBJ_DIR)/dep
-DEPS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(DEP_DIR)/%.d)
-DEP_FLAGS	:= -MMD -MF $(DEPS_DIR)/$*.d
-
 # Helper makefiles
 MK_DIR  := ./utils/makefiles
 
@@ -50,18 +45,15 @@ $(NAME): $(OBJS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
-	@mkdir -p $(DEP_DIR)
 	@echo "$(CYAN)Compiling...$(ORANGE)\t$(notdir $<)$(RESET)"
 	@$(COMPILE) $(C_FLAGS) $(DEP_FLAGS) $(INCLUDES) -c $< -o $@
 	@printf "$(UP)$(ERASE_LINE)"
-
--include $(DEPS)
 
 clean: ## Remove folder containing object files
 	@if [ -n "$(wildcard $(OBJ_DIR))" ]; then \
 		$(REMOVE) $(OBJ_DIR); \
 		echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)] \
-		$(GREEN)Object files and dependencies removed$(RESET)"; \
+		$(GREEN)Object files removed$(RESET)"; \
 	else \
 		echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)] \
 		$(YELLOW)No object files to remove$(RESET)"; \

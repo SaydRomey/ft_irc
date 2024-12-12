@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 15:57:49 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 23:00:47 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,5 +133,7 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 	}
 
 	return (oss.str());
+	// return (crlf(oss.str()));
+	// return (oss.str() + "\r\n");
 }
 

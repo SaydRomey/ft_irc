@@ -1,6 +1,6 @@
 
 SERVER_BIN	:= ./ircserv
-SCRIPTS_DIR	:= ./.scripts
+SCRIPTS_DIR	:= ./utils/scripts
 SCRIPTS		:= $(wildcard $(SCRIPTS_DIR)/*.sh)
 PORT		:= 6667
 PASSWORD	:= password123

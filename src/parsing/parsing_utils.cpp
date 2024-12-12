@@ -6,31 +6,14 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/08 20:07:47 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 23:18:07 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parsing_utils.hpp"
 
-/*
-Create a vector of string tokens using ' ' as delimiter
-*/
-std::vector<std::string>	tokenize(const std::string &input, char delimiter)
-{
-	std::vector<std::string>	tokens;
+/*	**TODO: change description to more generic..
 
-	std::stringstream	ss(input);
-	std::string			token;
-
-	while (std::getline(ss, token, delimiter))
-	{
-		if (!token.empty()) // ignore empty tokens caused by consecutive delimiters
-			tokens.push_back(token);
-	}
-	return (tokens);
-}
-
-/*
 Helper function to build argument vector with variadic argument...
 [prefix] [cmd] [param] [trailing]
 */
@@ -50,6 +33,70 @@ std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &ar
 	return (args);
 }
 
+/*
+Creates a vector of string tokens from 'input' using 'delimiter' as delimiter
+*/
+std::vector<std::string>	tokenize(const std::string &input, char delimiter)
+{
+	std::vector<std::string>	tokens;
+
+	std::stringstream	ss(input);
+	std::string			token;
+
+	while (std::getline(ss, token, delimiter))
+	{
+		if (!token.empty()) // ignore empty tokens caused by consecutive delimiters
+			tokens.push_back(token);
+	}
+	return (tokens);
+}
+
+inline bool	isWildcardKey(const std::string &key)
+{
+	return (key == "*");
+}
+
+/*	**TOCHECK:
+		maybe put in Parser class ?
+		change name of function ? (and params names to more generic ?) *** TOCHECK!!! is it two strings in "params" or one in "trailing" ?
+	
+Creates a vector of pairs of strings, unsing ',' as a delimiter,
+Pairs tokens from 'params' with tokens from 'trailing'
+* Used to tokenize an input of multiple channels and keys,
+formated like so:
+	"#channel1,#channel2,#channel3 pass1,pass2,pass3"
+or
+	"#channel1,#channel2,#channel3 pass1,,pass3"
+
+(key inputs can be empty)
+*/
+std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params, const std::string &trailing)
+{
+	std::vector<std::string>	channels = tokenize(params, ',');
+	std::vector<std::string>	keys = tokenize(trailing, ',');
+
+	std::vector<std::pair<std::string, std::string> >	result;
+	result.reserve(channels.size()); // to avoid reallocation
+
+	size_t	i = 0;
+	while (i < channels.size())
+	{
+		std::string	key = ""; // default to an empty key
+		
+		if (i < keys.size())
+		{
+			key = keys[i];
+			
+			// if (isWildcardKey(key))
+			if (key == "*")
+				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
+		}
+		
+		result.push_back(std::make_pair(channels[i], key));
+		++i;
+	}
+	return (result);
+}
 
 /*
 Remove leading and trailing whitespace
@@ -67,6 +114,7 @@ std::string trim(const std::string &str)
 
 /*
 Reformat a string by replacing multiple space char (' ') by a single space
+** (Also removes the "\r\n" sequence or any standalone '\r' or '\n')
 ex: 
 	":nickname   JOIN    #channel   :Hello    world!"
 would become 
@@ -104,6 +152,17 @@ std::string normalizeInput(const std::string &input)
 }
 
 /*
+Returns formatted string with appropriate line-ending sequence
+*/
+std::string	crlf(const std::string &str)
+{
+	// #define CRLF "\r\n"
+	// return (str + CRLF);
+	
+	return (str + "\r\n");
+}
+
+/*
 Print map<string, string> content:
 "  [key]: [value]"
 
@@ -122,33 +181,3 @@ void	printMap(const std::map<std::string, std::string> &parsedCommand, const std
 		++it;
 	}
 }
-
-/////
-
-#include <utility> // For std::pair
-
-std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params, const std::string &trailing)
-{
-	std::vector<std::pair<std::string, std::string> >	result;
-	std::vector<std::string>	channels = tokenize(params, ',');
-	std::vector<std::string>	keys = tokenize(trailing, ',');
-
-	size_t	i = 0;
-	while (i < channels.size())
-	{
-		std::string	key;
-		
-		if (i < keys.size())
-		{
-			key = keys[i];
-		}
-		else
-		{
-			key = "";
-		}
-		result.push_back(std::make_pair(channels[i], key));
-		++i;
-	}
-	return (result);
-}
-

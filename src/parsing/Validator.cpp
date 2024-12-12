@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/08 20:06:55 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 22:33:04 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,15 @@
 */
 
 #include "Validator.hpp"
-#include "parsing_utils.hpp"
+#include "parsing_utils.hpp" // ?
 
 #include <algorithm> // find
 #include <cctype> // isalnum, isalpha
 #include <iostream>
 #include <stdexcept>
 
-const size_t Validator::MAX_NICKNAME_LENGTH = 9;
-const size_t Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
+const size_t 		Validator::MAX_NICKNAME_LENGTH = 9;
+const size_t 		Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
 const std::string	Validator::VALID_MODE_FLAGS = "+-itkol";
 
 // ...other validations (for password rules, limits or allowed chars ?)
@@ -189,12 +189,13 @@ bool	Validator::validateCommand(const std::map<std::string, std::string> &comman
 	{
 		if (!_isValidNickname(command.at("prefix")))
 		// if (!_isValidNickname(_parsedMessage["prefix"])
-		return (_setError(ERR_ERRONEUSNICKNAME, command.at("prefix"))); //?
+		return (_setError(ERR_ERRONEUSNICKNAME, command.at("prefix"))); //? is this check needed ? we might not input prefixes at all as users..
 	}
 	
 	// ... additional validation as needed
 	
 	return (_validateCommandByType(cmdType, command));
+	// return ((this->*(_validators[cmdType]))(command)); // to remove _validateCommandByType() ?
 }
 
 bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const
@@ -202,7 +203,7 @@ bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::
 	// if (cmdType == CMD_UNKNOWN && cmd == "CAP")
 		// return (_noError()); // CAP command is ignored without error ??
 
-	if (cmdType < PASS || cmdType > NOTICE)
+	if (cmdType < PASS || cmdType > NOTICE) // will not get here -> in validateCommand(), we iterate through _commandMap...
 		return (_setError(ERR_UNKNOWNCOMMAND, command.at("command")));
 
 	return ((this->*(_validators[cmdType]))(command));
@@ -305,6 +306,26 @@ bool	Validator::_isValidChannelName(const std::string &channel) const
 // {
 // 	// 
 // 	return (_setError(ERR_PASSWDMISMATCH));
+// }
+
+/*
+Detect if the 'params' string contains one or two sequence of comma separated words
+*/
+// bool	Validator::_hasMultipleParams(const std::string &params) const;
+// {
+// 	return (params.find(',') != std::string::npos);
+// }
+
+/*
+implement syntax validation ('#' before channel names?)
+implement semantic validation (same number of channels and keys,
+	**(do we accept '*' as an empty imput ?))
+*/
+// bool	Validator::_isValidMultipleParams(const std::string &params) const
+// {
+// 	enter here from detecting a param with multiple targets (channels, keys, users?)
+// 	// ...
+// 	think on how to handle replies...
 // }
 
 /* ************************************************************************** */

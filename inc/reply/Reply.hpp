@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 01:35:46 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 19:33:21 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 23:01:13 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@
 # include <vector>
 
 /*	TOCHECK:
-
-should we split RPL_* and ERR_* replies ?
+		should we split RPL_* and ERR_* replies ?
 
 */
 
@@ -38,6 +37,7 @@ class Reply
 	
 	private:
 		static const std::string	SERVER_NAME;
+		
 		std::map<ReplyType, std::string>	_replyTemplates;
 
 		std::string	_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const;

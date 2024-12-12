@@ -6,12 +6,12 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/08 21:13:56 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 09:10:04 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Message.hpp"
-#include "parsing_utils.hpp"
+#include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
 #include "iomanip" // std::setw()
 
 // Message::Message(void) {}
@@ -31,6 +31,10 @@
 // 	return (*this);
 // }
 
+/*
+
+** Assumes the input is a single command, as it will remove any CRLF ("\r\n") characters from it
+*/
 Message::Message(const std::string &input) : _input(input), _reply(""), _parser(), _validator()
 {
 	_processInput(normalizeInput(input));
@@ -55,7 +59,7 @@ void	Message::_processInput(const std::string &input)
 	std::vector<std::string>	tokens = tokenize(input);
 	std::map<std::string, std::string>	parsedCommand = _parser.parseCommand(tokens);
 
-	// change for the _parser.parse(input) instead *!? (but fix it first...)
+	// change for the _parser.parse(input) instead *!? (handles tokenizing) **(but fix it first...)
 
 	std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
 	while (it != parsedCommand.end())
@@ -64,7 +68,7 @@ void	Message::_processInput(const std::string &input)
 		++it;
 	}
 
-	Reply	rpl; // should we put it as private in Validator class ?
+	Reply	rpl; // should we put it as private in Validator class ? or inside the try/if's body to not instanciate rpl if not needed
 	try
 	{
 		if (!_validator.validateCommand(_parsedMessage))
@@ -103,6 +107,11 @@ const std::string	&Message::getReply(void) const { return (_reply); }
 // 	return (_channelsAndKeys);
 // }
 
+/*	TOCHECK: do we implement the channelsAndKeys conditional display?
+
+Displays the Message object's attributes,
+** Used for debug
+*/
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
 	const int	labelWidth = 18;
@@ -117,33 +126,3 @@ std::ostream	&operator<<(std::ostream &oss, const Message &message)
 	
 	return (oss);
 }
-
-// /*
-// Once the Message object is populated, higher-level components (Channel, User, etc.) can retrieve the parsed data and apply business logic.
-// */
-// void	ChannelManager::processJoin(const Message &message)
-// {
-// 	const std::vector<std::pair<std::string, std::string> >	&channelsAndKeys = message.getChannelsAndKeys();
-
-// 	size_t i = 0;
-// 	while (i < channelsAndKeys.size())
-// 	{
-// 		const std::string	&channel = channelsAndKeys[i].first;
-// 		const std::string	&key = channelsAndKeys[i].second;
-
-// 		if (!channelExists(channel))
-// 		{
-// 			createChannel(channel);
-// 		}
-
-// 		if (isValidKey(channel, key))
-// 		{
-// 			addUserToChannel(channel, message.getPrefix());
-// 		}
-// 		else
-// 		{
-// 			sendError(ERR_BADCHANNELKEY, channel);
-// 		}
-// 		++i;
-// 	}
-// }

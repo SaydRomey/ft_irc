@@ -6,15 +6,9 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/08 20:08:45 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 23:13:17 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-/*	*TOCHECK:
-	
-	should the getters be inline to access parsed data ?
-		inline const std::string &getPrefix() const { return _parsedMessage["prefix"]; }
-*/
 
 #ifndef MESSAGE_HPP
 # define MESSAGE_HPP
@@ -26,7 +20,7 @@
 # include <iostream>
 # include <map>
 # include <string>
-// # include <utility> // For std::pair
+// # include <utility> // For std::pair ? or std::make_pair()
 
 class Message
 {
@@ -45,17 +39,19 @@ class Message
 		const std::string	&getTrailing(void) const;
 		const std::string	&getReply(void) const;
 
-		// const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const;
+		// const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const; // ? if tokenized access is required, else implement tools to be used..
 		
 	private:
-		std::string	_input;
+		std::string							_input;
 		std::map<std::string, std::string>	_parsedMessage;
-		std::string	_reply;
-		// std::vector<std::pair<std::string, std::string> >	_channelsAndKeys;
+		std::string							_reply;
+		
+		// std::vector<std::pair<std::string, std::string> >	_channelsAndKeys; // ? if we want to store channel/key pairs for edge case of "CMD #ch1,#ch2 key1,key2"
 	
 		Parser		_parser;
 		Validator	_validator;
-		// Reply		_rpl;
+		// Reply		_rpl; // less overhead if we create a Reply instance too often.. (TOCHECK)
+		// Reply		&_rpl; // (if we pass it as an external single Reply object (in constructor) (TOCHECK))
 
 		void	_processInput(const std::string &input);
 };

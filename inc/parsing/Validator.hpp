@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:41:29 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/10 22:13:30 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,8 @@ class Validator
 		
 		bool	validateCommand(const std::map<std::string, std::string> &command) const;
 
-		static const std::map<std::string, CommandType> &getCommandMap(void);
+		static const std::map<std::string, CommandType> &getCommandMap(void); // ? is this going to be used by Server ? maybe put somewhere more accessible for Validator and other class
 	
-		
 		ReplyType						getError(void) const;
 		const std::vector<std::string>	&getErrorArgs(void) const;
 		// CommandType						getCommandType(const std::string &cmd);

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:40:47 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 09:03:29 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,4 +118,31 @@ std::map<std::string, std::string>	Parser::parseCommand(const std::vector<std::s
 // 	if (tokens.size() > 2)
 // 		parsed["trailing"] = tokens[2];
 // 	return (parsed);
+// }
+
+// #include <utility> // For std::pair
+
+// std::vector<std::pair<std::string, std::string> >	Parser::parseChannelsAndKeys(const std::string &params, const std::string &trailing)
+// {
+// 	std::vector<std::pair<std::string, std::string> >	result;
+// 	std::vector<std::string>	channels = tokenize(params, ',');
+// 	std::vector<std::string>	keys = tokenize(trailing, ',');
+
+// 	size_t	i = 0;
+// 	while (i < channels.size())
+// 	{
+// 		std::string	key;
+		
+// 		if (i < keys.size())
+// 		{
+// 			key = keys[i];
+// 		}
+// 		else
+// 		{
+// 			key = "";
+// 		}
+// 		result.push_back(std::make_pair(channels[i], key));
+// 		++i;
+// 	}
+// 	return (result);
 // }
