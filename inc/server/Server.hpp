@@ -1,69 +1,41 @@
-
 #ifndef SERVER_HPP
 # define SERVER_HPP
-
+# include "User.hpp"
+# include "ChannelManager.hpp"
+# include "Message.hpp"
 # include <string>
-# include <map>
-# include <vector>
-# include <set>
-# include <queue>
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <poll.h>
 # include <stdexcept>
-# include <cerrno>
-# include "Aggregator.hpp"
-# include "Parser.hpp"
-# include "Client.hpp"
+# include <vector>
+# include <map>
+# include <poll.h>
 
-namespace ft
-{
+typedef std::map<int, User> t_clientMap;
+typedef std::vector<pollfd> t_pollfdVect;
 
 class Server
 {
-	public:
-		Server(const std::string &port, const std::string &password);
-		~Server(void);
+public:
+	Server(const std::string& port, const std::string& password);
 
-		void	start(void);
-		void	stop(void);
-	
-	private:
-		// server core
-		int			_serverFd;
-		std::string	_port;
-		std::string	_password;
-		bool		_isRunning;
-		time_t		_startTime;
+	void run();
 
-		// polling
-		std::vector<pollfd>	_pollFds;
-		std::map<int, ft::Client>	_clients; // maps file descriptor to ft::Client object
+private:
+	int			_port;
+	std::string	_password;
+	time_t		_time;
+	bool		_isRunning;
 
-		// parsing and buffering
-		Aggregator	_aggregator;
-		Parser	_parser;
+	t_pollfdVect					_pollFds;
+	t_clientMap						_clients;
+	std::map<std::string, int>		_nickMap;
+	ChannelManager					_chanManager;
 
-		// methods
-		void	_initSocket(void);
-		void	_acceptConnection(void);
-		void	_handleClient(int clientFd);
-		void	_broadcast(const std::string &message, int senderFd = -1);
-		void	_welcomeClient(int clientFd);
+	Reply	_rplGenerator;
 
-		// command handlers
-		void	_handleCommand(int clientFd, const Message &message);
-		void	_authenticateClient(int clientFd, const Message &message);
+	void	_acceptConnection();
+	void	_messageRoundabout(User& client, const Message& msg);
 
-		// helpers
-		void	_sendMessage(int clientFd, const std::string &message);
-		void	_disconnectClient(int clientFd, const std::string &reason);
-
-		// template<int clientFd>
-		// static bool _is_clientFd(const pollfd &pfd) { return pfd.fd == clientFd; }
+	void	nick_cmd(User& client, const std::string& nick);
 };
 
-}
-
-#endif // SERVER_HPP
+#endif

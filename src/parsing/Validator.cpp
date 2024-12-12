@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 22:33:04 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 11:44:02 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,23 @@
 ** add edge cases where a command should not return false even if not implemented ?
 		-> handle CAP (ignore, do not throw error)..
 
+*/
+/*
+// #include <utility>
+
+// static const std::pair<std::string, int> cmdArr[11] = {
+// 	std::make_pair("PASS", PASS),
+// 	std::make_pair("NICK", NICK),
+// 	std::make_pair("USER", USER),
+// 	std::make_pair("JOIN", JOIN),
+// 	std::make_pair("PART", PART),
+// 	std::make_pair("TOPIC", TOPIC),
+// 	std::make_pair("MODE", MODE),
+// 	std::make_pair("KICK", KICK),
+// 	std::make_pair("INVITE", INVITE),
+// 	std::make_pair("PRIVMSG", PRIVMSG),
+// 	std::make_pair("NOTICE", NOTICE),
+// };
 */
 
 #include "Validator.hpp"
@@ -731,3 +748,38 @@ int main(void)
 	return (0);
 }
 */
+
+/* ************************************************************************** */ // **TOCHECK where do we put this?
+
+/*	** TOCHECK: do we prevent a username, nickname to be the same as a command ?
+
+*/
+bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck)
+{
+	std::string	nickname = nickToCheck;
+	
+	std::string::iterator	nickIt = nickname.begin();
+	while (nickIt != nickname.end())
+	{
+		*nickIt = static_cast<char>(std::tolower(*nickIt));
+		++nickIt;
+	}
+
+	std::map<std::string, int>::const_iterator	it = nickMap.begin();
+	while (it != nickMap.end())
+	{
+		std::string	nickKey = it->first;
+		std::string::iterator	keyIt = nickKey.begin();
+		while (keyIt != nickKey.end())
+		{
+			*keyIt = static_cast<char>(std::tolower(*keyIt));
+			++keyIt;
+		}
+		if (nickKey == nickname)
+		{
+			return (false);
+		}
+		++it;
+	}
+	return (true);
+}

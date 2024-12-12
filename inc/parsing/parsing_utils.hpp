@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:41:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 22:57:42 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 11:24:52 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 
 std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 std::vector<std::string>	tokenize(const std::string &input, char delimiter = ' ');
-std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params, const std::string &trailing);
+std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys);
 
 std::string trim(const std::string &str);
 std::string	normalizeInput(const std::string &input);

@@ -8,12 +8,8 @@ class ChannelTest
 {
 	private:
 		void setModeTest();
-		void addRemovetests();
+		void addRemoveTests();
 		void commandsOpTest();
 	public:
-		void runTests() {
-			setModeTest();
-			addRemovetests();
-			commandsOpTest();
-		}
+		void channelTests();
 };

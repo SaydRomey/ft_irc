@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:19:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/05 23:38:25 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 10:00:14 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,7 @@
 void	test_message(void);
 void	test_tokenizer(int argc, char *argv[]);
 void	test_reply(void);
+
+void	test_channel(void);
 
 #endif // TEST_HEADER_HPP

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 22:13:30 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 10:33:41 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,5 +101,7 @@ class Validator
 		static const size_t			MAX_CHANNEL_NAME_LENGTH;
 		static const std::string	VALID_MODE_FLAGS;
 };
+
+bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck);
 
 #endif // VALIDATOR_HPP

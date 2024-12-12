@@ -8,3 +8,16 @@ password rules
 cout or cerr ?
 
 atoi if we overflow all the way back to valid range.. ?
+
+add multiple replies to pending queue for successfull authentication >>?
+
+implement unique nock validation
+
+bool	isNickAvailable(const std::map<std::string, int> nickMap, const std::string &nickname)
+{
+	
+}
+
+
+can a function return an iterator on only the key or the value of a map ??
+

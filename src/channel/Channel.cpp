@@ -1,6 +1,23 @@
-#include "channel.hpp"
+#include "Channel.hpp"
 
-Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
+/*
+Default constructor needed for when you use std::map::operator[] like this
+
+	_channels[chan].setTopic(sender, msg.getTrailing());
+
+If chan does not already exist in _channels, std::map will attempt to default-construct a Channel object and insert it into the map
+
+*/
+Channel::Channel() : _name(""), _topic(""), _password(""), _memberLimit(0)
+{
+	_modes['i'] = false;
+	_modes['t'] = false;
+	_modes['k'] = false;
+	_modes['o'] = false;
+	_modes['l'] = false;
+}
+
+Channel::Channel(std::string name, User& op) : _name(name), _topic(""), _password(""), _memberLimit(0)
 {
 	_modes['i'] = false;
 	_modes['t'] = false;
@@ -16,100 +33,144 @@ Channel::~Channel()
 
 bool	Channel::addMember(User& user, std::string pswIfNeeded)
 {
-	if (_modes['i'] == false || (_modes['i'] == true && _password.compare(pswIfNeeded) == 0))
+	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
-		if (_modes['l'] == false || _members.size() < _memberLimit)
+		std::cout << ":server 473 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+i)" << std::endl;
+		return false;
+	}
+	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0) //ERR_BADCHANNELKEY
+	{
+		std::cout << ":server 475 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+k)" << std::endl;
+		return false;
+	}
+	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+	{
+		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
+		return false;
+	}
+	_members[&user]=false;
+	if (_members.find(&user) != _members.end())
+		std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
+	return true;
+}
+
+bool	Channel::removeMember(User& user, const std::string& reason) //voir pour garder bool et retourner un si on doit supp le channel car vide
+{
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
+	{
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	_members.erase(&user);
+	if (_members.find(&user) == _members.end())
+	{
+		std::cout << ":" << user.getNickname() << "!user@localhost PART " << this->_name;
+		if (!reason.empty())
+			std::cout << " :" << reason;
+		std::cout << std::endl;
+	}
+	return true;
+	// les operateurs peuvent quitté, un channel peut etre sans operateur
+}
+
+bool	Channel::setTopic(User& user, const std::string& topic) //voir ce que weechat envoie si c'Est string vide
+{
+	//par defaut sur false tout le monde peut modifier le topic.
+	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
+	{
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	// if (topic == NULL)
+	// {
+	// 	if (this->_topic.empty()) //ERR_NOTOPIC
+	// 		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+	// 	else
+	// 		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+	// 	return true;
+	// }
+	if (_modes['t'] == true)
+	{
+		if (_members[&user] != true) //ERR_CHANOPRIVSNEEDED
 		{
-			_members[&user]=false;
-			if (_members.find(&user) != _members.end())
-			{
-				std::cout << user.getNickname() << " has joined the channel " << this->_name << "! :)" << std::endl;
-				return true;
-			}
-		}
-		else
-		{
-			std::cout << "The channel member limit has been reached" << std::endl;
+			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
 			return false;
 		}
+		_topic = topic;
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
 	}
 	else
 	{
-		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
+		_topic = topic;
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+	}
+	return true;
+}
+
+bool Channel::getTopic(User& user)
+{
+	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
+	{
+		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
+	if (this->_topic.empty()) //ERR_NOTOPIC
+		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+	else
+		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+	return true;
 }
 
-bool	Channel::removeMember(User& user)
+bool	Channel::kick(User &user, User& op, std::string reason)
 {
-	if (_members.find(&user) != _members.end())
-		_members.erase(&user);
+	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
+	{
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+	{
+		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+	if (_members.find(&user) == _members.end()) //ERR_USERNOTINCHANNEL
+	{
+		std::cout << ":server 441 " << op.getNickname() << " " << user.getNickname() << " " << this->_name << " :They aren't on that channel" << std::endl;
+		return false;
+	}
+	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-	{
-		std::cout << "User " << user.getNickname() << " has left the channel " << this->_name << std::endl;
-		return true;
-	}
-	return false;
-	// voir si c'est pas un operator, sinon voir pour interdire soit remplacer
+		std::cout << ":server KICK " << this->_name << " " << user.getNickname() << " :" << reason << std::endl;
+	return true;
 }
 
-bool	Channel::setTopic(const std::string &topic, const User& op)
+bool	Channel::invite(User &user, User& op) //a refaire comme settopic
 {
-	if (_modes['t'] == true)
+	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << "Channel " << this->_name << " theme: " << this->_topic << std::endl;
-		return true;
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
 	}
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
 	{
-		_topic = topic;
-		return true;
+		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
 	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
-	return false;
+	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+	{
+		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
+		return false;
+	}
+	_members[&user]=false;
+	if (_members.find(&user) != _members.end())
+		std::cout << ":server 341 " << user.getNickname() << " " << this->_name << " :" << op.getNickname() << std::endl;
+	return true;
 }
 
-bool	Channel::kick(User &user, const User& op, std::string reason)
+static bool	isValidNb(const std::string& str)
 {
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
-	{
-		this->removeMember(user);
-		std::cout << "User " << user.getNickname() << " has been kicked for the following reason: " << reason << std::endl;
-		return true;
-	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
-	return false;
-}
-
-bool	Channel::invite(User &user, const User& op)
-{
-	User current = op;
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
-	{
-		if (_modes['l'] == false || _members.size() < _memberLimit)
-		{
-			_members[&user]=false;
-			if (_members.find(&user) != _members.end())
-			{
-				std::cout << user.getNickname() << " has been invited to join the channel " << this->_name << "! :)" << std::endl;
-				return true;
-			}
-		}
-		else
-		{
-			std::cout << "The channel member limit has been reached" << std::endl;
-			return false;
-		}
-	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
-	return false;
-}
-
-bool	isValidNb(const std::string& str)
-{
-	for (size_t i = 0; i < str.length(); i++)
+	for (size_t i = 1; i < str.length(); i++) //commencé a 1 pour ignoré le +-
 	{
 		if (!std::isdigit(str[i]))
 			return false;
@@ -119,64 +180,133 @@ bool	isValidNb(const std::string& str)
 	return true;
 }
 
-bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
+// bool	Channel::setMode(std::string mode, User& op, const std::string& pswOrLimit, User* user)
+// {
+// 	const std::string validMod = "itkol";
+// 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
+// 	{
+// 		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+// 		return false;
+// 	}
+// 	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+// 	{
+// 		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+// 		return false;
+// 	}
+// 	if (mode[0] == '+')
+// 	{
+// 		for (size_t i = 1; i < mode.size(); i++)
+// 		{
+// 			if (validMod.find(mode[i]) != std::string::npos)
+// 			{
+// 				this->_modes[mode[i]] = true;
+// 				if (mode[i] == 'k')
+// 					if (!pswOrLimit.empty())
+// 						this->_password = pswOrLimit;
+// 				if (mode[i] == 'o')
+// 					if (user != NULL)
+// 						addOperator(user, '+');
+// 				if (mode[i] == 'l')
+// 					if (isValidNb(pswOrLimit) != false)
+// 						this->_memberLimit = std::atoi(pswOrLimit.c_str());
+// 			}
+// 			else
+// 			{
+// 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+// 				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+// 				return false;
+// 			}
+// 		}
+// 	}
+// 	else if (mode[0] == '-')
+// 	{
+// 		for (size_t i = 1; i < mode.size(); i++)
+// 		{
+// 			if (validMod.find(mode[i]) != std::string::npos)
+// 			{
+// 				this->_modes[mode[i]] = false;
+// 				if (mode[i] == 'k')
+// 					this->_password = "";
+// 				if (mode[i] == 'o')
+// 					if (user != NULL)
+// 						addOperator(user, '-');
+// 				if (mode[i] == 'l')
+// 					_memberLimit = 0;
+// 			}
+// 			else
+// 			{
+// 				//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
+// 				std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+// 				return false;
+// 			}
+// 		}
+// 	}
+// 	else //ERR_UNKNOWNMODE 
+// 	{
+// 		std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
+// 		return false;
+// 	}
+// 	return true;
+// }
+
+bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user)
 {
-	User current = op;
-	std::string validMod = "itkol";
-	if (_members.find(&current) != _members.end() && _members[&current] == true)
+	const std::string validMod = "itkol";
+	if (_members.find(&op) == _members.end())
+	{ // ERR_NOTONCHANNEL
+		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		return false;
+	}
+	if (_members[&op] != true)
+	{ // ERR_CHANOPRIVSNEEDED
+		std::cout << ":server 482 " << op.getNickname() << " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+
+	char currentSign = '\0'; // Pour garder la trace de + ou -
+	for (size_t i = 0; i < mode.size(); ++i)
 	{
-		if (mode[0] == '+')
+		if (mode[i] == '+' || mode[i] == '-')
+			currentSign = mode[i];
+		else if (validMod.find(mode[i]) != std::string::npos)
 		{
-			for (size_t i = 1; i < mode.size(); i++)
+			// Mode valide
+			if (currentSign == '\0') //ERR_UNKNOWNMODE 
 			{
-				if (validMod.find(mode[i]) != std::string::npos)
-				{
-					this->_modes[mode[i]] = true;
-					if (mode[i] == 'k')
-						if (!pswOrLimit.empty())
-							this->_password = pswOrLimit;
-					if (mode[i] == 'o')
-						if (user != NULL)
-							addOperator(user, '+');
-					if (mode[i] == 'l')
-						if (isValidNb(pswOrLimit) != false)
-							this->_memberLimit = std::atoi(pswOrLimit.c_str());
-				}
-				else
-				{
-					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
-				}
+				std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
+				return false;
+			}
+			bool enable = (currentSign == '+');
+			_modes[mode[i]] = enable;
+			if (mode[i] == 'k')
+			{
+				if (enable && !pwd.empty())
+					_password = pwd;
+				else if (!enable)
+					_password.clear();
+			}
+			else if (mode[i] == 'o')
+			{
+				if (user != NULL)
+					addOperator(user, enable ? '+' : '-');
+			}
+			else if (mode[i] == 'l')
+			{
+				if (enable && isValidNb(limit))
+					_memberLimit = std::atoi(limit.c_str());
+				else if (!enable)
+					_memberLimit = 0;
 			}
 		}
-		else if (mode[0] = '-')
+		else //Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
 		{
-			for (size_t i = 1; i < mode.size(); i++)
-			{
-				if (validMod.find(mode[i]) != std::string::npos)
-				{
-					this->_modes[mode[i]] = false;
-					if (mode[i] == 'k')
-						this->_password = "";
-					if (mode[i] == 'o')
-						if (user != NULL)
-							addOperator(user, '-');
-					if (mode[i] == 'l')
-						_memberLimit = 0;
-				}
-				else
-				{
-					//Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-					std::cout << "'" << mode[i] << "'" << " :is an unknown mode" << std::endl;
-				}
-			}
-		}
-		else
-		{
-			std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
+			std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
+			return false;
 		}
 	}
+	return true;
 }
+
 
 bool	Channel::addOperator(User *user, const char addOrRemove)
 {
@@ -191,4 +321,18 @@ bool	Channel::addOperator(User *user, const char addOrRemove)
 		return true;
 	}
 	return false;
+}
+
+void Channel::printMembers()
+{
+	std::cout << "Members list: " << std::endl;
+	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		std::cout << "-> " << it->first->getNickname() << " : " << it->second << std::endl;
+}
+
+void	Channel::printMode()
+{
+	std::cout << "Modes list: " << std::endl;
+	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
+		std::cout << "-> " << it->first << " : " << it->second << std::endl;
 }

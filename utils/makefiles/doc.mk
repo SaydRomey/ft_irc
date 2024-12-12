@@ -6,7 +6,7 @@
 #    By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/29 15:17:43 by cdumais           #+#    #+#              #
-#    Updated: 2024/12/03 20:07:13 by cdumais          ###   ########.fr        #
+#    Updated: 2024/12/12 11:10:00 by cdumais          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,9 @@ pdf: | $(TMP_DIR) ## Opens the PDF instructions
 # **************************************************************************** #
 # ------------------------------ DOCUMENTATION ------------------------------- #
 # **************************************************************************** #
+# C++ documentation
+URL_CPP_REF	:=	https://cplusplus.com/reference/
+
 # Weechat
 URL_WEECHAT	:= https://weechat.org/
 URL_WEEDOC	:= https://weechat.org/doc/
@@ -50,9 +53,11 @@ URL_MODERN	:= https://modern.ircdocs.horse/
 doc: ## Offer a list of documentation URL links
 	@clear
 	@echo "Select documentation subject:"
+	@echo "$(ORANGE)CPP$(RESET)"
+	@echo "  0. CPP documentation"
 	@echo "$(ORANGE)Weechat$(RESET)"
-	@echo "  0. Weechat home page"
-	@echo "  1. Weechat documentation"
+	@echo "  1. Weechat home page"
+	@echo "  2. Weechat documentation"
 	@echo "$(ORANGE)Guides/Tutorials$(RESET)"
 	@echo "  100. ft_irc guide - on medium.com"
 	@echo "  101. ft_irc guide - on reactive.so"
@@ -69,8 +74,9 @@ doc: ## Offer a list of documentation URL links
 
 	@read url_choice; \
 	case $$url_choice in \
-		0) CHOICE=$(URL_WEECHAT);; \
-		1) CHOICE=$(URL_WEEDOC);; \
+		0) CHOICE=$(URL_CPP_REF);; \
+		1) CHOICE=$(URL_WEECHAT);; \
+		2) CHOICE=$(URL_WEEDOC);; \
 		100) CHOICE=$(URL_SMALL);; \
 		101) CHOICE=$(URL_GUIDE);; \
 		102) CHOICE=$(URL_CHIRC);; \
@@ -97,11 +103,11 @@ CPP_TUTO_URL	:=	https://cplusplus.com/doc/oldtutorial/
 
 ref: ## Open C++ reference
 	@echo "Opening cplusplus reference's url..."
-	@$(OPEN) $(CPP_REF_URL);
+	@open $(CPP_REF_URL);
 
 tuto: ## Open C++ old tutorial
 	@echo "Opening cplusplus oldtutorial's url..."
-	@$(OPEN) $(CPP_TUTO_URL);
+	@open $(CPP_TUTO_URL);
 
 .PHONY: ref tuto
 # **************************************************************************** #

@@ -1,249 +1,247 @@
-
 #include "Server.hpp"
 #include <iostream>
-#include <cstring> // for strerror
-#include <cstdlib>
-#include <unistd.h> // for close()
-#include <ctime>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <cstring>
+#include <fcntl.h>
 
-ft::Server::Server(const std::string &port, const std::string &password) \
-: _port(port), _password(password), _isRunning(false), _serverFd(-1)
+Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
+	_isRunning(false), _clients(), _nickMap(), _rplGenerator()
 {
-	// 
-}
+	long tmp_port = std::strtol(port.c_str(), NULL, 10);
+	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
+		throw std::invalid_argument("Server::invalid_port");
+	_port = tmp_port;
 
-ft::Server::~Server(void)
-{
-	stop();
-}
+	if (password == "" || password.find_first_of("\t\n\r\f\v ") != std::string::npos)
+		throw std::invalid_argument("Server::invalid_password");
+	_password = password;
 
-void	ft::Server::_initSocket(void)
-{
-	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_serverFd < 0)
-		throw (std::runtime_error(std::string("Socket creation failed: ").append(strerror(errno))));
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0)
+		throw std::runtime_error("Server::socket_creation_failed");
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
-	int	opt = 1;
-	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		throw (std::runtime_error(std::string("setsockopt failed: ").append(strerror(errno))));
-
-	sockaddr_in	serverAddr;
-	std::memset(&serverAddr, 0, sizeof(serverAddr));
+	sockaddr_in serverAddr;
+	bzero(&serverAddr, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-	serverAddr.sin_port = htons(atoi(_port.c_str()));
+	serverAddr.sin_port = htons(_port);
+	if (bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+		throw std::runtime_error("Server::socket_bind_failed");
 
-	if (bind(_serverFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
-		throw (std::runtime_error("Binding failed: " + std::string(strerror(errno))));
+	if (listen(sockfd, SOMAXCONN) < 0)
+		throw std::runtime_error("Server::socket_listen_failed");
 
-	if (listen(_serverFd, SOMAXCONN) < 0)
-		throw (std::runtime_error("Listen failed: " + std::string(strerror(errno))));
+	int	opt = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		throw std::runtime_error("Server::setsockopt_failed");
 
-	std::cout << "Server initialized and listening on port " << _port << std::endl;
+	// _pollFds.push_back({sockfd, POLLIN, 0});
+	//
+	pollfd	serverPollFd;
+	serverPollFd.fd = sockfd;
+	serverPollFd.events = POLLIN;
+	serverPollFd.revents = 0;
+	_pollFds.push_back(serverPollFd);
+	//
 }
 
-void	ft::Server::start(void)
+void Server::run(void)
 {
+	char buffer[1024];
+	ssize_t bytes;
+
 	_isRunning = true;
-	_initSocket();
-	time(&_startTime);
-
-	pollfd	serverPollFd = {_serverFd, POLLIN, 0};
-	_pollFds.push_back(serverPollFd);
-
 	while (_isRunning)
 	{
-		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
-			throw (std::runtime_error("Poll failed: " + std::string(strerror(errno))));
-
-		size_t	i = 0;
-		while (i < _pollFds.size())
+		for (t_pollfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
 		{
-			if (_pollFds[i].fd == _serverFd)
-				_acceptConnection();
-			else
-				_handleClient(_pollFds[i].fd);
-			++i;
+			if (_clients[it->fd].pendingSize() > 0)
+				it->events |= POLLOUT;
+		}
+		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
+			throw std::runtime_error("Poll failed");
+		if (_pollFds[0].revents & POLLIN)
+			_acceptConnection();
+		for (t_pollfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
+		{
+			if (it->revents & POLLHUP)
+			{
+				// TODO
+			}
+			if (it->revents & POLLIN)
+			{
+				bzero(buffer, sizeof(buffer));
+				bytes = recv(it->fd, buffer, sizeof(buffer), 0);
+				if (bytes > 0)
+					_clients[it->fd].addToMsgBuffer(std::string(buffer, bytes));
+				else
+					_clients[it->fd].resetMsgBuffer("QUIT :Connection reset by peer\r\n");
+			}
+			if (it->revents & POLLOUT)
+			{
+				for (size_t n=_clients[it->fd].pendingSize(); n > 0; n--)
+				{
+					std::string msg = _clients[it->fd].pendingPop();
+					send(it->fd, msg.c_str(), msg.size(), 0);
+				}
+				it->events ^= POLLOUT;
+			}
+			// TODO: handle other revents flags maybe
+		}
+		for (t_clientMap::iterator it=_clients.begin(); it != _clients.end(); it++)
+		{
+			std::string msg_str = it->second.extractFromBuffer();
+			while (!msg_str.empty())
+			{
+				Message msg(msg_str);
+				if (msg.getReply().empty())
+					_messageRoundabout(it->second, msg);
+				else
+					it->second.pendingPush(msg.getReply());
+				msg_str = it->second.extractFromBuffer();
+			}
 		}
 	}
 }
 
-void	ft::Server::stop(void)
+void Server::_acceptConnection()
 {
-	_isRunning = false;
+	// sockaddr_in	clientAddr;
+	// socklen_t	clientLen = sizeof(clientAddr);
 
-	size_t	i = 0;
-	while (i < _pollFds.size())
-	{
-		close(_pollFds[i].fd);
-		++i;
-	}
-	if (_serverFd >= 0)
-		close(_serverFd);
-
-	std::cout << "Server stropped." << std::endl;
-}
-
-
-void	ft::Server::_acceptConnection(void)
-{
-	sockaddr_in	clientAddr;
-	socklen_t	clientLen = sizeof(clientAddr);
-
-	int	clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientLen);
-
+	int	clientFd = accept(_pollFds[0].fd, NULL, NULL);
 	if (clientFd < 0)
-	{
-		std::cout << "Failed to accept connection: " << strerror(errno) << std::endl;
 		return ;
-	}
 
-	pollfd	clientPollFd = {clientFd, POLLIN, 0};
-	_pollFds.push_back(clientPollFd);
-	_clients[clientFd] = ft::Client(clientFd);
-
-	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
-	// _handleClient(clientFd);
-}
-
-void	ft::Server::_handleClient(int clientFd)
-{
-	char	buffer[1024];
-	int	bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
-
-	if (bytesRead <= 0)
-	{
-		_disconnectClient(clientFd, "Disconnected");
-		return ;
-	}
-
-	buffer[bytesRead] = '\0';
-	std::string	data(buffer);
-	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << data << std::flush;
-	try
-	{
-		Message	message = _parser.parse(data);
-		_handleCommand(clientFd, message);
-	}
-	catch (const std::exception& e)
-	{
-		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
-		_disconnectClient(clientFd, e.what());
-	}
+	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	
-	// std::vector<std::string>	commands = _aggregator.processData(clientFd, data);
-	// size_t	i = 0;
-	// while (i < commands.size())
-	// {
-	// 	std::cout << YELLOW << "Client <" << clientFd << "> Data: " RESET << commands[i] << std::endl;
-	// 	try
-	// 	{
-	// 		Message	message = _parser.parse(commands[i]);
-	// 		_handleCommand(clientFd, message);
-	// 	}
-	// 	catch (const std::exception &e)
-	// 	{
-	// 		_clients[clientFd].sendMessage("ERROR " + std::string(e.what()));
-	// 		_disconnectClient(clientFd, e.what());
-	// 		break;
-	// 	}
-	// 	++i;
-	// }
+	// _pollFds.push_back({clientFd, POLLIN, 0});
+	//
+	pollfd	clientPollFd;
+	clientPollFd.fd = clientFd;
+	clientPollFd.events = POLLIN;
+	clientPollFd.revents = 0;
+	_pollFds.push_back(clientPollFd);
+	//
+
+	_clients[clientFd] = User(clientFd);
+	_pollFds[0].revents = 0;
+	std::cout << "Client connected (fd: " << clientFd << ")." << std::endl;
 }
 
-void	ft::Server::_broadcast(const std::string &message, int senderFd)
+/*
+hello :)
+
+commandMap is currently a map instead of an array, so no accessor "[]"
+// ->	switch (Validator::commandMap[msg.getCommand()])
+
+	donc 3 options pour utiliser la commandMap de Validator:
+
+1.  utilise la fonction at() et le getter 'getCommandMap' de Validator dans ta switch:
+
+	// switch (Validator::getcommandMap().at(msg.getCommand()))
+
+2.  declare une variable map<string, CommandType> pour valider que tu as une commande
+
+	const std::map<std::string, CommandType>& commandMap = Validator::getCommandMap();
+
+2.1 (optionnel) valide que la commande dans 'msg' est bien dans 'commandMap'
+
+	if (commandMap.find(msg.getCommand()) == commandMap.end())
+	{
+		// admettons que tu voudrais handle un unknown command
+		// mais techniquement c'est deja geré dans Validator et dans Message
+		return;
+	}
+
+2.2 utilise la variable dans ta switch
+
+	// switch (commandMap.at(msg.getCommand()))
+
+3. declare un iterator pour trouver la commande direct dans commandMap (avec la variable map encore)
+
+	const std::map<std::string, CommandType>& commandMap = Validator::getCommandMap();
+
+	std::map<std::string, CommandType>::const_iterator	it = commandMap.find(msg.getCommand());
+
+3.1 meme validation optionnelle ..
+
+	if (it == commandMap.end())
+	{
+		return;
+	}
+
+3.2 utilise la value pointée par l'iterateur pour ton switch
+
+	switch (it->second)
+
+*/
+void Server::_messageRoundabout(User& client, const Message& msg)
 {
-	size_t	i = 0;
+	const std::map<std::string, CommandType>& commandMap = Validator::getCommandMap();
 
-	while (i < _pollFds.size())
+	std::map<std::string, CommandType>::const_iterator	it = commandMap.find(msg.getCommand());
+	if (it == commandMap.end())
+	// if (commandMap.find(msg.getCommand()) == commandMap.end()) // ** same thing but you don't obtain the iterator for the switch case **
 	{
-		int	clientFd = _pollFds[i].fd;
-		if (clientFd != _serverFd && clientFd != senderFd)
-			_sendMessage(clientFd, message);
-		++i;
+		// handle unknown command if necessary?
+		// ..probably not needed since i already validate the command in Message..
+		return;
 	}
-}
 
-void ft::Server::_welcomeClient(int clientFd)
-{
-	Client&	client = _clients[clientFd];
-	Message	msg;
-
-	msg.setPrefix(":ft-irc");
-	msg.setCommand("001");
-	msg.setParams(client.getNickname());
-	msg.setTrailing("Placeholder text");
-	client.sendMessage(msg.str());
-
-	msg.setCommand("002");
-	client.sendMessage(msg.str());
-
-	msg.setCommand("003");
-	client.sendMessage(msg.str());
-
-	msg.setCommand("004");
-	client.sendMessage(msg.str());
-}
-
-void	ft::Server::_handleCommand(int clientFd, const Message &message)
-{
-	const std::string	&command = message.getCommand();
-	ft::Client&			client = _clients[clientFd];
-
-	if (command == "PASS")
+	// switch (Validator::getcommandMap().at(msg.getCommand())) // ** if you skip the previous check **
+	// switch (commandMap.at(msg.getCommand())) // ** if you skip the iterator part **
+	switch (it->second)
 	{
-		if (client.isAuthenticated())
-			return;
-		_authenticateClient(clientFd, message);
-	}
-	else if (!client.isAuthenticated())
-	{
-		client.sendMessage(":ft-irc 464 Password is wrong/not supplied");
-		throw std::logic_error("Password error");
-	}
-	else if (command == "PING")
-	{
-		_sendMessage(clientFd, "PONG :" + message.getTrailing());
-	}
-	else if (command == "PRIVMSG")
-	{
-		_broadcast(message.getTrailing(), clientFd);
-	}
-	else
-	{
-		_sendMessage(clientFd, "ERROR: Unknown command");
-	}
-}
-
-void	ft::Server::_authenticateClient(int clientFd, const Message &message)
-{
-	if (message.getParams() == _password)
-	{
-		std::cout << "Client authenticated (fd: " << clientFd << ")." << std::endl;
-	}
-	else
-	{
-		_disconnectClient(clientFd, "Authentication failed.");
-	}
-}
-
-void	ft::Server::_sendMessage(int clientFd, const std::string &message)
-{
-	std::string	formattedMessage = message + "\r\n";
-	send(clientFd, formattedMessage.c_str(), formattedMessage.size(), 0);
-}
-
-void	ft::Server::_disconnectClient(int clientFd, const std::string &reason)
-{
-	std::cout << "Disconnecting client (fd: " << clientFd << "): " << reason << std::endl;
-	_clients.erase(clientFd);
-	close(clientFd);
-
-	for (std::vector<pollfd>::iterator it=_pollFds.begin(); it != _pollFds.end(); it++)
-	{
-		if (it->fd != clientFd)
-			continue;
-		_pollFds.erase(it);
+	case PASS:
+	case USER:
+		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
 		break;
+	case NICK:
+		nick_cmd(client, msg.getParams());
+		break;
+	case JOIN:
+		break;
+	case PART:
+		_chanManager.part(client, msg);
+		break;
+	case TOPIC:
+		break;
+	case MODE:
+		break;
+	case KICK:
+		break;
+	case INVITE:
+		break;
+	case PRIVMSG:
+		break;
+	case NOTICE:
+		break;
+	default:
+		break;
+	}
+}
+
+void Server::nick_cmd(User& client, const std::string& nick)
+{
+	static const std::string leadCharBan = "#&:0123456789";
+
+	std::string oldNick = client.getNickname();
+	if (nick.size() == 0)
+		client.pendingPush(_rplGenerator.reply(431, oldNick));
+	else if (_nickMap.count(nick) == 1)
+		client.pendingPush(_rplGenerator.reply(433, oldNick, nick));
+	else if (leadCharBan.find(nick[0]) != std::string::npos
+			|| nick.find(' ') != std::string::npos)
+		client.pendingPush(_rplGenerator.reply(432, oldNick, nick));
+	else
+	{
+		_nickMap.erase(oldNick);
+		_nickMap[nick] = client.getFd();
+		client.setNickname(nick);
+		// std::
 	}
 }

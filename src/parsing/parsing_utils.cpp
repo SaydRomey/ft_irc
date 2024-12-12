@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 23:18:07 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/12 11:44:43 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,13 @@ inline bool	isWildcardKey(const std::string &key)
 	return (key == "*");
 }
 
+bool	hasMultipleEntries(const std::string &param)
+{
+	return (param.find(',') != std::string::npos);
+}
+
+
+
 /*	**TOCHECK:
 		maybe put in Parser class ?
 		change name of function ? (and params names to more generic ?) *** TOCHECK!!! is it two strings in "params" or one in "trailing" ?
@@ -70,29 +77,31 @@ or
 
 (key inputs can be empty)
 */
-std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params, const std::string &trailing)
+std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys)
 {
-	std::vector<std::string>	channels = tokenize(params, ',');
-	std::vector<std::string>	keys = tokenize(trailing, ',');
+	std::vector<std::string>	channelTokens = tokenize(channels, ',');
+	std::vector<std::string>	keyTokens = tokenize(keys, ',');
 
 	std::vector<std::pair<std::string, std::string> >	result;
-	result.reserve(channels.size()); // to avoid reallocation
+	result.reserve(channelTokens.size()); // to avoid reallocation
 
 	size_t	i = 0;
-	while (i < channels.size())
+	while (i < channelTokens.size())
 	{
 		std::string	key = ""; // default to an empty key
 		
-		if (i < keys.size())
+		if (i < keyTokens.size())
 		{
-			key = keys[i];
+			key = keyTokens[i];
 			
 			// if (isWildcardKey(key))
 			if (key == "*")
+			{
 				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
+			}
 		}
 		
-		result.push_back(std::make_pair(channels[i], key));
+		result.push_back(std::make_pair(channelTokens[i], key));
 		++i;
 	}
 	return (result);
