@@ -1,4 +1,4 @@
-#include "Channel.hpp"
+#include "channel.hpp"
 
 Channel::Channel(std::string name, User& op) : _name(name), _topic("No topic"), _password(""), _memberLimit(0)
 {
@@ -30,15 +30,14 @@ bool	Channel::addMember(User& user, std::string pswIfNeeded)
 		else
 		{
 			std::cout << "The channel member limit has been reached" << std::endl;
-			// return false;
+			return false;
 		}
 	}
 	else
 	{
 		std::cout << "Unauthorized access: Channel " << this->_name << " password invalid" << std::endl;
-		// return false;
+		return false;
 	}
-	return (false); //
 }
 
 bool	Channel::removeMember(User& user)
@@ -120,7 +119,7 @@ bool	isValidNb(const std::string& str)
 	return true;
 }
 
-bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit, User* user)
+bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit = "", User* user = NULL)
 {
 	User current = op;
 	std::string validMod = "itkol";
@@ -150,7 +149,7 @@ bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit, 
 				}
 			}
 		}
-		else if (mode[0] == '-')
+		else if (mode[0] = '-')
 		{
 			for (size_t i = 1; i < mode.size(); i++)
 			{
@@ -176,10 +175,7 @@ bool	Channel::setMode(std::string mode, const User& op, std::string pswOrLimit, 
 		{
 			std::cout << "Syntax error: a mode change must be preceded by a '-' or a '+'" << std::endl;
 		}
-		return (true); // successful mode update
 	}
-	std::cout << "Unauthorized access: " << current.getNickname() << " is not an operator" << std::endl;
-	return (false);
 }
 
 bool	Channel::addOperator(User *user, const char addOrRemove)
@@ -195,17 +191,4 @@ bool	Channel::addOperator(User *user, const char addOrRemove)
 		return true;
 	}
 	return false;
-}
-
-/*	** implementation was missing?
-
-*/
-bool	Channel::isValidNb(const std::string& str)
-{
-	for (size_t i = 9; i < str.length(); i++)
-	{
-		if (!std::isdigit(str[i]))
-			return (false);
-	}
-	return (!str.empty()); // simplified check
 }
