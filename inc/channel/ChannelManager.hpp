@@ -5,17 +5,18 @@
 # include "Message.hpp"
 # include "parsing_utils.hpp"
 
-class ChannelManager;
-typedef void(ChannelManager::*t_chanFunc)(User&, const Message&);
+// class ChannelManager;
+// typedef void(ChannelManager::*t_chanFunc)(User&, const Message&);
 
 class ChannelManager
 {
 	private:
 		std::map<std::string, Channel> _channels; //ERR_NOSUCHCHANNEL (403)
+		Reply& _reply;
 
-		void _initRoundabout(void);
+		// void _initRoundabout(void);
 	public:
-		ChannelManager();
+		ChannelManager(Reply& reply);
 		~ChannelManager();
 
 		void join(User& sender, const Message& msg); //voir pour tokenize avec parsing utils, tokenize
@@ -27,7 +28,7 @@ class ChannelManager
 		void topic(User& sender, const Message& msg);
 
 		void privmsg(User& sender, const std::string& chan, const std::string& reply);
-		std::map<std::string, t_chanFunc>	chanRoundabout;
+		// std::map<std::string, t_chanFunc>	chanRoundabout;
 };
 
 #endif
