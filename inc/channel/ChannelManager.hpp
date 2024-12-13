@@ -19,15 +19,16 @@ class ChannelManager
 		ChannelManager(Reply& reply);
 		~ChannelManager();
 
-		void join(User& sender, const Message& msg); //voir pour tokenize avec parsing utils, tokenize
-		void part(User& sender, const Message& msg);
-		void privmsg(User& sender, const Message& msg);
-		void invite(User& sender, const Message& msg);
-		void kick(User& sender, const Message& msg);
-		void mode(User& sender, const Message& msg);
-		void topic(User& sender, const Message& msg);
+		void joinManager(User& sender, const Message& msg); //voir pour tokenize avec parsing utils, tokenize
+		void partManager(User& sender, const Message& msg);
+		void privmsgManager(User& sender, const Message& msg);
+		void inviteManager(User& sender, const Message& msg);
+		void kickManager(User& sender, const Message& msg);
+		void modeManager(User& sender, const Message& msg);
+		void topicManager(User& sender, const Message& msg);
+		void quitManager(User& sender);
 
-		void privmsg(User& sender, const std::string& chan, const std::string& reply);
+		void privmsgManager(User& sender, const std::string& chan, const std::string& reply);
 		// std::map<std::string, t_chanFunc>	chanRoundabout;
 };
 

@@ -39,7 +39,7 @@ Channel::~Channel()
 // 1.A JOIN message with the client as the message <source> and the channel they have joined as the first parameter of the message.
 // 2.The channel’s topic (with RPL_TOPIC (332) and optionally RPL_TOPICWHOTIME (333)), and no message if the channel does not have a topic.
 // 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
-void	Channel::addMember(User& user, std::string pswIfNeeded, const std::string&	defaultReply)
+void	Channel::addMember(User& user, std::string pswIfNeeded, const std::string& defaultReply)
 {
 	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
@@ -60,12 +60,13 @@ void	Channel::addMember(User& user, std::string pswIfNeeded, const std::string&	
 	if (_members.find(&user) != _members.end()) //RPL_JOIN
 	{
 		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			user.pendingPush(defaultReply);
+			it->first->pendingPush(defaultReply);
+		user.pendingPush(_reply.reply(RPL_TOPIC, this->_topic));
 		// std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
 	}
 }
 
-bool	Channel::removeMember(User& user, const std::string& reason = "")
+bool	Channel::removeMember(User& user, const std::string& reason = "", const std::string& defaultReply)
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
@@ -88,7 +89,7 @@ std::map<User*,bool> Channel::getMembers()
 	return _members;
 }
 
-bool	Channel::setTopic(User& user, const std::string& topic) //voir ce que weechat envoie si c'Est string vide
+bool	Channel::setTopic(User& user, const std::string& topic, const std::string& defaultReply) //voir ce que weechat envoie si c'Est string vide
 {
 	//par defaut sur false tout le monde peut modifier le topic.
 	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
@@ -129,7 +130,7 @@ bool Channel::getTopic(User& user)
 	return true;
 }
 
-bool	Channel::kick(User &user, User& op, std::string reason)
+bool	Channel::kick(User &user, User& op, std::string reason, const std::string& defaultReply)
 {
 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
@@ -152,7 +153,7 @@ bool	Channel::kick(User &user, User& op, std::string reason)
 	return true;
 }
 
-bool	Channel::invite(User &user, User& op)
+bool	Channel::invite(User &user, User& op, const std::string& defaultReply)
 {
 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
@@ -261,7 +262,7 @@ static bool	isValidNb(const std::string& str)
 // 	return true;
 // }
 
-bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user)
+bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user, const std::string& defaultReply)
 {
 	const std::string validMod = "itkol";
 	if (_members.find(&op) == _members.end())

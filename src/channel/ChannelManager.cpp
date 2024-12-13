@@ -9,7 +9,7 @@ ChannelManager::~ChannelManager()
 {
 }
 
-void ChannelManager::join(User &sender, const Message &msg)
+void ChannelManager::joinManager(User &sender, const Message &msg)
 {
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
@@ -28,7 +28,7 @@ void ChannelManager::join(User &sender, const Message &msg)
 }
 
 
-void ChannelManager::part(User &sender, const Message &msg)
+void ChannelManager::partManager(User &sender, const Message &msg)
 {
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	const std::string &reason = msg.getTrailing();
@@ -46,11 +46,7 @@ void ChannelManager::part(User &sender, const Message &msg)
 	}
 }
 
-void ChannelManager::privmsg(User &sender, const Message &msg)
-{
-}
-
-void ChannelManager::invite(User &sender, const Message &msg)
+void ChannelManager::inviteManager(User &sender, const Message &msg)
 {
 	// Extraire les paramètres : channel et utilisateur à inviter
 	std::vector<std::pair<std::string, std::string>> ChannelsAndKeys = msg.getChannelsAndKeys();
@@ -75,17 +71,17 @@ void ChannelManager::invite(User &sender, const Message &msg)
 	}
 }
 
-void ChannelManager::kick(User &sender, const Message &msg)
+void ChannelManager::kickManager(User &sender, const Message &msg)
 {
 
 }
 
-void ChannelManager::mode(User &sender, const Message &msg)
+void ChannelManager::modeManager(User &sender, const Message &msg)
 {
 	
 }
 
-void ChannelManager::topic(User &sender, const Message &msg)
+void ChannelManager::topicManager(User &sender, const Message &msg)
 {
 	std::string channelName = msg.getParams();
 	if (_channels.find(channelName) == _channels.end())
@@ -101,7 +97,12 @@ void ChannelManager::topic(User &sender, const Message &msg)
 		_channels[channelName].setTopic(sender, msg.getTrailing());
 }
 
-void ChannelManager::privmsg(User &sender, const std::string &chan, const std::string &reply)
+void ChannelManager::quitManager(User &sender)
+{
+	
+}
+
+void ChannelManager::privmsgManager(User &sender, const std::string &chan, const std::string &reply)
 {
 	if (_channels.count(chan) == 0)
 		return sender.pendingPush("INSERT REPLY 403 HERE");
