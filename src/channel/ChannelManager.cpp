@@ -1,7 +1,8 @@
 #include "ChannelManager.hpp"
 
-ChannelManager::ChannelManager()
+ChannelManager::ChannelManager(Reply& reply) : _reply(reply)
 {
+
 }
 
 ChannelManager::~ChannelManager()
@@ -75,6 +76,7 @@ void ChannelManager::invite(User &sender, const Message &msg)
 
 void ChannelManager::kick(User &sender, const Message &msg)
 {
+
 }
 
 void ChannelManager::mode(User &sender, const Message &msg)

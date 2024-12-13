@@ -8,8 +8,9 @@ class ChannelManager
 {
 	private:
 		std::map<std::string, Channel> _channels; //ERR_NOSUCHCHANNEL (403)
+		Reply& _reply;
 	public:
-		ChannelManager();
+		ChannelManager(Reply& reply);
 		~ChannelManager();
 
 		void join(User& sender, const Message& msg); //voir pour tokenize avec parsing utils, tokenize

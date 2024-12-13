@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, User& op) : _name(name), _topic(""), _password(""), _memberLimit(0)
+Channel::Channel(std::string name, User& op, Reply& reply) :
+	_name(name), _topic(""), _password(""), _memberLimit(0), _reply(reply)
 {
 	_modes['i'] = false;
 	_modes['t'] = false;
@@ -37,11 +38,11 @@ bool	Channel::addMember(User& user, std::string pswIfNeeded)
 	return true;
 }
 
-bool	Channel::removeMember(User& user, const std::string& reason = "") //voir pour garder bool et retourner un si on doit supp le channel car vide
+bool	Channel::removeMember(User& user, const std::string& reason = "")
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
+		user.pushPending(_reply.reply(ERR_NOTONCHANNEL, user.getNickname()));
 		return false;
 	}
 	_members.erase(&user);
