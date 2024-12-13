@@ -25,17 +25,18 @@ class Channel
 	public:
 		Channel();
 		Channel(std::string name, User& op, Reply& reply);
+		Channel& Channel::operator=(const Channel& other);
 		~Channel();
 
-		bool	addMember(User& user, std::string pswIfNeeded = "");
-		bool	removeMember(User& user, const std::string& reason = "");
+		void	addMember(User& user, std::string pswIfNeeded = "", const std::string&	_reply);
+		bool	removeMember(User& user, const std::string& reason = "", const std::string&	_reply);
 		std::map<User*, bool> getMembers();
-		bool	setTopic(User& user, const std::string& topic);
+		bool	setTopic(User& user, const std::string& topic, const std::string&	_reply);
 		bool	getTopic(User& user);
-		bool	kick(User &user, User& op, std::string reason);
-		bool	invite(User &user, User& op);
+		bool	kick(User &user, User& op, std::string reason, const std::string&	_reply);
+		bool	invite(User &user, User& op, const std::string&	_reply);
 		// bool	isValidNb(const std::string& str);
-		bool	setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user);
+		bool	setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user, const std::string&	_reply);
 		bool	addOperator(User *user, const char addOrRemove);
 
 		void	printMembers();

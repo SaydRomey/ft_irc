@@ -13,39 +13,63 @@ Channel::Channel(std::string name, User &op, Reply& reply) :
 	_modes['l'] = false;
 	_members[&op]=true;
 }
+
+Channel& Channel::operator=(const Channel& other) 
+{
+	if (this == &other) 
+	{
+		return *this;
+	}
+	this->_name = other._name;
+	this->_topic = other._topic;
+	this->_members = other._members;
+	this->_modes = other._modes;
+	this->_password = other._password;
+	this->_memberLimit = other._memberLimit;
+	this->_reply = other._reply;
+	return *this;
+}
+
 Channel::~Channel()
 {
 
 }
+// If a client’s JOIN command to the server is successful, the server MUST send, in this order:
 
-bool	Channel::addMember(User& user, std::string pswIfNeeded)
+// 1.A JOIN message with the client as the message <source> and the channel they have joined as the first parameter of the message.
+// 2.The channel’s topic (with RPL_TOPIC (332) and optionally RPL_TOPICWHOTIME (333)), and no message if the channel does not have a topic.
+// 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
+void	Channel::addMember(User& user, std::string pswIfNeeded, const std::string&	defaultReply)
 {
 	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
-		std::cout << ":server 473 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+i)" << std::endl;
-		return false;
+		user.pendingPush(_reply.reply(ERR_INVITEONLYCHAN, user.getNickname()));
+		return ;
 	}
 	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0) //ERR_BADCHANNELKEY
 	{
-		std::cout << ":server 475 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+k)" << std::endl;
-		return false;
+		user.pendingPush(_reply.reply(ERR_BADCHANNELKEY, user.getNickname()));
+		return ;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
 	{
-		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
-		return false;
+		user.pendingPush(_reply.reply(ERR_CHANNELISFULL, user.getNickname()));
+		return ;
 	}
 	_members[&user]=false;
-	if (_members.find(&user) != _members.end())
-		std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
-	return true;
+	if (_members.find(&user) != _members.end()) //RPL_JOIN
+	{
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+			user.pendingPush(defaultReply);
+		// std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
+	}
 }
 
 bool	Channel::removeMember(User& user, const std::string& reason = "")
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		user.pushPending(_reply.reply(ERR_NOTONCHANNEL, user.getNickname()));
+		user.pendingPush(_reply.reply(ERR_NOTONCHANNEL, user.getNickname()));
 		return false;
 	}
 	_members.erase(&user);
@@ -57,7 +81,6 @@ bool	Channel::removeMember(User& user, const std::string& reason = "")
 		std::cout << std::endl;
 	}
 	return true;
-	// les operateurs peuvent quitté, un channel peut etre sans operateur
 }
 
 std::map<User*,bool> Channel::getMembers()

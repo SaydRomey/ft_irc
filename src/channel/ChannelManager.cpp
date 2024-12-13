@@ -19,13 +19,14 @@ void ChannelManager::join(User &sender, const Message &msg)
 		if (_channels.find(channelName) == _channels.end())
 		{
 			// Channel inexistant donc creation du channel
-			Channel newChannel(channelName, sender);
+			Channel newChannel(channelName, sender, this->_reply);
 			_channels[channelName] = newChannel;
 		}
 		else
-			_channels[channelName].addMember(sender, key);
+			_channels[channelName].addMember(sender, key, msg.getReply());
 	}
 }
+
 
 void ChannelManager::part(User &sender, const Message &msg)
 {
