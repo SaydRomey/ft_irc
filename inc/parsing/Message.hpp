@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 14:58:02 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 03:04:30 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,9 @@ class Message
 		Message(void);
 		~Message(void);
 		Message(const Message &other);
+		Message(const std::string &input);
 		Message& operator=(const Message &other);
 		
-		Message(const std::string &input);
 		
 		const std::string	&getInput(void) const;
 		const std::string	&getPrefix(void) const;
@@ -54,11 +54,15 @@ class Message
 	
 		Parser		_parser;
 		Validator	_validator;
-		// Reply		_rpl; // less overhead if we create a Reply instance too often.. (TOCHECK)
-		// Reply		&_rpl; // (if we pass it as an external single Reply object (in constructor) (TOCHECK))
+		// Reply		_rpl;		// less overhead if we create a Reply instance too often.. (TOCHECK)
+		// Reply		&_rpl;		// (if we pass it as an external single Reply object (in constructor) (TOCHECK))
 
 		void	_processInput(const std::string &input);
-		void	_processChannelsAndKeys(const std::string &params);
+		bool	_validateParsedCommand(void);
+		void	_processJoinCommand(void);
+
+		// void	_processChannelsAndKeys(const std::string &params);
+		
 };
 
 std::ostream	&operator<<(std::ostream &out, const Message &message);

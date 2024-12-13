@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 00:58:28 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 02:35:09 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,8 +90,6 @@ const std::map<std::string, CommandType>& Validator::getCommandMap(void)
 
 /* ************************************************************************** */
 
-/*	** or return value void, and handle true or false elsewhere.. ?
-*/
 bool	Validator::_setRpl(ReplyType rplType, const std::string &arg1, const std::string &arg2) const
 {
 	_rplType = rplType;

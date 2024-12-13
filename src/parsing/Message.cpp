@@ -6,13 +6,13 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 00:21:41 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 04:06:13 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Message.hpp"
 #include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
-#include "iomanip" // std::setw()
+#include <iomanip>				// std::setw()
 
 Message::Message(void) : _valid(false), _input(""), _reply("") {}
 Message::~Message(void) {}
@@ -30,6 +30,14 @@ Message::Message(const Message &other)
 	// *this = other;
 }
 
+/*	** Assumes the input is a single command (will remove any CRLF ("\r\n") characters from it)
+*/
+Message::Message(const std::string &input) : _valid(false), _input(input), _reply("")
+{
+	_processInput(normalizeInput(input));
+	// _processInput(trim(normalizeInput(input)));
+}
+
 Message&	Message::operator=(const Message &other)
 {
 	if (this != &other)
@@ -45,128 +53,7 @@ Message&	Message::operator=(const Message &other)
 	return (*this);
 }
 
-/*
-
-** Assumes the input is a single command, as it will remove any CRLF ("\r\n") characters from it
-*/
-Message::Message(const std::string &input) : _valid(false), _input(input), _reply("")
-{
-	_processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));
-}
-
-/*
-	// init keys with default values
-	// tokenize the input
-	// parse the tokens into the map
-	// merge parsedCommand into _parsedMessage, keeping defaults for missing keys
-	// validate the parsed command
-
-*/
-void	Message::_processInput(const std::string &input)
-{
-	_parsedMessage["prefix"] = "";
-	_parsedMessage["command"] = "";
-	_parsedMessage["params"] = "";
-	_parsedMessage["trailing"] = "";
-
-	std::vector<std::string>	tokens = tokenize(input);
-	std::map<std::string, std::string>	parsedCommand = _parser.parseCommand(tokens);
-
-	// change for the _parser.parse(input) instead *!? (handles tokenizing) **(but fix it first...)
-
-	std::map<std::string, std::string>::iterator	it = parsedCommand.begin();
-	while (it != parsedCommand.end())
-	{
-		_parsedMessage[it->first] = it->second;
-		++it;
-	}
-
-	Reply	rpl; // should we put it as private in Validator class ? or inside the try/if's body to not instanciate rpl if not needed
-	try
-	{
-		if (!_validator.validateCommand(_parsedMessage))
-		{
-			ReplyType	rplType = _validator.getRplType();
-			const std::vector<std::string>	&args = _validator.getRplArgs();
-			_reply = rpl.reply(rplType, args);
-			return ; // to prevent reply format related errors from overriding _reply
-		}
-	}
-	catch (const std::exception &e)
-	{
-		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "PROCESSING", "ERROR", e.what());
-		_valid = false;
-	}
-
-	// (wip) if the command is "JOIN", parse channels and keys // other commands also ?
-	if (_parsedMessage["command"] == "JOIN")
-	{
-		// assumes "params" contains exactly ? 
-		if (hasMultipleEntries(_parsedMessage["params"]))
-			_processChannelsAndKeys(_parsedMessage["params"]); 
-		
-		// ...
-	}
-
-	_valid = true;	
-	_reply.clear(); // if everything is valid
-}
-
-
-/*
-** assumes params has multiple entries
-	
-Creates a vector of pairs of strings, unsing ',' as a delimiter,
-Pairs tokens from 'params' with tokens from 'trailing'
-* Used to tokenize an input of multiple channels and keys,
-formated like so:
-	"#channel1,#channel2,#channel3 pass1,pass2,pass3"
-or
-	"#channel1,#channel2,#channel3 pass1,,pass3"
-
-(key inputs can be empty)
-*/
-void Message::_processChannelsAndKeys(const std::string &params)
-{
-	
-	// tokenize params into two parts
-	std::vector<std::string>	paramTokens = tokenize(params);
-	if (paramTokens.size() != 2)
-		return ; // set error 400 reply ? (would already be set in validator ?)
-	
-	std::string	channels = paramTokens[0];
-	std::string	keys = paramTokens[1];
-
-	std::vector<std::string>	channelTokens = tokenize(channels, ',');
-	std::vector<std::string>	keyTokens = tokenize(keys, ',');
-	// std::vector<std::string>	channelTokens = tokenize(paramTokens[0], ',');
-	// std::vector<std::string>	keyTokens = tokenize(paramTokens[0], ',')
-
-	std::vector<std::pair<std::string, std::string> >	result;
-	result.reserve(channelTokens.size()); // to avoid reallocation
-
-	size_t	i = 0;
-	while (i < channelTokens.size())
-	{
-		std::string	key = ""; // default to an empty key
-		
-		if (i < keyTokens.size())
-		{
-			key = keyTokens[i];
-			
-			if (key == "*")
-			{
-				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
-			}
-		}
-		
-		result.push_back(std::make_pair(channelTokens[i], key));
-		++i;
-	}
-	_channelsAndKeys = result;
-}
-
+/* ************************************************************************** */
 
 const std::string	&Message::getInput(void) const { return (_input); }
 const std::string	&Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
@@ -180,13 +67,78 @@ const std::vector<std::pair<std::string, std::string> >	&Message::getChannelsAnd
 	return (_channelsAndKeys);
 }
 
-bool	Message::isValid(void) const
+bool	Message::isValid(void) const { return (_valid); }
+
+/* ************************************************************************** */
+
+/*
+Focuses on the high-level flow:
+parsing, validating and delegating to command-specific handlers
+*/
+void	Message::_processInput(const std::string &input)
 {
-	return (_valid);
+	_parsedMessage = _parser.parseCommand(input);
+
+	if (!_validateParsedCommand())
+		return ;
+	
+	if (_parsedMessage["command"] == "JOIN")
+		_processJoinCommand();
+
+	_valid = true;	
+	_reply.clear(); // if everything is valid
 }
 
-/*	TOCHECK: do we implement the channelsAndKeys conditional display?
+/*
+Handles command validation and error reporting
+*/
+bool	Message::_validateParsedCommand(void)
+{
+	try
+	{
+		if (!_validator.validateCommand(_parsedMessage))
+		{
+			Reply	rpl;
+			_reply = rpl.reply(_validator.getRplType(), _validator.getRplArgs());
+			_valid = false;
+			return (false);
+		}
+	}
+	catch (const std::exception &e)
+	{
+		Reply	rpl;
+		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "PROCESSING", "ERROR", e.what());
+		_valid = false;
+		return (false);
+	}
+	return (true);
+}
 
+void	Message::_processJoinCommand(void)
+{
+	if (!hasMultipleEntries(_parsedMessage["params"]))
+		return ;
+
+	try
+	{
+		// std::vector<std::pair<std::string, std::string> >	channelsAndKeys;
+		
+		// channelsAndKeys = _parser.parseChannelsAndKeys(_parsedMessage["params"]);
+		// _channelsAndKeys = channelsAndKeys;
+		
+		_channelsAndKeys = _parser.parseChannelsAndKeys(_parsedMessage["params"]);
+	}
+	catch (const std::exception &e)
+	{
+		Reply	rpl;
+		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "JOIN", "Invalid params", e.what());
+		_valid = false;
+	}
+}
+
+/* ************************************************************************** */
+
+/*
 Displays the Message object's attributes,
 ** Used for debug
 */
@@ -205,45 +157,107 @@ Displays the Message object's attributes,
 // 	return (oss);
 // }
 
+/*	** Used for debug
 
-// upgraded for multiparams channels and keys
-std::ostream &operator<<(std::ostream &oss, const Message &message)
+Displays the Message object's attributes
+Conditionnal alternative display for multi params
+Conditionnal alternative display for multi params with "JOIN" as channel/key pairs
+
+*/
+// std::ostream &operator<<(std::ostream &oss, const Message &message)
+// {
+// 	const int labelWidth = 18;
+
+// 	// Print basic details
+// 	oss << "Message Details:\n"
+// 		<< GRAYTALIC << std::setw(labelWidth) << "Input: " << RESET << message.getInput() << "\n"
+// 		<< GRAYTALIC << std::setw(labelWidth) << "Prefix: " << RESET << message.getPrefix() << "\n"
+// 		<< GRAYTALIC << std::setw(labelWidth) << "Command: " << RESET << message.getCommand() << "\n";
+
+// 	// Tokenize params by spaces
+// 	std::vector<std::string> paramsTokens = tokenize(message.getParams(), ' ');
+
+// 	// Print params based on the number of tokens
+// 	if (paramsTokens.size() > 1)
+// 	{
+// 		size_t i = 0;
+// 		while (i < paramsTokens.size())
+// 		{
+// 			oss << GRAYTALIC << std::setw(labelWidth - 4) << "Param (" << (i + 1) << "): " << RESET << paramsTokens[i] << "\n";
+// 			++i;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		oss << GRAYTALIC << std::setw(labelWidth) << "Params: " << RESET << message.getParams() << "\n";
+// 	}
+
+// 	oss << GRAYTALIC << std::setw(labelWidth) << "Trailing: " << RESET << message.getTrailing() << "\n"
+// 		<< GRAYTALIC << std::setw(labelWidth) << "Reply: " << RESET << message.getReply() << "\n";
+
+// 	// Conditionally print the channel/key pairs if the command is "JOIN" and the params are multi
+// 	if (message.getCommand() == "JOIN" && hasMultipleEntries(message.getParams()))
+// 	{
+// 		oss << "\nChannels & Keys:\n";
+
+// 		const std::vector<std::pair<std::string, std::string> > &pairs = message.getChannelsAndKeys();
+
+// 		size_t	j = 0;
+// 		while (j < pairs.size())
+// 		{
+// 			oss << GRAYTALIC << std::setw(labelWidth) << "  Channel (" << (j + 1) << "): " << RESET << pairs[j].first << "\n";
+
+// 			if (!pairs[j].second.empty())
+// 			{
+// 				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << pairs[j].second << "\n";
+// 			}
+// 			else
+// 			{
+// 				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << "<none>" << "\n";
+// 			}
+// 			++j;
+// 		}
+// 	}
+
+// 	return (oss);
+// }
+
+/* ************************************************************************** */
+
+// Helper function to print labeled fields
+static void	printLabeledField(std::ostream &oss, const std::string &label, const std::string &value, int labelWidth)
 {
-	const int labelWidth = 18;
+	oss << GRAYTALIC << std::setw(labelWidth) << label << RESET << value << "\n";
+}
 
-	// Print basic details
-	oss << "Message Details:\n"
-		<< GRAYTALIC << std::setw(labelWidth) << "Input: " << RESET << message.getInput() << "\n"
-		<< GRAYTALIC << std::setw(labelWidth) << "Prefix: " << RESET << message.getPrefix() << "\n"
-		<< GRAYTALIC << std::setw(labelWidth) << "Command: " << RESET << message.getCommand() << "\n";
+// Handle multi-parameter output
+static void	handleMultiParams(std::ostream &oss, const std::string &params, int labelWidth)
+{
+	std::vector<std::string>	paramsTokens = tokenize(params, ' ');
 
-	// Tokenize params by spaces
-	std::vector<std::string> paramsTokens = tokenize(message.getParams(), ' ');
-
-	// Print params based on the number of tokens
 	if (paramsTokens.size() > 1)
 	{
-		size_t i = 0;
+		size_t	i = 0;
 		while (i < paramsTokens.size())
 		{
-			oss << GRAYTALIC << std::setw(labelWidth - 4) << "Param (" << (i + 1) << "): " << RESET << paramsTokens[i] << "\n";
+			oss << GRAYTALIC << std::setw(labelWidth) << "Param (" << (i + 1) << "): " << RESET << paramsTokens[i] << "\n";
 			++i;
 		}
 	}
 	else
 	{
-		oss << GRAYTALIC << std::setw(labelWidth) << "Params: " << RESET << message.getParams() << "\n";
+		printLabeledField(oss, "Params: ", params, labelWidth);
 	}
+}
 
-	oss << GRAYTALIC << std::setw(labelWidth) << "Trailing: " << RESET << message.getTrailing() << "\n"
-		<< GRAYTALIC << std::setw(labelWidth) << "Reply: " << RESET << message.getReply() << "\n";
-
-	// Conditionally print the channel/key pairs if the command is "JOIN" and the params are multi
+// Handle channels and keys output
+static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int labelWidth)
+{
 	if (message.getCommand() == "JOIN" && hasMultipleEntries(message.getParams()))
 	{
 		oss << "\nChannels & Keys:\n";
 
-		const std::vector<std::pair<std::string, std::string> > &pairs = message.getChannelsAndKeys();
+		const std::vector<std::pair<std::string, std::string> >	&pairs = message.getChannelsAndKeys();
 
 		size_t	j = 0;
 		while (j < pairs.size())
@@ -261,6 +275,28 @@ std::ostream &operator<<(std::ostream &oss, const Message &message)
 			++j;
 		}
 	}
+}
+
+std::ostream	&operator<<(std::ostream &oss, const Message &message)
+{
+	const int	labelWidth = 18;
+
+	// Print basic details
+	oss << "Message Details:\n";
+	printLabeledField(oss, "Valid: ", message.isValid() ? "True" : "False", labelWidth);
+	printLabeledField(oss, "Input: ", message.getInput(), labelWidth);
+	printLabeledField(oss, "Prefix: ", message.getPrefix(), labelWidth);
+	printLabeledField(oss, "Command: ", message.getCommand(), labelWidth);
+
+	// Handle multi-parameter output
+	handleMultiParams(oss, message.getParams(), labelWidth - 4);
+
+	// Print trailing and reply
+	printLabeledField(oss, "Trailing: ", message.getTrailing(), labelWidth);
+	printLabeledField(oss, "Reply: ", message.getReply(), labelWidth);
+
+	// Handle channels and keys
+	handleChannelsAndKeys(oss, message, labelWidth);
 
 	return (oss);
 }

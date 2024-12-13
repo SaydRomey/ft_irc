@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 00:52:35 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 04:16:19 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) co
 		std::ostringstream	oss;
 		oss << "UNKNOWN_REPLY_TYPE(" << static_cast<int>(key) << ")";
 		// throw (std::runtime_error(oss.str()));
-		std::cout << oss.str() << std::endl;
+		// std::cout << oss.str() << std::endl;
+		return (oss.str());
 	}
 	
 	return (_formatReply(it->second, args));
@@ -108,14 +109,7 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 			if (argIndex >= args.size()) // too few arguments
 			{
 				throw (std::runtime_error("Too few arguments for reply template:  " + templateStr));
-				// return (oss.str()); // append partial result for debugging or logging (tmp)
-				
-				// oss << "[FORMAT ERROR: Too few arguments]";
-				// break ;
-				
-				// return (":ircserv 400 :Reply formatting error (too few arguments)");
 			}
-			
 			oss << args[argIndex++];
 			++i; // skip 's' after '%'
 		}
@@ -123,18 +117,14 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 			oss << templateStr[i];
 		++i;
 	}
+	
 	if (argIndex < args.size()) // to many arguments
 	{
 		throw (std::runtime_error("Too many arguments for reply template:  " + templateStr));
-		// return (oss.str()); // append partial result for debugging or logging (tmp)
-		
-		// oss << "[FORMAT ERROR: Too many arguments]";
-
-		// return (":ircserv 400 :Reply formatting error (too many arguments)");
 	}
 
-	return (oss.str());
-	// return (crlf(oss.str()));
+	// return (oss.str());
+	return (crlf(oss.str()));
 	// return (oss.str() + "\r\n");
 }
 

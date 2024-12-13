@@ -6,50 +6,18 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 09:03:29 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 04:00:05 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
+#include "parsing_utils.hpp"
 #include "Reply.hpp"
-
 #include <stdexcept>
+# include <utility>				// std::make_pair()
 
 Parser::Parser(void) {}
 Parser::~Parser(void) {}
-
-/*
-Single entry point (Parser::parse) to handle:
-
-Tokenizing:	split the input
-Parsing:	extract and organize command data
-Validating:	validate command-specific details
-
-Returns a Message object for valid inputs.
-Throws a formatted reply for invalid inputs.
-*/
-// Message	Parser::parse(const std::string &input)
-// {
-// 	std::vector<std::string>	tokens = tokenize(input);
-// 	std::map<std::string, std::string>	command = _parseCommand(tokens);
-	
-// 	Validator	validator;
-// 	Reply		rpl;
-
-// 	if (!validator.isValidCommand(command)) // syntax validation
-// 	{
-// 		throw (std::invalid_argument(rpl.reply(ERR_UNKNOWNCOMMAND, command["command"])));
-// 	}
-// 	if (!validator.validateCommand(command)) // semantic validation
-// 	{
-// 		ReplyType	errorCode = validator.getError();
-// 		const std::vector<std::string>	&args = validator.getErrorArgs();
-		
-// 		throw (std::invalid_argument(rpl.reply(errorCode, args)));
-// 	}
-	
-// 	return (Message(command));
-// }
 
 /*
 Extracts and organize command data
@@ -58,9 +26,15 @@ Extracts and organize command data
 	parameters
 	trailing message if ':' is found after the command
 */
-std::map<std::string, std::string>	Parser::parseCommand(const std::vector<std::string> &tokens) const
+std::map<std::string, std::string>	Parser::parseCommand(const std::string &input) const
 {
 	std::map<std::string, std::string>	command;
+	std::vector<std::string>			tokens = tokenize(input);
+
+	command["prefix"] = "";
+	command["command"] = "";
+	command["params"] = "";
+	command["trailing"] = "";
 	
 	if (tokens.empty())
 		return (command);
@@ -106,43 +80,47 @@ std::map<std::string, std::string>	Parser::parseCommand(const std::vector<std::s
 	return (command);
 }
 
-// std::map<std::string, std::string>	Parser::parse(const std::string> &input) const
-// {
-// 	std::vector<std::string>	tokens = tokenize(input);
-// 	std::map<std::string, std::string>	parsed;
+/*	** assumes params has multiple entries
+	
+Creates a vector of pairs of strings, unsing ',' as a delimiter,
+Pairs tokens from first param with tokens from second param
+(returns empty vector<string> if )
+* Used to tokenize an input of multiple channels and keys,
+formated like so:
+	"#channel1,#channel2,#channel3 pass1,pass2,pass3"
+or
+	"#channel1,#channel2,#channel3 pass1,,pass3"
 
-// 	if (!tokens.empty())
-// 		parsed["command"] = tokens[0];
-// 	if (tokens.size() > 1)
-// 		parsed["params"] = tokens[1];
-// 	if (tokens.size() > 2)
-// 		parsed["trailing"] = tokens[2];
-// 	return (parsed);
-// }
+(key inputs can be empty)
+*/
+std::vector<std::pair<std::string, std::string> > Parser::parseChannelsAndKeys(const std::string &params) const
+{
+	
+	// tokenize params into two parts
+	std::vector<std::string>	paramTokens = tokenize(params);
+	if (paramTokens.size() != 2) // > 2)
+		throw (std::invalid_argument("Invalid params: must contain exactly one space-separated list of channels and keys"));
+	
+	std::vector<std::string>	channelTokens = tokenize(paramTokens[0], ',');
+	std::vector<std::string>	keyTokens = tokenize(paramTokens[1], ',');
 
-// #include <utility> // For std::pair
+	std::vector<std::pair<std::string, std::string> >	result;
+	result.reserve(channelTokens.size()); // to avoid reallocation
 
-// std::vector<std::pair<std::string, std::string> >	Parser::parseChannelsAndKeys(const std::string &params, const std::string &trailing)
-// {
-// 	std::vector<std::pair<std::string, std::string> >	result;
-// 	std::vector<std::string>	channels = tokenize(params, ',');
-// 	std::vector<std::string>	keys = tokenize(trailing, ',');
-
-// 	size_t	i = 0;
-// 	while (i < channels.size())
-// 	{
-// 		std::string	key;
+	size_t	i = 0;
+	while (i < channelTokens.size())
+	{
+		std::string	key = ""; // default to an empty key
 		
-// 		if (i < keys.size())
-// 		{
-// 			key = keys[i];
-// 		}
-// 		else
-// 		{
-// 			key = "";
-// 		}
-// 		result.push_back(std::make_pair(channels[i], key));
-// 		++i;
-// 	}
-// 	return (result);
-// }
+		if (i < keyTokens.size())
+		{
+			key = keyTokens[i];
+			if (key == "*")
+				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
+		}
+		
+		result.push_back(std::make_pair(channelTokens[i], key));
+		++i;
+	}
+	return (result);
+}
