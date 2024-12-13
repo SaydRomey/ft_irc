@@ -1,6 +1,6 @@
 
+REPLIES
 
-/*
 Commands to Implement
 
 Authentication Commands:
@@ -15,6 +15,16 @@ JOIN:	Join a specific channel.
 PART:	Leave a specific channel.
 TOPIC:	View or change the channel's topic.
 MODE:	Change channel modes (i, t, k, o, l).
+		+i:
+		-i:
+		+t:
+		+k:
+		-k:
+		+o:
+		-o:
+		+l:
+		-l:
+
 KICK:	Eject a client from a channel.
 INVITE:	Invite a client to a channel.
 
@@ -22,15 +32,61 @@ Messaging Commands:
 
 PRIVMSG:	Send a private message to a user or channel.
 NOTICE:		Send a notice to a user or channel.
-*/
+
 
 RFC 2812 - IRC - Client Protocol
 
-/* ************************************************************************** */
++i (Invite-Only Mode)
+Description: When set, only invited users can join the channel.
+Command to Enable: MODE #channel +i
+Command to Disable: MODE #channel -i
+Effect:
+Clients attempting to join without an invitation will receive ERR_INVITEONLYCHAN (473).
 
++t (Topic Lock Mode)
+Description: When set, only channel operators can change the channel topic.
+Command to Enable: MODE #channel +t
+Command to Disable: MODE #channel -t
+Effect:
+Non-operator clients attempting to change the topic will receive ERR_CHANOPRIVSNEEDED (482).
+
++k (Key Mode)
+Description: When set, a key (password) is required to join the channel.
+Command to Enable: MODE #channel +k <key>
+Command to Disable: MODE #channel -k
+Effect:
+Clients attempting to join without the correct key will receive ERR_BADCHANNELKEY (475).
+
++o (Operator Mode)
+Description: Grants or removes operator privileges for a user in the channel.
+Command to Enable: MODE #channel +o <nickname>
+Command to Disable: MODE #channel -o <nickname>
+Effect:
+Operators can change modes, kick users, and manage topics when +t is set.
+Clients not in the channel or not existing will return ERR_USERNOTINCHANNEL (441).
+
++l (Limit Mode)
+Description: Limits the number of users allowed in the channel.
+Command to Enable: MODE #channel +l <number>
+Command to Disable: MODE #channel -l
+Effect:
+Once the limit is reached, new join attempts will receive ERR_CHANNELISFULL (471).
+
+example:
+Client sends: MODE #channel
+Server replies:
+:ircserv 324 nickname #channel +itk secretkey
+
+Modes applied:
+
++i: Channel is invite-only.
++t: Only operators can change the topic.
++k: Channel requires the key secretkey to join.
+
+
+/* ************************************************************************** */ 
 Connection Registration
-
-/* ************************************************************************** */
+/* ************************************************************************** */ 
 
 a PASS command is not required for a client connection,
 but it must precede the NICK/USER combination (for a user connection)
@@ -59,8 +115,7 @@ REPLIES:
 		"<servername> <version> <available user modes> <available channel modes>"
 
          
-
-/* ************************************************************************** */ PASS
+/* ************************************************************************** */  PASS
 
 cmd: PASS
 params: <password>
@@ -78,7 +133,7 @@ ex:
 
 	PASS secretpasswordhere
 
-/* ************************************************************************** */ NICK
+/* ************************************************************************** */  NICK
 
 cmd: NICK
 params: <nickname>
@@ -117,7 +172,7 @@ REPLIES:?
 	either one will not succeed or both will be removed by use of KILL
 	(See Section 3.7.1 of "IRC Client Protocol)"
 
-/* ************************************************************************** */ USER
+/* ************************************************************************** */  USER
 
 cmd: USER
 params: <user> <mode> <unused> <realname>
@@ -150,7 +205,7 @@ ex:
 	available user and channel modes (RPL_MYINFO),
 	and it MAY send any introductory messages which may be deemed appropriate.
 
-/* ************************************************************************** */
+/* ************************************************************************** */ 
 
 Channel operations
 
@@ -165,7 +220,7 @@ granted, denied or generated an error
 when the server grants the request, the message is typically sent back
 (eventually reformatted) to the user with the prefix set to the user itself
 
-/* ************************************************************************** */ JOIN
+/* ************************************************************************** */  JOIN
 
 cmd: JOIN
 params: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
@@ -188,7 +243,7 @@ ex:
 
 	:SomeDude JOIN #Awesome_channel
 
-/* ************************************************************************** */ PART
+/* ************************************************************************** */  PART
 
 cmd: PART
 params: <channel> *( "," <channel> ) [ <Part Message> ]
@@ -217,7 +272,7 @@ ex:
 
 	:SomeDude Part #supersmashbros :I lost
 
-/* ************************************************************************** */ TOPIC
+/* ************************************************************************** */  TOPIC
 
 cmd: TOPIC
 params: <channel> [ <topic> ]
@@ -253,7 +308,7 @@ ex:
 
 	TOPIC #test
 
-/* ************************************************************************** */ MODE (channel)
+/* ************************************************************************** */  MODE (channel)
 
 cmd: MODE
 params: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
@@ -304,7 +359,7 @@ ex:
 
 
 
-/* ************************************************************************** */ INVITE
+/* ************************************************************************** */  INVITE
 
 cmd: INVITE
 params: <nickname> <channel>
@@ -340,7 +395,7 @@ to channel #Dudes_chan)
 
 	INVITE SomeDude #Dudes_chan
 
-/* ************************************************************************** */ KICK
+/* ************************************************************************** */  KICK
 
 cmd: KICK
 params: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>]
@@ -377,11 +432,11 @@ using "Not dude enough" as the reason (comment))
 
 	:SomeOtherDude KICK #Dudes_chan SomeDude
 
-/* ************************************************************************** */
+/* ************************************************************************** */ 
 
 Sending messages
 
-/* ************************************************************************** */ PRIVMSG
+/* ************************************************************************** */  PRIVMSG
 
 cmd: PRIVMSG
 params: <msgtarget> <text to be sent>
@@ -414,7 +469,7 @@ ex:
 
 	PRIVMSG Mr :Hi Mr !
 
-/* ************************************************************************** */ NOTICE
+/* ************************************************************************** */  NOTICE
 
 cmd: NOTICE
 params: <msgtarget> <text>
@@ -434,7 +489,7 @@ This is typically used by services, and automatons
 
 See PRIVMSG for more details on replies and examples.
 
-/* ************************************************************************** */ 
+/* ************************************************************************** */  
 
 *** MISC ***
 
@@ -470,3 +525,35 @@ that a time range be given and entries which are too old ignored.
 For a reasonable history, a server SHOULD be able to keep previous
 nickname for every client it knows about if they all decided to change.
 This size is limited by other factors (such as memory, etc).
+
+
+
+
+
+
+
+
+-Messaging commands
+
+PRIVMSG
+
+	401 ERR_NOSUCHNICK
+	:ircserv 401 [nickname] :No such nick/channel
+
+	404 ERR_CANNOTSENDTOCHAN
+	:ircserv 404 [channel] :Cannot send to channel
+
+	407 ERR_TOOMANYTARGETS
+	:ircserv 407 [target] :Duplicate recipients. No message delivered
+
+	411 ERR_NORECIPIENT
+	:ircserv 411 :No recipient given (PRIVMSG)
+
+	412 ERR_NOTEXTTOSEND
+	:ircserv 412 :No text to send
+
+NOTICE
+
+	N/A (No numeric replies; NOTICE errors are not returned by servers)
+
+---

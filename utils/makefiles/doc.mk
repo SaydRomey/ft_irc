@@ -6,7 +6,7 @@
 #    By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/29 15:17:43 by cdumais           #+#    #+#              #
-#    Updated: 2024/12/12 11:10:00 by cdumais          ###   ########.fr        #
+#    Updated: 2024/12/12 17:42:44 by cdumais          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,17 +53,17 @@ URL_MODERN	:= https://modern.ircdocs.horse/
 doc: ## Offer a list of documentation URL links
 	@clear
 	@echo "Select documentation subject:"
-	@echo "$(ORANGE)CPP$(RESET)"
+	@echo "\n$(ORANGE)CPP$(RESET)"
 	@echo "  0. CPP documentation"
-	@echo "$(ORANGE)Weechat$(RESET)"
+	@echo "\n$(ORANGE)Weechat$(RESET)"
 	@echo "  1. Weechat home page"
 	@echo "  2. Weechat documentation"
-	@echo "$(ORANGE)Guides/Tutorials$(RESET)"
+	@echo "\n$(ORANGE)Guides/Tutorials$(RESET)"
 	@echo "  100. ft_irc guide - on medium.com"
 	@echo "  101. ft_irc guide - on reactive.so"
 	@echo "  102. chirc - similar project with good documentation (MUST READ)**"
 	@echo "  103. Beej's guide to network programming"
-	@echo "$(ORANGE)IRC Protocols - RFC$(RESET)"
+	@echo "\n$(ORANGE)IRC Protocols - RFC$(RESET)"
 	@echo "  1459. IRC Protocol"
 	@echo "  2810. Architecture"
 	@echo "  2811. Channel Management"

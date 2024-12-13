@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 15:49:19 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 00:21:41 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,9 +87,9 @@ void	Message::_processInput(const std::string &input)
 	{
 		if (!_validator.validateCommand(_parsedMessage))
 		{
-			ReplyType	errorCode = _validator.getError();
-			const std::vector<std::string>	&args = _validator.getErrorArgs();
-			_reply = rpl.reply(errorCode, args);
+			ReplyType	rplType = _validator.getRplType();
+			const std::vector<std::string>	&args = _validator.getRplArgs();
+			_reply = rpl.reply(rplType, args);
 			return ; // to prevent reply format related errors from overriding _reply
 		}
 	}

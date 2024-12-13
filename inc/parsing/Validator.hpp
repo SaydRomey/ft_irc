@@ -6,9 +6,14 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 15:16:03 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 00:56:45 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*	TODO:
+		only set the reply if i can (so on syntax or semantic errors)
+		else, reply is empty, and boolean '_valid' is true
+*/
 
 /*	TOCHECK:
 
@@ -16,22 +21,16 @@ improve nickname validator
 improve username validator
 improve channel name validator
 	(syntax rules, limits, etc) -> uniqueness handled in higher level..
-
-*(does not handle chanop privileges related issues..)
-
 */
 
 #ifndef VALIDATOR_HPP
 # define VALIDATOR_HPP
 
 # include "ReplyTypes.hpp" // for numeric reply enum
-
 # include <map>
 # include <string>
 # include <vector>
 
-/*	UNKNOWN at the end? or not at all, do we need PASS to start at 1 ?
-*/
 enum CommandType
 {
 	PASS = 0,
@@ -50,33 +49,34 @@ enum CommandType
 
 class Validator
 {
-	public:		
+	public:
 		Validator(void);
 		~Validator(void);
 		
 		bool	validateCommand(const std::map<std::string, std::string> &command) const;
 
-		static const std::map<std::string, CommandType> &getCommandMap(void); // ? is this going to be used by Server ? maybe put somewhere more accessible for Validator and other class
-	
-		ReplyType						getError(void) const;
-		const std::vector<std::string>	&getErrorArgs(void) const;
-		// CommandType						getCommandType(const std::string &cmd);
-		
-		// const std::string	&getReply(void) const;
+		ReplyType										getRplType(void) const;
+		const std::vector<std::string>					&getRplArgs(void) const;
+		static const std::map<std::string, CommandType> &getCommandMap(void);
 	
 	private:
-	
-		// function pointer type for _validators
-		typedef bool (Validator::*ValidatorFunc)(const std::map<std::string, std::string>&) const;
-
-		// internal array mapping CommandType to ValidatorFunc
-		static const ValidatorFunc	_validators[];
+		typedef bool (Validator::*ValidatorFunc)(const std::map<std::string, std::string>&) const; // function pointer type for _validators
+		static const ValidatorFunc	_validators[]; // internal array mapping CommandType to ValidatorFunc
 		
 		static const std::map<std::string, CommandType>	_commandMap;
-		// static const std::map<ReplyType, std::string>	_errorMessages;
+
+		// error handling
+		mutable ReplyType					_rplType; // store the last error code
+		mutable std::vector<std::string>	_rplArgs; // store arguments for the error reply
+
+		bool	_setRpl(ReplyType rplType, const std::string &arg1 = "", const std::string &arg2 = "") const;
+		bool	_noRpl(void) const;
+
+		bool	_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const;
 
 		bool	_isValidNickname(const std::string &nickname) const;
 		bool	_isValidChannelName(const std::string& channel) const;
+		bool	_isValidModeParam(char modeFlag, const std::string &param) const;
 		
 		bool	_validatePassCommand(const std::map<std::string, std::string> &command) const;
 		bool	_validateNickCommand(const std::map<std::string, std::string> &command) const;
@@ -89,15 +89,6 @@ class Validator
 		bool	_validateInviteCommand(const std::map<std::string, std::string> &command) const;
 		bool	_validatePrivmsgCommand(const std::map<std::string, std::string> &command) const;
 		bool	_validateNoticeCommand(const std::map<std::string, std::string> &command) const;
-
-		// error handling
-		mutable ReplyType					_error; // store the last error code
-		mutable std::vector<std::string>	_errorArgs; // store arguments for the error reply
-
-		bool	_setError(ReplyType error, const std::string &arg1 = "", const std::string &arg2 = "") const;
-		bool	_noError(void) const;
-
-		bool	_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const;
 
 		static const size_t			MAX_NICKNAME_LENGTH;		// 9
 		static const size_t			MAX_CHANNEL_NAME_LENGTH;	// 42

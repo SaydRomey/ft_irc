@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/10 23:00:47 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 00:52:35 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) co
 	{
 		std::ostringstream	oss;
 		oss << "UNKNOWN_REPLY_TYPE(" << static_cast<int>(key) << ")";
-		throw (std::runtime_error(oss.str()));
+		// throw (std::runtime_error(oss.str()));
+		std::cout << oss.str() << std::endl;
 	}
 	
 	return (_formatReply(it->second, args));

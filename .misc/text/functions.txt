@@ -148,3 +148,53 @@ Messaging Commands:
 
 	PRIVMSG: Send a private message to a user or channel.
 	NOTICE: Send a notice to a user or channel.
+
+*****
+
+Authentication Commands:
+
+PASS: No numeric replies specifically associated, but errors include:
+ERR_PASSWDMISMATCH (464): Password incorrect.
+ERR_ALREADYREGISTRED (462): Attempt to send PASS after registration.
+
+NICK:
+ERR_NONICKNAMEGIVEN (431): No nickname provided.
+ERR_NICKNAMEINUSE (433): Nickname already in use.
+
+USER:
+ERR_ALREADYREGISTRED (462): Client already registered.
+
+Channel Management Commands:
+
+JOIN:
+RPL_TOPIC (332): Current topic of the channel.
+ERR_BADCHANNELKEY (475): Incorrect channel key.
+ERR_CHANNELISFULL (471): Channel is full.
+
+PART:
+ERR_NOSUCHCHANNEL (403): Channel does not exist.
+ERR_NOTONCHANNEL (442): Client not in the channel.
+
+TOPIC:
+RPL_TOPIC (332): Channel topic response.
+ERR_CHANOPRIVSNEEDED (482): Operator privileges needed.
+
+MODE:
+RPL_CHANNELMODEIS (324): Current modes for a channel.
+ERR_UNKNOWNMODE (472): Unknown mode.
+
+KICK:
+ERR_NOTONCHANNEL (442): Client not in the channel.
+ERR_CHANOPRIVSNEEDED (482): Operator privileges needed.
+
+INVITE:
+RPL_INVITING (341): Acknowledgment of successful invite.
+ERR_USERONCHANNEL (443): User already in the channel.
+
+Messaging Commands:
+
+PRIVMSG:
+ERR_NORECIPIENT (411): No recipient specified.
+ERR_NOTEXTTOSEND (412): No message text provided.
+
+NOTICE: Similar replies to PRIVMSG.

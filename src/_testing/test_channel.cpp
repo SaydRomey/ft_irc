@@ -1,9 +1,9 @@
 
-#include "ChannelTest.hpp"
+// #include "ChannelTest.hpp"
 
-void	test_channel(void)
-{
-	ChannelTest test;
+// void	test_channel(void)
+// {
+// 	ChannelTest test;
 	
-	test.channelTests();
-}
+// 	test.channelTests();
+// }
