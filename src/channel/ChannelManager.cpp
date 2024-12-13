@@ -99,7 +99,8 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 
 void ChannelManager::quitManager(User &sender)
 {
-
+	//boucle dans tout les channels pour chercher si le sender est dedans car deconnexion = part des channels.
+	//voir pour mettre un message PART different genre "disconnected", avec RPL_QUIT ou autre ou ajouté parametre à removeMembers
 }
 
 void ChannelManager::privmsgManager(User &sender, const std::string &chan, const std::string &reply)

@@ -309,7 +309,7 @@ void Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 				else if (!enable)
 					_password.clear();
 			}
-			else if (mode[i] == 'o') //voir si je peux mettre quelqu'un en op si il est pas dans le channel
+			else if (mode[i] == 'o') //TODO verifié si dans le channel et si il est pas deja op
 			{
 				if (user != NULL)
 					addOperator(user, enable ? '+' : '-');
