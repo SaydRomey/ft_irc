@@ -50,6 +50,27 @@ void ChannelManager::privmsg(User &sender, const Message &msg)
 
 void ChannelManager::invite(User &sender, const Message &msg)
 {
+	// Extraire les paramètres : channel et utilisateur à inviter
+	std::vector<std::pair<std::string, std::string>> ChannelsAndKeys = msg.getChannelsAndKeys();
+	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
+	{
+		std::string channelName = ChannelsAndKeys[i].first;
+		std::string inviteeNickname = ChannelsAndKeys[i].second;
+		if (_channels.find(channelName) == _channels.end())
+		{
+			std::cout << ":server 403 " << sender.getNickname() << " " << channelName << " :No such channel" << std::endl;
+			continue;
+		}
+		// Inviter l'utilisateur
+		User& target = getUserByNickname(inviteeNickname); // Fonction à implémenter dans serveur?
+		if (target == NULL) //ERR_NOSUCHNICK
+		{
+			std::cout << ":server 401 " << sender.getNickname() << " " << inviteeNickname << " :No such nick" << std::endl;
+			continue;
+		}
+		_channels[channelName].invite(target, sender);
+		std::cout << ":" << sender.getNickname() << " INVITE " << inviteeNickname << " " << channelName << std::endl;
+	}
 }
 
 void ChannelManager::kick(User &sender, const Message &msg)
@@ -69,11 +90,10 @@ void ChannelManager::topic(User &sender, const Message &msg)
 		std::cout << ":server 403 " << sender.getNickname() << " " << channelName << " :No such channel" << std::endl;
 		return ;
 	}
-	//voir avec ced si il a fait une difference entre string vide et pas de string pour topic
-	// if (msg.getTrail() is null)
-	// 	_channels[channelName].getTopic(sender);
-	// else if (msg.getTrail() is empty)
-	// 	_channels[channelName].setTopic(sender, "");
-	// else
+	if (msg.getTrailing().empty())
+		_channels[channelName].getTopic(sender);
+	else if (msg.getTrailing().compare(":") == 0)
+		_channels[channelName].setTopic(sender, "");
+	else
 		_channels[channelName].setTopic(sender, msg.getTrailing());
 }

@@ -70,14 +70,6 @@ bool	Channel::setTopic(User& user, const std::string& topic) //voir ce que weech
 		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	// if (topic == NULL)
-	// {
-	// 	if (this->_topic.empty()) //ERR_NOTOPIC
-	// 		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
-	// 	else
-	// 		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
-	// 	return true;
-	// }
 	if (_modes['t'] == true)
 	{
 		if (_members[&user] != true) //ERR_CHANOPRIVSNEEDED
@@ -133,16 +125,21 @@ bool	Channel::kick(User &user, User& op, std::string reason)
 	return true;
 }
 
-bool	Channel::invite(User &user, User& op) //a refaire comme settopic
+bool	Channel::invite(User &user, User& op)
 {
 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
 		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
 		return false;
 	}
-	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
+	if (_modes['i'] == true && _members[&op] != true) //ERR_CHANOPRIVSNEEDED
 	{
 		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
+		return false;
+	}
+	if (_members.find(&user) != _members.end()) //ERR_USERONCHANNEL
+	{
+		std::cout << ":server 443 " << op.getNickname() << " " << user.getNickname() << " " << this->_name << " :is already on channel" << std::endl;
 		return false;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
