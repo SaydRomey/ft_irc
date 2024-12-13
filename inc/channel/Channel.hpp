@@ -28,20 +28,23 @@ class Channel
 		Channel& Channel::operator=(const Channel& other);
 		~Channel();
 
-		void						addMember(User& user, std::string pswIfNeeded = "", const std::string&	defaultReply);
-		bool						removeMember(User& user, const std::string& reason = "", const std::string&	defaultReply);
+		void						addMember(User& user, std::string pswIfNeeded = "");
+		void						removeMember(User& user, const std::string& reason = "");
 		std::map<User*, bool>		getMembers();
-		bool						setTopic(User& user, const std::string& topic, const std::string&	defaultReply);
-		bool						getTopic(User& user);
-		bool						kick(User &user, User& op, std::string reason, const std::string&	defaultReply);
-		bool						invite(User &user, User& op, const std::string&	defaultReply);
+		void						setTopic(User& user, const std::string& topic);
+		void						getTopic(User& user);
+		void						kick(User &user, User& op, std::string reason);
+		void						invite(User &user, User& op);
 		// bool	isValidNb(const std::string& str);
-		bool						setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user, const std::string&	defaultReply);
-		bool						addOperator(User *user, const char addOrRemove);
+		void						setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user);
+		void						addOperator(User *user, const char addOrRemove);
 
 		void						printMembers();
+		std::string 				membersList();
 		void						printMode();
-		//ajouter un getmember et getmode (car MODE sans parametres retourne les mode activés "Mode du channel xx activé : +i +o etc")
+		//ajouter un getmember et getmode (car MODE sans parametres retourne 
+		//les mode activés "Mode du channel xx activé : +i +o etc") 
+		//mais si c'Est un op ca montrerait aussi genre les données types limite, pwd etc..
 		const std::map<User*,bool>&	getMembers(void) const;
 };
 

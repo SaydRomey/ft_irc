@@ -39,146 +39,158 @@ Channel::~Channel()
 // 1.A JOIN message with the client as the message <source> and the channel they have joined as the first parameter of the message.
 // 2.The channel’s topic (with RPL_TOPIC (332) and optionally RPL_TOPICWHOTIME (333)), and no message if the channel does not have a topic.
 // 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
-void	Channel::addMember(User& user, std::string pswIfNeeded, const std::string& defaultReply)
+void	Channel::addMember(User& user, std::string pswIfNeeded)
 {
 	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
-		user.pendingPush(_reply.reply(ERR_INVITEONLYCHAN, user.getNickname()));
+		user.pendingPush(_reply.reply(ERR_INVITEONLYCHAN, user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0) //ERR_BADCHANNELKEY
 	{
-		user.pendingPush(_reply.reply(ERR_BADCHANNELKEY, user.getNickname()));
+		user.pendingPush(_reply.reply(ERR_BADCHANNELKEY, user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
 	{
-		user.pendingPush(_reply.reply(ERR_CHANNELISFULL, user.getNickname()));
+		user.pendingPush(_reply.reply(ERR_CHANNELISFULL, user.getNickname(), this->_name));
 		return ;
 	}
 	_members[&user]=false;
 	if (_members.find(&user) != _members.end()) //RPL_JOIN
 	{
 		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			it->first->pendingPush(defaultReply);
-		user.pendingPush(_reply.reply(RPL_TOPIC, this->_topic));
-		// std::cout << ":" << user.getNickname() << "!user@host JOIN " << this->_name << std::endl;
+			it->first->pendingPush(_reply.reply(RPL_JOIN, user.getNickname(), this->_name));
+		if (this->_topic.empty())
+			user.pendingPush(_reply.reply(RPL_NOTOPIC, user.getNickname(), this->_name));
+		else
+			user.pendingPush(_reply.reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
+		user.pendingPush(_reply.reply(RPL_NAMREPLY, user.getNickname(), this->_name, membersList()));
+		user.pendingPush(_reply.reply(RPL_ENDOFNAMES, user.getNickname(), this->_name));
 	}
 }
 
-bool	Channel::removeMember(User& user, const std::string& reason = "", const std::string& defaultReply)
+void	Channel::removeMember(User& user, const std::string& reason = "")
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
 		user.pendingPush(_reply.reply(ERR_NOTONCHANNEL, user.getNickname()));
-		return false;
+		return ;
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
 	{
-		std::cout << ":" << user.getNickname() << "!user@localhost PART " << this->_name;
+		std::string rep = _reply.reply(RPL_PART, user.getNickname(), this->_name);
 		if (!reason.empty())
-			std::cout << " :" << reason;
-		std::cout << std::endl;
+		{
+			rep += " :";
+			rep += reason;
+		}
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+			it->first->pendingPush(rep);
 	}
-	return true;
 }
 
-std::map<User*,bool> Channel::getMembers()
-{
-	return _members;
-}
-
-bool	Channel::setTopic(User& user, const std::string& topic, const std::string& defaultReply) //voir ce que weechat envoie si c'Est string vide
+void	Channel::setTopic(User& user, const std::string& topic)
 {
 	//par defaut sur false tout le monde peut modifier le topic.
 	//si mode +t donc true est activé, c'est seulement les op qui peuvent le changer
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
-		return false;
+		user.pendingPush(_reply.reply(ERR_NOTONCHANNEL, user.getNickname(), this->_name));
+		return ;
 	}
 	if (_modes['t'] == true)
 	{
 		if (_members[&user] != true) //ERR_CHANOPRIVSNEEDED
 		{
-			std::cout << ":server 482 " << user.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
-			return false;
+			user.pendingPush(_reply.reply(ERR_CHANOPRIVSNEEDED, user.getNickname(), this->_name));
+			return ;
 		}
 		_topic = topic;
-		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		{
+			if (!this->_topic.empty())
+				it->first->pendingPush(_reply.reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
+			else
+				it->first->pendingPush(_reply.reply(RPL_NOTOPIC, user.getNickname(), this->_name, this->_topic));
+		}
 	}
 	else
 	{
 		_topic = topic;
-		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		{
+			if (!this->_topic.empty())
+				it->first->pendingPush(_reply.reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
+			else
+				it->first->pendingPush(_reply.reply(RPL_NOTOPIC, user.getNickname(), this->_name, this->_topic));
+		}
 	}
-	return true;
 }
 
-bool Channel::getTopic(User& user)
+void Channel::getTopic(User& user)
 {
 	if (_members.find(&user) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << ":server 442 " << user.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
-		return false;
+		user.pendingPush(_reply.reply(ERR_NOTONCHANNEL, user.getNickname(), this->_name));
+		return ;
 	}
-	if (this->_topic.empty()) //ERR_NOTOPIC
-		std::cout << ":server 331 " << _name << " :No topic is set" << std::endl;
+	if (this->_topic.empty()) //RPL_NOTOPIC
+		user.pendingPush(_reply.reply(RPL_NOTOPIC, user.getNickname(), this->_name, this->_topic));
 	else
-		std::cout << ":" << user.getNickname() << "!user@host TOPIC " << _name << " :" << _topic << std::endl;
-	return true;
+		user.pendingPush(_reply.reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
 }
 
-bool	Channel::kick(User &user, User& op, std::string reason, const std::string& defaultReply)
+void	Channel::kick(User &user, User& op, std::string reason)
 {
 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
+		return ;
 	}
 	if (_members[&op] != true) //ERR_CHANOPRIVSNEEDED
 	{
-		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
+		return ;
 	}
 	if (_members.find(&user) == _members.end()) //ERR_USERNOTINCHANNEL
 	{
-		std::cout << ":server 441 " << op.getNickname() << " " << user.getNickname() << " " << this->_name << " :They aren't on that channel" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_USERNOTINCHANNEL, user.getNickname(), this->_name));
+		return ;
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		std::cout << ":server KICK " << this->_name << " " << user.getNickname() << " :" << reason << std::endl;
-	return true;
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+			it->first->pendingPush(_reply.reply(RPL_KICK, user.getNickname(), this->_name, reason));
 }
 
-bool	Channel::invite(User &user, User& op, const std::string& defaultReply)
+void	Channel::invite(User &user, User& op)
 {
 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
 	{
-		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
+		return ;
 	}
 	if (_modes['i'] == true && _members[&op] != true) //ERR_CHANOPRIVSNEEDED
 	{
-		std::cout << ":server 482 " << op.getNickname()<< " " << this->_name << " :You're not channel operator" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
+		return ;
 	}
 	if (_members.find(&user) != _members.end()) //ERR_USERONCHANNEL
 	{
-		std::cout << ":server 443 " << op.getNickname() << " " << user.getNickname() << " " << this->_name << " :is already on channel" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_USERONCHANNEL, op.getNickname(), user.getNickname(), this->_name));
+		return ;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
 	{
-		std::cout << ":server 471 " << user.getNickname() << " " << this->_name << " :Cannot join channel (+l)" << std::endl;
-		return false;
+		op.pendingPush(_reply.reply(ERR_CHANNELISFULL, op.getNickname(), this->_name));
+		return ;
 	}
 	_members[&user]=false;
 	if (_members.find(&user) != _members.end())
-		std::cout << ":server 341 " << user.getNickname() << " " << this->_name << " :" << op.getNickname() << std::endl;
-	return true;
+		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+			it->first->pendingPush(_reply.reply(RPL_INVITING, op.getNickname(), user.getNickname(), this->_name));
 }
 
 static bool	isValidNb(const std::string& str)
@@ -262,20 +274,19 @@ static bool	isValidNb(const std::string& str)
 // 	return true;
 // }
 
-bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user, const std::string& defaultReply)
+void Channel::setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user)
 {
 	const std::string validMod = "itkol";
-	if (_members.find(&op) == _members.end())
-	{ // ERR_NOTONCHANNEL
-		std::cout << ":server 442 " << op.getNickname() << " " << this->_name << " :You're not on that channel" << std::endl;
-		return false;
+	if (_members.find(&op) == _members.end())// ERR_NOTONCHANNEL
+	{ 
+		op.pendingPush(_reply.reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
+		return ;
 	}
-	if (_members[&op] != true)
-	{ // ERR_CHANOPRIVSNEEDED
-		std::cout << ":server 482 " << op.getNickname() << " " << this->_name << " :You're not channel operator" << std::endl;
-		return false;
+	if (_members[&op] != true)// ERR_CHANOPRIVSNEEDED
+	{ 
+		op.pendingPush(_reply.reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
+		return ;
 	}
-
 	char currentSign = '\0'; // Pour garder la trace de + ou -
 	for (size_t i = 0; i < mode.size(); ++i)
 	{
@@ -286,8 +297,8 @@ bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 			// Mode valide
 			if (currentSign == '\0') //ERR_UNKNOWNMODE 
 			{
-				std::cout << ":server 501 " << op.getNickname() << " :Syntax error in parameters" << std::endl;
-				return false;
+				op.pendingPush(_reply.reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
+				return ;
 			}
 			bool enable = (currentSign == '+');
 			_modes[mode[i]] = enable;
@@ -298,7 +309,7 @@ bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 				else if (!enable)
 					_password.clear();
 			}
-			else if (mode[i] == 'o')
+			else if (mode[i] == 'o') //voir si je peux mettre quelqu'un en op si il est pas dans le channel
 			{
 				if (user != NULL)
 					addOperator(user, enable ? '+' : '-');
@@ -311,29 +322,18 @@ bool Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 					_memberLimit = 0;
 			}
 		}
-		else //Numéro d'erreur : 472, Message : ERR_UNKNOWNMODE, Format : "<mode char> :is an unknown mode" but not return
-		{
-			std::cout << ":server 472 " << op.getNickname() << " " << mode[i] << " :is an unknown mode" << std::endl;
-			return false;
-		}
+		else //ERR_UNKNOWNMODE
+			op.pendingPush(_reply.reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
-	return true;
 }
 
 
-bool	Channel::addOperator(User *user, const char addOrRemove)
+void	Channel::addOperator(User *user, const char addOrRemove)
 {
 	if (addOrRemove == '+')
-	{
 		this->_members[user] = true;
-		return true;
-	}
 	else if (addOrRemove == '-')
-	{
 		this->_members[user] = false;
-		return true;
-	}
-	return false;
 }
 
 void Channel::printMembers()
@@ -341,6 +341,23 @@ void Channel::printMembers()
 	std::cout << "Members list: " << std::endl;
 	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
 		std::cout << "-> " << it->first->getNickname() << " : " << it->second << std::endl;
+}
+
+std::string Channel::membersList()
+{
+	std::string list;
+	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+	{
+		if (list.empty())
+		{
+			list = it->first->getNickname();
+			continue ;
+		}
+		else
+			list += " ";
+		list += it->first->getNickname();
+	}
+	return list;
 }
 
 void	Channel::printMode()

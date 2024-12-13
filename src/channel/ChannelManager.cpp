@@ -73,7 +73,7 @@ void ChannelManager::inviteManager(User &sender, const Message &msg)
 
 void ChannelManager::kickManager(User &sender, const Message &msg)
 {
-
+	//voir pour envoyé un message par default si pas de raison envoyé
 }
 
 void ChannelManager::modeManager(User &sender, const Message &msg)
@@ -99,7 +99,7 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 
 void ChannelManager::quitManager(User &sender)
 {
-	
+
 }
 
 void ChannelManager::privmsgManager(User &sender, const std::string &chan, const std::string &reply)
