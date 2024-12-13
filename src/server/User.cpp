@@ -3,7 +3,7 @@
 User::User(void): _fd(-1), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
 {}
 
-User::User(int fd): _fd(fd), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
+User::User(int fd): _fd(fd), _username(), _nickname("*"), _perms(), _msgBuffer(), _pending()
 {}
 
 User &User::operator=(const User &other)
@@ -99,4 +99,19 @@ const std::string User::pendingPop(void)
 	std::string msg = _pending.front();
 	_pending.pop();
 	return msg;
+}
+
+bool User::addChannel(const std::string &chan)
+{
+	return _channels.insert(chan).second;
+}
+
+bool User::removeChannel(const std::string &chan)
+{
+	return _channels.erase(chan);
+}
+
+bool User::inChannel(const std::string &chan)
+{
+	return _channels.count(chan);
 }

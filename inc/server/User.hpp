@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <queue>
+# include <set>
 # include <string>
 
 # define PERM_PASS 0x00f
@@ -20,6 +21,7 @@ class User
 
 		std::string				_msgBuffer;
 		std::queue<std::string>	_pending;
+		std::set<std::string>	_channels;
 	public:
 		User(void);
 		User(int fd);
@@ -42,6 +44,10 @@ class User
 		size_t				pendingSize(void) const;
 		void				pendingPush(const std::string& msg);
 		const std::string	pendingPop(void);
+
+		bool	addChannel(const std::string& chan);
+		bool	removeChannel(const std::string& chan);
+		bool	inChannel(const std::string& chan);
 };
 
 #endif
