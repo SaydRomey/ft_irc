@@ -6,7 +6,7 @@
 /*   By: jdemers <jdemers@student.42quebec.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 16:07:19 by jdemers          ###   ########.fr       */
+/*   Updated: 2024/12/13 18:57:01 by jdemers          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,36 +23,6 @@
 #include <cctype> // isalnum, isalpha
 #include <iostream>
 #include <stdexcept>
-#include <utility>
-
-static const std::pair<std::string, int> cmdArr[11] = {
-	std::make_pair("PASS", PASS),
-	std::make_pair("NICK", NICK),
-	std::make_pair("USER", USER),
-	std::make_pair("JOIN", JOIN),
-	std::make_pair("PART", PART),
-	std::make_pair("TOPIC", TOPIC),
-	std::make_pair("MODE", MODE),
-	std::make_pair("KICK", KICK),
-	std::make_pair("INVITE", INVITE),
-	std::make_pair("PRIVMSG", PRIVMSG),
-	std::make_pair("NOTICE", NOTICE),
-};
-
-// static const std::pair<std::string, int> cmdArr[11] = {
-// 	{"PASS", PASS},
-// 	{"NICK", NICK},
-// 	{"USER", USER},
-// 	{"JOIN", JOIN},
-// 	{"PART", PART},
-// 	{"TOPIC", TOPIC},
-// 	{"MODE", MODE},
-// 	{"KICK", KICK},
-// 	{"INVITE", INVITE},
-// 	{"PRIVMSG", PRIVMSG},
-// 	{"NOTICE", NOTICE},
-// };
-std::map<std::string, int> Validator::commandMap(cmdArr, cmdArr + sizeof(cmdArr) / sizeof(std::pair<std::string, int>));
 
 const size_t Validator::MAX_NICKNAME_LENGTH = 9;
 const size_t Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
