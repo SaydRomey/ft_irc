@@ -6,14 +6,16 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:05:32 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 04:16:19 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 21:14:17 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Reply.hpp"
 #include "parsing_utils.hpp"
+#include <ctime>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 const std::string Reply::SERVER_NAME = "ircserv";
 
@@ -118,7 +120,7 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 		++i;
 	}
 	
-	if (argIndex < args.size()) // to many arguments
+	if (argIndex < args.size()) // too many arguments
 	{
 		throw (std::runtime_error("Too many arguments for reply template:  " + templateStr));
 	}
@@ -128,3 +130,90 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 	// return (oss.str() + "\r\n");
 }
 
+/* ************************************************************************** */
+
+
+// Maybe overload the pendingPush ?
+void	User::pendingPush(const std::vector<std::string>& msgs)
+{
+	std::vector<std::string>::const_iterator	it = msgs.begin();
+	while (it != msgs.end())
+	{
+		pendingPush(*it);
+		++it;
+	}
+}
+
+// std::string getCurrentDate(void)
+// {
+// 	char		buffer[80];
+// 	std::time_t	now = std::time(0);
+// 	std::tm		*localTime = std::localtime(&now);
+// 	std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
+	
+// 	return (std::string(buffer));
+// }
+
+// to convert the '_time' attribute
+std::string	Server::getServerCreationDate(void) const
+{
+	char	buffer[80];
+	std::tm	*localTime = std::localtime(&_time);
+	std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
+	
+	return (std::string(buffer));
+}
+
+void Server::user_cmd(User &client, const Message &msg)
+{
+	short perms = client.getPerms();
+	if (perms == PERM_ALL)
+		client.pendingPush(_rplGenerator.reply(462), client.getNickname());
+	else if (perms == PERM_NICK)
+		client.pendingPush(_rplGenerator.reply(464), client.getNickname());
+	else
+	{
+		client.setUsername(msg.getParams());
+		if (client.getPerms() == PERM_ALL)
+		{
+			std::string creationDate = getServerCreationDate();
+			
+			std::vector<std::string> welcomeReplies = _rplGenerator.generateWelcomeReplies(client.getNickname(), creationDate);
+			client.pendingPush(welcomeReplies);
+			// client.pendingPush(_rplGenerator.generateWelcomeReplies(client.getNickname(), creationDate));
+		}
+	}
+}
+
+std::vector<std::string>	Reply::generateWelcomeReplies(const std::string &nickname, const std::string &creationDate) const
+{
+	std::vector<std::string>	replies;
+
+	// Generate replies
+	replies.push_back(reply(RPL_WELCOME, nickname, nickname));
+	replies.push_back(reply(RPL_YOURHOST, nickname, SERVER_NAME, "1.0"));
+	replies.push_back(reply(RPL_CREATED, nickname, creationDate));
+	replies.push_back(reply(RPL_MYINFO, nickname, SERVER_NAME, "1.0", "i t k o l"));
+
+	return (replies);
+}
+
+// usage example:
+void	test_generateWelcomeReplies(void)
+{
+	Reply	rpl;
+	User	user(1);
+	
+	user.setNickname("HonoredGuest");
+
+	Server	server("4242", "password");
+	std::string	creationDate = server.getServerCreationDate();
+
+	std::vector<std::string> welcomeReplies = rpl.generateWelcomeReplies(user.getNickname(), creationDate);
+	user.pendingPush(welcomeReplies);
+	
+	while (user.pendingSize() > 0)
+	{
+		std::cout << user.pendingPop() << std::endl;
+	}
+}

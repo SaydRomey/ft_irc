@@ -6,21 +6,12 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:41:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 13:56:13 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 23:36:20 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSING_UTILS_HPP
 # define PARSING_UTILS_HPP
-
-# include <algorithm>
-# include <iostream>
-# include <map>
-# include <sstream>
-# include <string>
-# include <vector>
-# include <utility>		// For std::pair (in parseChannelsAndKeys() and print)
-# include <stdexcept>	// std::invalid_argument (in processChannelsAndKeys)
 
 # define RESET		"\033[0m"
 # define BOLD		"\033[1m"
@@ -35,19 +26,41 @@
 # define ORANGE		"\033[38;5;208m"
 # define GRAYTALIC	"\033[3;90m"
 
+# include <algorithm>
+# include <iostream>
+# include <map>
+# include <sstream>
+# include <string>
+# include <vector>
+# include <utility>		// For std::pair (in parseChannelsAndKeys() and print)
+# include <stdexcept>	// std::invalid_argument (in processChannelsAndKeys)
+
+
+typedef std::vector<std::pair<std::string, std::string> >	t_vecPairStrStr;
+typedef std::map<std::string, std::string>					t_mapStrStr;
+typedef std::vector<std::string>							t_vecStr;
+
+// for the 'hasValidNumberOfParams()' function
+enum VerificationType
+{
+	AT_LEAST,	// >=
+	EXACTLY,	// ==
+	AT_MOST		// <=
+};
+
 std::vector<std::string>	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
-std::vector<std::string>	tokenize(const std::string &input, char delimiter = ' ');
+std::vector<std::string>	tokenize(const std::string &input, char delimiter = ' ', bool includeEmptyTokens = false);
 
+int		countTokens(const std::string &str, char delimiter = ' ');
+bool	hasValidNumberOfParams(const std::string &params, int expectedNum, VerificationType type);
 bool	hasMultipleEntries(const std::string &param);
-
-// std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys);
 
 std::string trim(const std::string &str);
 std::string	normalizeInput(const std::string &input);
 std::string	crlf(const std::string &str);
 
-void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg = "");
-void	printChannelKeyPairs(const std::vector<std::pair<std::string, std::string> > &pairs);
+void	printMap(const t_mapStrStr &parsedCommand, const std::string &msg = "");
+void	printChannelKeyPairs(const t_vecPairStrStr &pairs);
 
 #endif // PARSING_UTILS_HPP
 

@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:24 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 02:35:09 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/14 00:34:50 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@
 #include <stdexcept>
 
 const size_t 		Validator::MAX_NICKNAME_LENGTH = 9;
-const size_t 		Validator::MAX_CHANNEL_NAME_LENGTH = 42; // arbitrary limit for channels
+const size_t 		Validator::MAX_CHANNEL_NAME_LENGTH = 42;
 const std::string	Validator::VALID_MODE_FLAGS = "+-itkol";
-// ...other validations (for password rules, limits or allowed chars ?)
+const std::string	Validator::INVALID_CHANNEL_CHARS = " ,\r\n";
 
 static std::map<std::string, CommandType>	initCommandMap(void)
 {
@@ -218,18 +218,14 @@ Uses command-specific methods (e.g., ValidateJoinCommand)
 
 Validate IRC nickname
 
-	Must start with a letter and contain only alphanumeric characters
-	Must contain only alphanumeric characters, underscores, or dashes
+	Must start with a letter,
+	Must contain only alphanumeric characters, underscores, or dashes,
 	Must not exceed specified limit
-
 */
 bool	Validator::_isValidNickname(const std::string &nickname) const
 {
 	if (nickname.empty() || nickname.length() > MAX_NICKNAME_LENGTH)
 		return (false);
-
-	// if (nickname.size() > 10)
-		// return (false); // 432
 
 	if (!std::isalpha(nickname[0]))
 		return (false);
@@ -241,7 +237,6 @@ bool	Validator::_isValidNickname(const std::string &nickname) const
 			return (false);
 		++i;
 	}
-	
 	return (true);
 }
 
@@ -251,7 +246,6 @@ Validate IRC channel names
 	Must start with '#'
 	Must not contain invalid characters:
 	(' ', ','. '\r', '\n') 
-
 */
 bool	Validator::_isValidChannelName(const std::string &channel) const
 {
@@ -261,14 +255,9 @@ bool	Validator::_isValidChannelName(const std::string &channel) const
 	if (channel[0] != '#')
 		return (false);
 
-	size_t	i = 1;
-	while (i < channel.length())
-	{
-		if (channel[i] == ' ' || channel[i] == ',' || channel[i] == '\r' || channel[i] == '\n')
-			return (false);
-		++i;
-	}
-	
+	if (channel.find_first_of(INVALID_CHANNEL_CHARS) != std::string::npos)
+		return (false);
+
 	return (true);
 }
 
@@ -276,26 +265,6 @@ bool	Validator::_isValidChannelName(const std::string &channel) const
 // {
 // 	// 
 // 	return (_setRpl(ERR_PASSWDMISMATCH));
-// }
-
-/*
-Detect if the 'params' string contains one or two sequence of comma separated words
-*/
-// bool	Validator::_hasMultipleParams(const std::string &params) const;
-// {
-// 	return (params.find(',') != std::string::npos);
-// }
-
-/*
-implement syntax validation ('#' before channel names?)
-implement semantic validation (same number of channels and keys,
-	**(do we accept '*' as an empty imput ?))
-*/
-// bool	Validator::_isValidMultipleParams(const std::string &params) const
-// {
-// 	enter here from detecting a param with multiple targets (channels, keys, users?)
-// 	// ...
-// 	think on how to handle replies...
 // }
 
 /* ************************************************************************** */
@@ -328,9 +297,7 @@ bool	Validator::_validatePassCommand(const std::map<std::string, std::string> &c
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "PASS"));
 
-	// Check if the client has already registered (handled in higher-level logic) 462
 	return (_noRpl());
-	// return (_setRpl(RPL_MYINFO, "PASS", "Accepted"));
 }
 
 /*
@@ -365,7 +332,7 @@ bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &c
 		return (_setRpl(ERR_ERRONEUSNICKNAME, command.at("params")));
 
 	// Check if nickname is already in use (higher-level logic) 462
-	return (_setRpl(RPL_WELCOME, command.at("params")));
+	return (_setRpl(RPL_WELCOME, command.at("params"))); // TOCHANGE
 }
 
 /*
@@ -416,28 +383,17 @@ Errors:
 	476 ERR_BADCHANMASK: Bad channel mask
 
 Success Reply:
-	RPL_TOPIC (332):
-		Sent after joining a channel to notify the client of the topic.
-
-	RPL_NOTOPIC (331):
-		Sent if there is no topic for the channel.
+	join message? (RPL_JOIN, custom reply..)
+	RPL_TOPIC (332)	or	RPL_NOTOPIC (331)
+	RPL_NAMEREPLY (353)
+	RPL_ENDOFNAMES (366)
 */
-// bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
-// {
-// 	if (command.find("params") == command.end() || command.at("params").empty())
-// 		return(_setRpl(ERR_NEEDMOREPARAMS, "JOIN"));
-	
-// 	if (!_isValidChannelName(command.at("params")))
-// 		return (_setRpl(ERR_NOSUCHCHANNEL, command.at("params")));
-
-// 	// Additional checks like invite-only or channel limits can be implemented elsewhere
-// 	return (_noRpl());
-// }
-
 bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return(_setRpl(ERR_NEEDMOREPARAMS, "JOIN"));
+
+	// 
 
 	// should we ignore trailing if present, or flag the error?
 
@@ -515,10 +471,10 @@ Success Reply:
 */
 bool Validator::_validateTopicCommand(const std::map<std::string, std::string>& command) const
 {
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setRpl(ERR_NEEDMOREPARAMS, "TOPIC"));
+	// if (command.find("params") == command.end() || command.at("params").empty())
+	// 	return (_setRpl(ERR_NEEDMOREPARAMS, "TOPIC"));
 	
-	if (!_isValidChannelName(command.at("params")))
+	if (command.find("params") != command.end() && !_isValidChannelName(command.at("params")))
 		return (_setRpl(ERR_NOSUCHCHANNEL, command.at("params")));
 
 	// Check if the user is on the channel (higher-level logic)
@@ -710,6 +666,7 @@ params must exist and specify the target user and channel
 
 Errors:
 	401 ERR_NOSUCHNICK: No such nick/channel
+	403 ERR_NOSUCHCHANNEL: No such channel ?
 	442 ERR_NOTONCHANNEL: You're not on that channel
 	443 ERR_USERONCHANNEL: is already on channel
 	461 ERR_NEEDMOREPARAMS: Not enough parameters
@@ -726,10 +683,11 @@ bool Validator::_validateInviteCommand(const std::map<std::string, std::string>&
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "INVITE"));
 
-	std::vector<std::string>	params = tokenize(command.at("params"));
+	std::vector<std::string>	paramsTokens = tokenize(command.at("params"));
 
-	if (params.size() < 2)
+	if (paramsTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, "INVITE"));
+	
 
 	// Validate that the user and channel exist (additional logic needed)
 	return (_noRpl());

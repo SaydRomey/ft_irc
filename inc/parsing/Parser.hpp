@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:08:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 02:07:01 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 20:21:03 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 # include <string>
 # include <vector>
 
-// typedef std::vector<std::pair<std::string, std::string> >	t_vecPairStrStr; // ?
+typedef std::vector<std::pair<std::string, std::string> >	t_vecPairStrStr;
+typedef std::map<std::string, std::string>					t_mapStrStr;
 
 class Parser
 {
@@ -25,9 +26,8 @@ class Parser
 		Parser(void);
 		~Parser(void);
 		
-		std::map<std::string, std::string>	parseCommand(const std::string &input) const;
-		std::vector<std::pair<std::string, std::string> >	parseChannelsAndKeys(const std::string &params) const;
-		// t_vecPairStrStr	parseChannelsAndKeys(const std::string &params) const;
+		t_mapStrStr			parseCommand(const std::string &input) const;
+		t_vecPairStrStr		parseChannelsAndKeys(const std::string &params) const;
 	
 	private:
 };

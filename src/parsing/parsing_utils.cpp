@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/12 13:57:38 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 23:33:20 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,78 +35,73 @@ std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &ar
 
 /*
 Creates a vector of string tokens from 'input' using 'delimiter' as delimiter
+** Set 'includeEmptyTokens' to true to keep empty tokens in vector
+** ex., if using it to tokenize multiple channel keys in JOIN command:
+	tokenize ("key1,,key3", ',');		-> {"key1"}, {"key3"}
+	tokenize ("key1,,key3", ',', true);	-> {"key1"}, {""}, {"key3"}
 */
-std::vector<std::string>	tokenize(const std::string &input, char delimiter)
+std::vector<std::string>	tokenize(const std::string &input, char delimiter, bool includeEmptyTokens)
 {
 	std::vector<std::string>	tokens;
-
-	std::stringstream	ss(input);
-	std::string			token;
+	std::stringstream			ss(input);
+	std::string					token;
 
 	while (std::getline(ss, token, delimiter))
 	{
-		if (!token.empty()) // ignore empty tokens caused by consecutive delimiters
+		if (includeEmptyTokens || !token.empty())
 			tokens.push_back(token);
 	}
 	return (tokens);
 }
 
+/*
+Returns the number of tokens in a string, using 'delimiter' or default ' '
+*/
+int	countTokens(const std::string &str, char delimiter)
+{
+	if (str.empty())
+		return (0);
+
+	std::istringstream	stream(str);
+	std::string			token;
+	
+	int	count = 0;
+	while (std::getline(stream, token, delimiter))
+	{
+		++count;
+	}
+	return (count);
+}
+
+/*
+Checks if the number of tokens in 'params' is valid compared to 'expectedNum'.
+Modes (using VerificationType enum):
+	AT_LEAST:	true if param count >= expectedNum.
+	EXACTLY:	true if param count == expectedNum.
+	AT_MOST:	true if param count <= expectedNum.
+*/
+bool	hasValidNumberOfParams(const std::string &params, int expectedNum, VerificationType type)
+{
+	int	paramNum = countTokens(params);
+
+	switch (type)
+	{
+		case AT_LEAST:
+			return (paramNum >= expectedNum);
+		case EXACTLY:
+			return (paramNum == expectedNum);
+		case AT_MOST:
+			return (paramNum <= expectedNum);
+		default:
+			return (false);
+	}
+}
 
 bool	hasMultipleEntries(const std::string &param)
 {
 	return (param.find(',') != std::string::npos);
 }
 
-/*
-** assumes params contains multiple entries (previously checked in higher level with 'hasMultipleEntries()')
-*/
-// std::vector<std::pair<std::string, std::string> >	processChannelsAndKeys(const std::string &params)
-// {
-// 	// check anyways?
-// 	if (!hasMultipleEntries(params))
-// 		throw (std::invalid_argument("Invalid params: Missing or malformed entries for channels and keys."));
-	
-// 	// tokenize params into two parts
-// 	std::vector<std::string>	paramTokens = tokenize(params);
-// 	if (paramTokens.size() != 2)
-// 		throw (std::invalid_argument("Invalid params in processChannelsAndKeys: Expected two entries (channels and keys)."));
-	
-// 	std::string	channels = paramTokens[0];
-// 	std::string	keys = paramTokens[1];
-
-// 	return (pairChannelsAndKeys(channels, keys));
-// }
-
-
-
-// std::vector<std::pair<std::string, std::string> >	pairChannelsAndKeys(const std::string &channels, const std::string &keys)
-// {
-// 	std::vector<std::string>	channelTokens = tokenize(channels, ',');
-// 	std::vector<std::string>	keyTokens = tokenize(keys, ',');
-
-// 	std::vector<std::pair<std::string, std::string> >	result;
-// 	result.reserve(channelTokens.size()); // to avoid reallocation
-
-// 	size_t	i = 0;
-// 	while (i < channelTokens.size())
-// 	{
-// 		std::string	key = ""; // default to an empty key
-		
-// 		if (i < keyTokens.size())
-// 		{
-// 			key = keyTokens[i];
-			
-// 			if (key == "*")
-// 			{
-// 				key = ""; // if key is exactly "*", treat as empty field (TODO: check with teammates...)
-// 			}
-// 		}
-		
-// 		result.push_back(std::make_pair(channelTokens[i], key));
-// 		++i;
-// 	}
-// 	return (result);
-// }
 
 /*
 Remove leading and trailing whitespace
@@ -157,7 +152,6 @@ std::string normalizeInput(const std::string &input)
 		}
 		++it;
 	}
-
 	return (normalized);
 }
 

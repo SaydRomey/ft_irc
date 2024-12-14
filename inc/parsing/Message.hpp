@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 03:04:30 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/14 00:19:39 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,49 +20,51 @@
 # include <iostream>
 # include <map>
 # include <string>
-// # include <utility> // For std::pair ? or std::make_pair()
 
-// typedef std::vector<std::pair<std::string, std::string> >	vecPairStrStr; // ?
+typedef std::vector<std::pair<std::string, std::string> >	t_vecPairStrStr;
+typedef std::map<std::string, std::string>					t_mapStrStr;
+typedef std::vector<std::string>							t_vecStr;
 
 class Message
 {
 	public:
+	
+		// Constructors/Destructors
 		Message(void);
-		~Message(void);
-		Message(const Message &other);
 		Message(const std::string &input);
+		Message(const std::string &input, const std::string &nickname = "*");
+		Message(const Message &other);
 		Message& operator=(const Message &other);
+		~Message(void);
 		
-		
-		const std::string	&getInput(void) const;
-		const std::string	&getPrefix(void) const;
-		const std::string	&getCommand(void) const;
-		const std::string	&getParams(void) const;
-		const std::string	&getTrailing(void) const;
-		const std::string	&getReply(void) const;
-		const std::vector<std::pair<std::string, std::string> >	&getChannelsAndKeys(void) const; // ? if tokenized access is required, else implement tools to be used..
-
-		bool	isValid(void) const;
+		// Getters
+		bool					isValid(void) const;
+		const std::string		&getInput(void) const;
+		const std::string		&getPrefix(void) const;
+		const std::string		&getCommand(void) const;
+		const std::string		&getParams(void) const;
+		const t_vecStr			&getParamsVec(void) const;
+		// const t_vecStr			&getParams(bool tokenized) const;
+		const std::string		&getTrailing(void) const;
+		const std::string		&getReply(void) const;
+		const t_vecPairStrStr	&getChannelsAndKeys(void) const;
 		
 	private:
-		bool												_valid;
-		std::string											_input;
-		std::map<std::string, std::string>					_parsedMessage;
-		std::string											_reply;
-		std::vector<std::pair<std::string, std::string> >	_channelsAndKeys;
+		bool			_valid;
+		std::string		_nickname;
+		std::string		_input;
+		t_mapStrStr		_parsedMessage;
+		std::string		_reply;
+		t_vecPairStrStr	_channelsAndKeys;
+		t_vecStr		_tokenizedParams;
 
-	
 		Parser		_parser;
 		Validator	_validator;
-		// Reply		_rpl;		// less overhead if we create a Reply instance too often.. (TOCHECK)
-		// Reply		&_rpl;		// (if we pass it as an external single Reply object (in constructor) (TOCHECK))
+		// Reply		&_rpl;
 
 		void	_processInput(const std::string &input);
-		bool	_validateParsedCommand(void);
 		void	_processJoinCommand(void);
 
-		// void	_processChannelsAndKeys(const std::string &params);
-		
 };
 
 std::ostream	&operator<<(std::ostream &out, const Message &message);

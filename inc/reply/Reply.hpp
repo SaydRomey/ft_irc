@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 01:35:46 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 00:52:22 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 19:32:09 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 */
 /* TODO:
 	implement function to add 4 replies to a Client (class) 's pendigqeue with member function..
+	
+	should the replies on successful command (join, part, kick, invite) be functions instead of replies ?
 	
 */
 

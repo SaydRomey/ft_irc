@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 04:06:13 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/14 01:04:55 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,33 @@
 #include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
 #include <iomanip>				// std::setw()
 
-Message::Message(void) : _valid(false), _input(""), _reply("") {}
-Message::~Message(void) {}
+Message::Message(void) : _valid(false), _nickname("*"), _input(""), _reply("") {}
+
+Message::Message(const std::string &input)
+	: _valid(false), _nickname("*"), _input(input), _reply("")
+{
+	_processInput(normalizeInput(input));
+	// _processInput(trim(normalizeInput(input)));	
+}
+
+Message::Message(const std::string &input, const std::string &nickname)
+	: _valid(false), _nickname(nickname), _input(input), _reply("")
+{
+	if (!_isValidNickname(nickname))
+		_nickname = "*";
+	
+	_processInput(normalizeInput(input));
+	// _processInput(trim(normalizeInput(input)));
+}
 
 Message::Message(const Message &other)
-	: _valid(false),
+	: _valid(other._valid),
+	  _nickname(other._nickname),
 	  _input(other._input),
 	  _parsedMessage(other._parsedMessage),
 	  _reply(other._reply),
-	  _channelsAndKeys(other._channelsAndKeys)
+	  _channelsAndKeys(other._channelsAndKeys),
+	  _tokenizedParams(other._tokenizedParams)
 {
 	// might need to implement assignable for Parser and Validator .. ?
 	// _parser(other._parser),
@@ -30,35 +48,42 @@ Message::Message(const Message &other)
 	// *this = other;
 }
 
-/*	** Assumes the input is a single command (will remove any CRLF ("\r\n") characters from it)
-*/
-Message::Message(const std::string &input) : _valid(false), _input(input), _reply("")
-{
-	_processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));
-}
-
 Message&	Message::operator=(const Message &other)
 {
 	if (this != &other)
 	{
 		_valid = other._valid;
+		_nickname = other._nickname;
 		_input = other._input;
 		_parsedMessage = other._parsedMessage;
 		_reply = other._reply;
 		_channelsAndKeys = other._channelsAndKeys;
+		_tokenizedParams = other._tokenizedParams;
 		// _parser = other._parser;
 		// _validator = other._validator;
 	}
 	return (*this);
 }
 
+Message::~Message(void) {}
+
 /* ************************************************************************** */
 
+bool	Message::isValid(void) const { return (_valid); }
+
 const std::string	&Message::getInput(void) const { return (_input); }
-const std::string	&Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
+
+const std::string	&Message::getPrefix(void) const
+{
+	if (_parsedMessage.at("prefix") == "*")
+		return ("");
+	return (_parsedMessage.at("prefix"));
+}
+
 const std::string	&Message::getCommand(void) const { return (_parsedMessage.at("command")); }
 const std::string	&Message::getParams(void) const { return (_parsedMessage.at("params")); }
+const std::string	&Message::getParamsVec(void) const { return (_tokenizedParams); }
+// const std::string	&Message::getParams(bool tokenized) const { return (_tokenizedParams); }
 const std::string	&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
 const std::string	&Message::getReply(void) const { return (_reply); }
 
@@ -66,8 +91,6 @@ const std::vector<std::pair<std::string, std::string> >	&Message::getChannelsAnd
 {
 	return (_channelsAndKeys);
 }
-
-bool	Message::isValid(void) const { return (_valid); }
 
 /* ************************************************************************** */
 
@@ -79,60 +102,74 @@ void	Message::_processInput(const std::string &input)
 {
 	_parsedMessage = _parser.parseCommand(input);
 
-	if (!_validateParsedCommand())
-		return ;
+	if(_parsedMessage.at("prefix").empty())
+		_parsedMessage["prefix"] = _nickname;
 	
-	if (_parsedMessage["command"] == "JOIN")
-		_processJoinCommand();
+	if (!_validator.validateCommand(_parsedMessage))
+	{
+		Reply	rpl;
+		_reply = rpl.reply(_validator.getRplType(), _validator.getRplArgs());
+		_valid = false;
+		return ;
+	}
+
+	const std::string	&command = _parsedMessage.at("command");
+	const std::string	&params = _parsedMessage.at("params");
+		
+	if (command == "JOIN")
+		_processJoinCommand(params);
+	// else if (command == "PART")
+	// 	_processPartCommand(params);
+	else if (command == "KICK")
+		_processKickCommand(params);
+	// else if (command == "MODE")
+	// 	_processModeCommand(params);
+	// else if (command == "TOPIC")
+	// 	_processTopicCommand(params);
+	// else if (command == "INVITE")
+	// 	_processInviteCommand(params);
+	// else if (command == "PRIVMSG" || command == "NOTICE")
+	// 	_processPrivMsgCommand(params);
+	else
+		_tokenizedParams = tokenize(params);
+
+	// 	PART params are either 1 or more channels..
+	// 	INVITE invitee_nickname #channel
+	// 	PRIVMSG and NOTICE 1 or more targets
+	
+	// Tokenize general params for other commands
 
 	_valid = true;	
 	_reply.clear(); // if everything is valid
 }
 
 /*
-Handles command validation and error reporting
 */
-bool	Message::_validateParsedCommand(void)
+void	Message::_processJoinCommand(const std::string &params)
 {
-	try
-	{
-		if (!_validator.validateCommand(_parsedMessage))
-		{
-			Reply	rpl;
-			_reply = rpl.reply(_validator.getRplType(), _validator.getRplArgs());
-			_valid = false;
-			return (false);
-		}
-	}
-	catch (const std::exception &e)
-	{
-		Reply	rpl;
-		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "PROCESSING", "ERROR", e.what());
-		_valid = false;
-		return (false);
-	}
-	return (true);
+	// if (!hasMultipleEntries(params))
+	// 	return ; // we still need a pair if it is one channel and one key...
+	
+	if (hasValidNumberOfParams(params, 2, AT_MOST))
+		_channelsAndKeys = _parser.parseChannelsAndKeys(params);
 }
 
-void	Message::_processJoinCommand(void)
+void	Message::_processKickParams(const std::string &params)
 {
-	if (!hasMultipleEntries(_parsedMessage["params"]))
-		return ;
+	if (hasValidNumberOfParams(params, 2, EXACTLY))
+	{
+		t_vecStr	paramsTokens = tokenize(params);
+		std::string	channel = paramsTokens[0];
+		
+		if (hasMultipleEntries(paramsTokens[1]))
+			t_vecStr	userTokens = tokenize(paramsTokens[1], ',', true);
 
-	try
-	{
-		// std::vector<std::pair<std::string, std::string> >	channelsAndKeys;
+		t_vecStr	kickParams;
+
+		kickParams.push_back(channel);
+		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
 		
-		// channelsAndKeys = _parser.parseChannelsAndKeys(_parsedMessage["params"]);
-		// _channelsAndKeys = channelsAndKeys;
-		
-		_channelsAndKeys = _parser.parseChannelsAndKeys(_parsedMessage["params"]);
-	}
-	catch (const std::exception &e)
-	{
-		Reply	rpl;
-		_reply = rpl.reply(ERR_UNKNOWNCOMMAND, "JOIN", "Invalid params", e.what());
-		_valid = false;
+		_tokenizedParams = kickParams;
 	}
 }
 

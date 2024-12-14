@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/04 21:30:44 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 00:10:47 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/13 18:15:37 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,17 @@ enum ReplyType
 	// ===================
 	// CHANNEL MANAGEMENT
 	// ===================
+	RPL_JOIN = 1000,
+	RPL_PART = 1001,
+	RPL_KICK = 1002,
+	RPL_INVITE = 1003,
+	
 	RPL_CHANNELMODEIS = 324,
 	RPL_NOTOPIC = 331,
 	RPL_TOPIC = 332,
 	RPL_INVITING = 341,
+	RPL_NAMEREPLY = 353,
+	RPL_ENDOFNAMES = 366,
 	
 	ERR_NOSUCHCHANNEL = 403,
 	// ERR_CANNOTSENDTOCHAN = 404,
@@ -678,7 +685,7 @@ this error may be sent to notify the client.
 
 *************************************
 421 ERR_UNKNOWNCOMMAND
-:SERVER_NAME 421 <client_nickname> :Unknown command
+:SERVER_NAME 421 <client_nickname> <command> :Unknown command
 :ircserv 421 nickname :Unknown command
 Sent to a registered client to indicate that
 the command they sent isn’t known by the server.

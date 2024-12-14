@@ -15,16 +15,6 @@ JOIN:	Join a specific channel.
 PART:	Leave a specific channel.
 TOPIC:	View or change the channel's topic.
 MODE:	Change channel modes (i, t, k, o, l).
-		+i:
-		-i:
-		+t:
-		+k:
-		-k:
-		+o:
-		-o:
-		+l:
-		-l:
-
 KICK:	Eject a client from a channel.
 INVITE:	Invite a client to a channel.
 
@@ -32,56 +22,6 @@ Messaging Commands:
 
 PRIVMSG:	Send a private message to a user or channel.
 NOTICE:		Send a notice to a user or channel.
-
-
-RFC 2812 - IRC - Client Protocol
-
-+i (Invite-Only Mode)
-Description: When set, only invited users can join the channel.
-Command to Enable: MODE #channel +i
-Command to Disable: MODE #channel -i
-Effect:
-Clients attempting to join without an invitation will receive ERR_INVITEONLYCHAN (473).
-
-+t (Topic Lock Mode)
-Description: When set, only channel operators can change the channel topic.
-Command to Enable: MODE #channel +t
-Command to Disable: MODE #channel -t
-Effect:
-Non-operator clients attempting to change the topic will receive ERR_CHANOPRIVSNEEDED (482).
-
-+k (Key Mode)
-Description: When set, a key (password) is required to join the channel.
-Command to Enable: MODE #channel +k <key>
-Command to Disable: MODE #channel -k
-Effect:
-Clients attempting to join without the correct key will receive ERR_BADCHANNELKEY (475).
-
-+o (Operator Mode)
-Description: Grants or removes operator privileges for a user in the channel.
-Command to Enable: MODE #channel +o <nickname>
-Command to Disable: MODE #channel -o <nickname>
-Effect:
-Operators can change modes, kick users, and manage topics when +t is set.
-Clients not in the channel or not existing will return ERR_USERNOTINCHANNEL (441).
-
-+l (Limit Mode)
-Description: Limits the number of users allowed in the channel.
-Command to Enable: MODE #channel +l <number>
-Command to Disable: MODE #channel -l
-Effect:
-Once the limit is reached, new join attempts will receive ERR_CHANNELISFULL (471).
-
-example:
-Client sends: MODE #channel
-Server replies:
-:ircserv 324 nickname #channel +itk secretkey
-
-Modes applied:
-
-+i: Channel is invite-only.
-+t: Only operators can change the topic.
-+k: Channel requires the key secretkey to join.
 
 
 /* ************************************************************************** */ 
@@ -368,7 +308,8 @@ used to invite a user to a channel.
 The parameter <nickname> is the nickname of the person
 to be invited to the target hannel <channel>.
 There is no requirement that
-the channel the target user is being invited to must exist or be a valid channel.  However, if the channel exists,
+the channel the target user is being invited to must exist or be a valid channel.
+However, if the channel exists,
 only members of the channel are allowed to invite other users.
 When the channel has invite-only flag set,
 only channel operators may issue INVITE command.
