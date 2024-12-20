@@ -7,14 +7,31 @@
 // #include <stdexcept>
 #include <string>
 
+// Initialize static constant
 const std::string Reply::SERVER_NAME = "ircserv";
 
-Reply::Reply(void)
+// Singleton instance accessor
+Reply&	Reply::getInstance(void)
 {
-	#include "ReplyTemplates.ipp" // init template reply strings
+	static Reply	instance;
+
+	return (instance);
 }
 
+const std::string&	Reply::getServerName(void) { return (SERVER_NAME); }
+
+// Private constructor to initialize the _replyTemplates map
+Reply::Reply(void)
+{
+	#include "ReplyTemplates.ipp"
+}
+
+// Destructor
 Reply::~Reply(void) {}
+
+// ** prevent copying and assignment
+Reply::Reply(const Reply&) {}
+Reply&	Reply::operator=(const Reply&) { return (*this); }
 
 /*
 Generates an RPL numeric reply
@@ -26,11 +43,12 @@ std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) co
 }
 
 /*
-overload to use an int (like 001 instead of RPL_WELCOME)
+overload to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
 */
 std::string	Reply::reply(int key, const std::vector<std::string> &args) const
 {
-	return (_replyHelper(static_cast<ReplyType>(key), args));
+	// return (_replyHelper(static_cast<ReplyType>(key), args));
+	return (reply(static_cast<ReplyType>(key), args));
 }
 
 /*
@@ -42,15 +60,16 @@ std::string	Reply::reply(ReplyType key, const std::string &arg1, const std::stri
 }
 
 /*
-overload to use an int (like 001 instead of RPL_WELCOME)
+overload to use an int instead of a ReplyType as well as direct string arguments
 */
 std::string	Reply::reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
 {
-	return (reply(static_cast<ReplyType>(key), makeArgs(arg1, arg2, arg3, arg4)));
+	// return (reply(static_cast<ReplyType>(key), makeArgs(arg1, arg2, arg3, arg4)));
+	return (reply(static_cast<ReplyType>(key), arg1, arg2, arg3, arg4));
 }
 
 /*
-generic method to generate replies using templates
+Internal method to generate reply using templates
 ** use key in '_replyTemplates' map,
 ** use helper function 'makeArgs()' to generate variadic vector for 'args' parameter
 */
@@ -123,47 +142,47 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 }
 
 /* ************************************************************************** */
-/*
-Static methods do not require an instance of the class to be called.
-
-std::string response = Reply::staticReply(RPL_WELCOME, makeArgs("nickname", "nickname"));
-*/
-std::string	Reply::staticReply(ReplyType key, const std::vector<std::string> &args)
+std::string	reply(ReplyType key, const std::vector<std::string> &args)
 {
-	Reply	tmpReply;
-	
-	return (tmpReply.reply(key, args));
+	return (Reply::getInstance().reply(key, args));
 }
+
+std::string	reply(int key, const std::vector<std::string> &args)
+{
+	return (Reply::getInstance().reply(key, args));
+}
+
+std::string	reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+{
+	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
+}
+
+std::string	reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+{
+	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
+}
+
 /* ************************************************************************** */
 /* ************************************************************************** */
 
 /*
-Non-member helper function (to generate a reply without needing a Reply instance)
-usage:
-std::string response = generateReply(RPL_WELCOME, makeArgs("nickname", "nickname"));
 */
-std::string	generateReply(ReplyType key, const std::vector<std::string> &args)
+std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate)
 {
-	Reply	rpl;
-
-	return (rpl.reply(key, args));
-}
-
-/*
-*/
-std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate) const
-{
-	Reply						rpl;
+	Reply&						rpl = Reply::getInstance();
 	std::vector<std::string>	replies;
 
 	// Generate replies
 	replies.push_back(rpl.reply(RPL_WELCOME, nickname, nickname));
-	replies.push_back(rpl.reply(RPL_YOURHOST, nickname, SERVER_NAME, "1.0"));
+	replies.push_back(rpl.reply(RPL_YOURHOST, nickname, Reply::getServerName(), "1.0"));
 	replies.push_back(rpl.reply(RPL_CREATED, nickname, creationDate));
-	replies.push_back(rpl.reply(RPL_MYINFO, nickname, SERVER_NAME, "1.0", "i t k o l"));
+	replies.push_back(rpl.reply(RPL_MYINFO, nickname, Reply::getServerName(), "1.0", "i t k o l"));
 
 	return (replies);
 }
+
+/* ************************************************************************** */
+/* ************************************************************************** */
 
 /*
 generates a message for when a client joins a channel

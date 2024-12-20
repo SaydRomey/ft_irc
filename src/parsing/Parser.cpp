@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/14 00:07:40 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 14:43:12 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,25 +35,34 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	command["command"] = "";
 	command["params"] = "";
 	command["trailing"] = "";
+
+	// Debug: print tokens
+	std::cout << YELLOW << "**DEBUG: tokens after tokenize(input):" << RESET << std::endl;
+	size_t	i = 0;
+	while (i < tokens.size())
+	{
+		std::cout << "  Token " << i << ": " << tokens[i] << std::endl;
+		++i;
+	} 
 	
 	if (tokens.empty())
 		return (command);
 	
 	size_t	index = 0;
 
-	// ignore prefix if present ?
-	if (tokens[index][0] == ':')
-		index++;
-	
-	// // extract prefix if present
+	// // ignore prefix if present ?
 	// if (tokens[index][0] == ':')
-	// {
-	// 	command["prefix"] = tokens[index].substr(1);
 	// 	index++;
-	// }
+	
+	// extract prefix if present
+	if (tokens[index][0] == ':')
+	{
+		command["prefix"] = tokens[index].substr(1);
+		index++;
+	}
 	
 	// extract command
-	if (index < tokens.size())
+	if (index < tokens.size() && tokens[index][0] != ':')
 	{
 		command["command"] = tokens[index];
 		index++;
@@ -80,6 +89,16 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 		++index;
 	}
 	command["params"] = params;
+
+	// Debug: print parsed command structure
+	std::cout << YELLOW << "**DEBUG: parsed command structure:" << RESET << std::endl;
+	
+	t_mapStrStr::const_iterator	it = command.begin();
+	while (it != command.end())
+	{
+		std::cout << "  key: " << it->first << ", Value: " << (it->second.empty() ? "<empty>" : it->second) << std::endl;
+		++it;
+	}
 
 	return (command);
 }

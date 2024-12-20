@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 23:04:14 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/14 00:33:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 12:32:57 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class Validator
 		Validator(const std::string &nickname);
 		~Validator(void);
 		
-		bool	validateCommand(const std::map<std::string, std::string> &command, const std::string &nickname) const;
+		bool	validateCommand(const std::map<std::string, std::string> &command) const;
 
 		ReplyType										getRplType(void) const;
 		const std::vector<std::string>					&getRplArgs(void) const;
@@ -70,7 +70,7 @@ class Validator
 		mutable ReplyType					_rplType; // store the last error code
 		mutable std::vector<std::string>	_rplArgs; // store arguments for the error reply
 
-		bool	_setRpl(ReplyType rplType, const std::string &arg1 = "", const std::string &arg2 = "") const;
+		bool	_setRpl(ReplyType rplType, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "") const;
 		bool	_noRpl(void) const;
 
 		bool	_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const;
@@ -96,6 +96,8 @@ class Validator
 		static const std::string	VALID_MODE_FLAGS;			// "+-itkol"
 		static const std::string	INVALID_CHANNEL_CHARS;		// " ,\r\n"
 };
+
+bool	isValidNickname(const std::string &nickname);
 
 bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck);
 

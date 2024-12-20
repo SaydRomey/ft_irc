@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 03:25:34 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 14:53:58 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,15 +25,23 @@
 // 	return (0);
 // }
 
+#include "Message.hpp"
+
+void	tmp_test(int argc, char *argv[])
+{
+	if (argc != 2)
+		return ;
+
+	Message msg(argv[1]);
+	std::cout << msg << std::endl;
+}
+
 int	main(int argc, char *argv[])
 {
 	// test_server(argc, argv);
 	// test_channel();
 
-	(void)argc;
-	(void)argv;
-	
-	
+	tmp_test(argc, argv);	
 	test_message();
 	// test_tokenizer(argc, argv);
 	// test_reply();

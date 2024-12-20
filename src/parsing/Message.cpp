@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:57:01 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/14 01:04:55 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 15:00:38 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,21 +16,26 @@
 
 Message::Message(void) : _valid(false), _nickname("*"), _input(""), _reply("") {}
 
-Message::Message(const std::string &input)
-	: _valid(false), _nickname("*"), _input(input), _reply("")
-{
-	_processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));	
-}
+// Message::Message(const std::string &input)
+// 	: _valid(false), _nickname("*"), _input(input), _reply("")
+// {
+// 	_processInput(normalizeInput(input));
+// 	// _processInput(trim(normalizeInput(input)));	
+// }
 
 Message::Message(const std::string &input, const std::string &nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
-	if (!_isValidNickname(nickname))
-		_nickname = "*";
+	// if (!isValidNickname(nickname))
+	// 	_nickname = "*";
 	
-	_processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));
+	// std::cout << YELLOW << "*** Input before normalize and trim:\t" << RESET << ">" << input << "<\n";
+	// std::cout << YELLOW << "*** Input after normalize:\t\t" << RESET << ">" << normalizeInput(input) << "<\n";
+	// std::cout << YELLOW << "*** Input after trim:\t\t\t" << RESET << ">" << trim(input) << "<\n";
+	// std::cout << YELLOW << "*** Input after normalize and trim:\t" << RESET << ">" << trim(normalizeInput(input)) << "<\n";
+
+	// _processInput(normalizeInput(input));
+	_processInput(trim(normalizeInput(input)));
 }
 
 Message::Message(const Message &other)
@@ -75,14 +80,14 @@ const std::string	&Message::getInput(void) const { return (_input); }
 
 const std::string	&Message::getPrefix(void) const
 {
-	if (_parsedMessage.at("prefix") == "*")
-		return ("");
+	// if (_parsedMessage.at("prefix") == "*")
+		// return ("");
 	return (_parsedMessage.at("prefix"));
 }
 
 const std::string	&Message::getCommand(void) const { return (_parsedMessage.at("command")); }
 const std::string	&Message::getParams(void) const { return (_parsedMessage.at("params")); }
-const std::string	&Message::getParamsVec(void) const { return (_tokenizedParams); }
+const t_vecStr		&Message::getParamsVec(void) const { return (_tokenizedParams); }
 // const std::string	&Message::getParams(bool tokenized) const { return (_tokenizedParams); }
 const std::string	&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
 const std::string	&Message::getReply(void) const { return (_reply); }
@@ -100,77 +105,195 @@ parsing, validating and delegating to command-specific handlers
 */
 void	Message::_processInput(const std::string &input)
 {
-	_parsedMessage = _parser.parseCommand(input);
-
-	if(_parsedMessage.at("prefix").empty())
-		_parsedMessage["prefix"] = _nickname;
+	// Debug: trace raw input
+	std::cout << YELLOW << "**DEBUG: Processing input: " << RESET << input << std::endl;
 	
-	if (!_validator.validateCommand(_parsedMessage))
+	// // guard against empty input
+	// if (input.empty())
+	// {
+	// 	_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Empty input*");
+	// 	_valid = false;
+	// 	return ;
+	// }
+
+	try
 	{
-		Reply	rpl;
-		_reply = rpl.reply(_validator.getRplType(), _validator.getRplArgs());
-		_valid = false;
-		return ;
-	}
+		_parsedMessage = _parser.parseCommand(input);
 
-	const std::string	&command = _parsedMessage.at("command");
-	const std::string	&params = _parsedMessage.at("params");
+		// Debug: print parsed message structure
+		std::cout << YELLOW << "**DEBUG: Parsed message structure:" << RESET << std::endl;
+		std::map<std::string, std::string>::iterator	it = _parsedMessage.begin();
+		while (it != _parsedMessage.end())
+		{
+			std::cout << YELLOW << "  Key: " << it->first << ", Value: " << (it->second.empty() ? "<empty>" : it->second) << std::endl;
+			++it;
+		}
+
+		// assign default prefix if not provided
+		std::map<std::string, std::string>::iterator	prefixIt = _parsedMessage.find("prefix");
+		if(prefixIt == _parsedMessage.end() || prefixIt->second.empty())
+			_parsedMessage["prefix"] = _nickname;
 		
-	if (command == "JOIN")
-		_processJoinCommand(params);
-	// else if (command == "PART")
-	// 	_processPartCommand(params);
-	else if (command == "KICK")
-		_processKickCommand(params);
-	// else if (command == "MODE")
-	// 	_processModeCommand(params);
-	// else if (command == "TOPIC")
-	// 	_processTopicCommand(params);
-	// else if (command == "INVITE")
-	// 	_processInviteCommand(params);
-	// else if (command == "PRIVMSG" || command == "NOTICE")
-	// 	_processPrivMsgCommand(params);
-	else
-		_tokenizedParams = tokenize(params);
+		// validate the parsed command
+		if (!_validator.validateCommand(_parsedMessage))
+		{
+			_reply = reply(_validator.getRplType(), _validator.getRplArgs());
+			_valid = false;
+			return ;
+		}
 
-	// 	PART params are either 1 or more channels..
-	// 	INVITE invitee_nickname #channel
-	// 	PRIVMSG and NOTICE 1 or more targets
+		// extract command and params
+		std::map<std::string, std::string>::iterator	commandIt = _parsedMessage.find("command");
+		if (commandIt == _parsedMessage.end())
+		{
+			_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Missing command*");
+			_valid = false;
+			return ;
+		}
+		const std::string	&command = commandIt->second;
+
+		std::map<std::string, std::string>::iterator	paramsIt = _parsedMessage.find("params");
+		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
+
+		// dispatch to command-specific handlers
+		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
+			_processJoinCommand(params);
+		else if (command == "KICK")
+			_processKickCommand(params);
+		else
+		{
+			std::cout << YELLOW \
+			<< "**DEBUG: (currently) No specific command handler for: " \
+			<< RESET << command << std::endl;
+			
+			_tokenizedParams = tokenize(params);
+		}
+
+		_valid = true;
+		_reply.clear();
+	}
+	catch (const std::exception &e)
+	{
+		std::string	reason = e.what();
+		if (reason.empty())
+			reason = "EMPTY REASON";
+		
+		_reply = reply(ERR_UNKNOWNERROR, "*", "[command]", reason);
+		_valid = false;
+	}
 	
-	// Tokenize general params for other commands
+	
+	// _parsedMessage = _parser.parseCommand(input);
 
-	_valid = true;	
-	_reply.clear(); // if everything is valid
+	// if(_parsedMessage.at("prefix").empty())
+	// 	_parsedMessage["prefix"] = _nickname;
+	
+	// if (!_validator.validateCommand(_parsedMessage))
+	// {
+	// 	_reply = reply(_validator.getRplType(), _validator.getRplArgs());
+	// 	_valid = false;
+	// 	return ;
+	// }
+
+	// const std::string	&command = _parsedMessage.at("command");
+	// const std::string	&params = _parsedMessage.at("params");
+		
+	// if (command == "JOIN")
+	// 	_processJoinCommand(params);
+	// // else if (command == "PART")
+	// // 	_processPartCommand(params);
+	// else if (command == "KICK")
+	// 	_processKickCommand(params);
+	// // else if (command == "MODE")
+	// // 	_processModeCommand(params);
+	// // else if (command == "TOPIC")
+	// // 	_processTopicCommand(params);
+	// // else if (command == "INVITE")
+	// // 	_processInviteCommand(params);
+	// // else if (command == "PRIVMSG" || command == "NOTICE")
+	// // 	_processPrivMsgCommand(params);
+	// else
+	// 	_tokenizedParams = tokenize(params);
+
+	// // 	PART params are either 1 or more channels..
+	// // 	INVITE invitee_nickname #channel
+	// // 	PRIVMSG and NOTICE 1 or more targets
+	
+	// // Tokenize general params for other commands
+
+	// _valid = true;	
+	// _reply.clear(); // if everything is valid
 }
 
 /*
 */
 void	Message::_processJoinCommand(const std::string &params)
 {
-	// if (!hasMultipleEntries(params))
-	// 	return ; // we still need a pair if it is one channel and one key...
+	// Debug: trace raw params
+	std::cout << YELLOW << "**Debug: Processing JOIN params: " << RESET << params << std::endl;
 	
 	if (hasValidNumberOfParams(params, 2, AT_MOST))
+	{
 		_channelsAndKeys = _parser.parseChannelsAndKeys(params);
+
+		// Debug: print parsed channels and keys
+		size_t	i = 0;
+		while (i < _channelsAndKeys.size())
+		{
+			std::cout << YELLOW \
+			<< "Channel " << (i + 1) << ": " << _channelsAndKeys[i].first \
+			<< ", key: " << (_channelsAndKeys[i].second.empty() ? "<none>" : _channelsAndKeys[i].second) \
+			<< RESET << std::endl;
+			++i;
+		}
+	}
+	// else
+	// {
+	// 	_reply = reply(ERR_NEEDMOREPARAMS, "*", "JOIN");
+	// 	_valid = false;
+	// }
 }
 
-void	Message::_processKickParams(const std::string &params)
+void	Message::_processKickCommand(const std::string &params)
 {
+	// Debug: trace raw params
+	std::cout << YELLOW << "**Debug: Processing KICK params: " << RESET << params << std::endl;
+
 	if (hasValidNumberOfParams(params, 2, EXACTLY))
 	{
 		t_vecStr	paramsTokens = tokenize(params);
 		std::string	channel = paramsTokens[0];
 		
-		if (hasMultipleEntries(paramsTokens[1]))
-			t_vecStr	userTokens = tokenize(paramsTokens[1], ',', true);
-
 		t_vecStr	kickParams;
-
 		kickParams.push_back(channel);
-		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
 		
+		if (hasMultipleEntries(paramsTokens[1]))
+		{
+			t_vecStr	userTokens = tokenize(paramsTokens[1], ',', true);
+			kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
+		}
+		else
+		{
+			kickParams.push_back(paramsTokens[1]);
+		}
+
+		// Debug: trace parsed KICK parameters
+		size_t	i = 0;
+		while (i < kickParams.size())
+		{
+			std::cout << YELLOW \
+			<< "Kick param " << (i + 1) << ": " \
+			<< kickParams[i] << RESET << std::endl;
+			++i;
+		}
+
 		_tokenizedParams = kickParams;
 	}
+	// else
+	// {
+	// 	_reply = reply(ERR_NEEDMOREPARAMS, "*", "KICK");
+	// 	_valid = false;
+	// }
 }
 
 /* ************************************************************************** */
@@ -283,7 +406,7 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 	}
 	else
 	{
-		printLabeledField(oss, "Params: ", params, labelWidth);
+		printLabeledField(oss, "Params: ", params, labelWidth + 4);
 	}
 }
 
@@ -303,11 +426,11 @@ static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int
 
 			if (!pairs[j].second.empty())
 			{
-				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << pairs[j].second << "\n";
+				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << pairs[j].second << "\n\n";
 			}
 			else
 			{
-				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << "<none>" << "\n";
+				oss << GRAYTALIC << std::setw(labelWidth) << "  Key (" << (j + 1) << "): " << RESET << "<none>" << "\n\n";
 			}
 			++j;
 		}

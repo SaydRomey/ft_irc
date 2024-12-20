@@ -7,14 +7,20 @@ AUTHOR	:= cdumais
 TEAM	:= "namoisan, jdemers and $(AUTHOR)"
 
 COMPILE	:= c++
-CFLAGS	:= -Wall -Werror -Wextra
-# CFLAGS	+= -pedantic
-CFLAGS	+= -std=c++98
+C_FLAGS	:= -Wall -Werror -Wextra
+# C_FLAGS	+= -pedantic
+C_FLAGS	+= -std=c++98
+# C_FLAGS	+= -j$(shell nproc)
 
-# Header files (including .ipp)
-INC_DIR		:= inc
-HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
-INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
+# tmp flags to ignore some warings during development
+WERROR_IGNORE	:= -Wno-comment
+
+C_FLAGS += $(WERROR_IGNORE)
+
+# Conditional flag for Linux to allow implicit fall-through in switch statements
+ifeq ($(shell uname), Linux)
+	C_FLAGS += -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=0
+endif
 
 # Source code files
 SRC_DIR	:= src
@@ -23,7 +29,15 @@ SRCS	:= $(shell find $(SRC_DIR) -name "*.cpp")
 # Object files
 OBJ_DIR		:= obj
 OBJS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
+# OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
+
+# Header files (including .ipp)
+INC_DIR		:= inc
+HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
+INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
+
+# Dependency flags for .d files
+# DEP_FLAGS	:= -MMD -MP
 
 # Helper makefiles
 MK_DIR  := ./utils/makefiles
@@ -73,5 +87,8 @@ fclean: clean ## 'clean' + Remove executable
 	fi
 
 re: fclean all ## 'fclean' + 'all' (Recompile the project)
+
+# Include dependency files
+# -include $(OBJS:.o=.d)
 
 .PHONY: all clean fclean re

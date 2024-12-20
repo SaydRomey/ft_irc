@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 22:45:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/14 03:57:31 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 14:57:22 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void	test_message(void)
 		"PRIVMSG #channel :Hello everyone!",
 		"       PRIVMSG    #channel :Hello     everyone!", // extra spaces
 		"JOIN #channel\t:Hello\tworld!", // tabs in the input
-		":server NOTICE * :Server maintenance scheduled"
+		":server NOTICE target :Server maintenance scheduled"
 	};
 
 	const std::string invalidMessages[] = {

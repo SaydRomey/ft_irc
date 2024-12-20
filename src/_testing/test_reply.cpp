@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 02:48:34 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/06 20:13:23 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/19 21:55:14 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	printRpl(const std::string &reply, const std::string &numeric="reply", cons
 
 void	test_reply(void)
 {
-	Reply	rpl;
+	Reply&	rpl = Reply::getInstance();
 
 	std::string	nickname = "HomeBoy";
 	std::string	sender = "senderPerson";

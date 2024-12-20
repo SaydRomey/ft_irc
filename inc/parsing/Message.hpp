@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/14 00:19:39 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/19 22:16:59 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class Message
 	
 		// Constructors/Destructors
 		Message(void);
-		Message(const std::string &input);
+		// Message(const std::string &input);
 		Message(const std::string &input, const std::string &nickname = "*");
 		Message(const Message &other);
 		Message& operator=(const Message &other);
@@ -63,7 +63,8 @@ class Message
 		// Reply		&_rpl;
 
 		void	_processInput(const std::string &input);
-		void	_processJoinCommand(void);
+		void	_processJoinCommand(const std::string &params);
+		void	_processKickCommand(const std::string &params);
 
 };
 

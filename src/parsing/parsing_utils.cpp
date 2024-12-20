@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/13 23:33:20 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 14:34:18 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,33 @@ Modes (using VerificationType enum):
 */
 bool	hasValidNumberOfParams(const std::string &params, int expectedNum, VerificationType type)
 {
+	if (params.empty())
+		return (false);
+	
 	int	paramNum = countTokens(params);
 
+	// Debug: trace token count
+	std::string typeStr;
+	switch (type)
+	{
+		case AT_LEAST:
+			typeStr = "AT_LEAST";
+			break ;
+		case EXACTLY:
+			typeStr = "EXACTLY";
+			break ;
+		case AT_MOST:
+			typeStr = "AT_MOST";
+			break ;
+		default:
+			typeStr = "*bad type*";
+	}
+	std::cout << YELLOW << "**Debug: hasValidNumberOfParams\n" \
+	<< "Validating params: " << params \
+	<< " | Token count: " << paramNum \
+	<< " | Expected: " << typeStr << " " << expectedNum \
+	<< " params" << RESET << std::endl;
+	
 	switch (type)
 	{
 		case AT_LEAST:
