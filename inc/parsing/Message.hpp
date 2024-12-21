@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 12:52:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/19 22:16:59 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 16:56:35 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 # include "Parser.hpp"
 # include "Validator.hpp"
 # include "Reply.hpp"
-
 # include <iostream>
 # include <map>
 # include <string>
@@ -31,7 +30,6 @@ class Message
 	
 		// Constructors/Destructors
 		Message(void);
-		// Message(const std::string &input);
 		Message(const std::string &input, const std::string &nickname = "*");
 		Message(const Message &other);
 		Message& operator=(const Message &other);
@@ -44,12 +42,14 @@ class Message
 		const std::string		&getCommand(void) const;
 		const std::string		&getParams(void) const;
 		const t_vecStr			&getParamsVec(void) const;
-		// const t_vecStr			&getParams(bool tokenized) const;
 		const std::string		&getTrailing(void) const;
 		const std::string		&getReply(void) const;
 		const t_vecPairStrStr	&getChannelsAndKeys(void) const;
 		
 	private:
+		void	_processInput(const std::string &input);
+		void	_parseKickParams(const std::string &params);
+		
 		bool			_valid;
 		std::string		_nickname;
 		std::string		_input;
@@ -58,14 +58,8 @@ class Message
 		t_vecPairStrStr	_channelsAndKeys;
 		t_vecStr		_tokenizedParams;
 
-		Parser		_parser;
-		Validator	_validator;
-		// Reply		&_rpl;
-
-		void	_processInput(const std::string &input);
-		void	_processJoinCommand(const std::string &params);
-		void	_processKickCommand(const std::string &params);
-
+		Parser			_parser;
+		Validator		_validator;
 };
 
 std::ostream	&operator<<(std::ostream &out, const Message &message);

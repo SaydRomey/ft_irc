@@ -1,23 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   parsing_utils.cpp                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/05 18:44:16 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/20 14:34:18 by cdumais          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "parsing_utils.hpp"
 
-/*	**TODO: change description to more generic..
-
-Helper function to build argument vector with variadic argument...
-[prefix] [cmd] [param] [trailing]
+/*
+Creates a std::vector<std::string> with variadic argument
+** Can be used with either 1, 2, 3 or 4 arguments
 */
-std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+t_vecStr	makeArgs(const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
 {
 	std::vector<std::string>	args;
 	
@@ -33,14 +21,20 @@ std::vector<std::string>	makeArgs(const std::string &arg1, const std::string &ar
 	return (args);
 }
 
+/* ************************************************************************** */ // Tokens
+
 /*
-Creates a vector of string tokens from 'input' using 'delimiter' as delimiter
+Returns a tokenized std::vector<std::string>
+** If unspecified, default ' ' will be used as delimiter
 ** Set 'includeEmptyTokens' to true to keep empty tokens in vector
-** ex., if using it to tokenize multiple channel keys in JOIN command:
+
+ex:
+(if using it to tokenize multiple channel keys in JOIN command)
+
 	tokenize ("key1,,key3", ',');		-> {"key1"}, {"key3"}
 	tokenize ("key1,,key3", ',', true);	-> {"key1"}, {""}, {"key3"}
 */
-std::vector<std::string>	tokenize(const std::string &input, char delimiter, bool includeEmptyTokens)
+t_vecStr	tokenize(const std::string &input, char delimiter, bool includeEmptyTokens)
 {
 	std::vector<std::string>	tokens;
 	std::stringstream			ss(input);
@@ -74,41 +68,22 @@ int	countTokens(const std::string &str, char delimiter)
 }
 
 /*
-Checks if the number of tokens in 'params' is valid compared to 'expectedNum'.
-Modes (using VerificationType enum):
+Checks if the number of tokens in 'params' is valid compared to 'expectedNum'
+
+'type' parameter options (using VerificationType enum):
 	AT_LEAST:	true if param count >= expectedNum.
 	EXACTLY:	true if param count == expectedNum.
 	AT_MOST:	true if param count <= expectedNum.
 */
-bool	hasValidNumberOfParams(const std::string &params, int expectedNum, VerificationType type)
+bool	hasValidNumberOfParams(const std::string &params, VerificationType type, int expectedNum)
 {
 	if (params.empty())
 		return (false);
 	
 	int	paramNum = countTokens(params);
 
-	// Debug: trace token count
-	std::string typeStr;
-	switch (type)
-	{
-		case AT_LEAST:
-			typeStr = "AT_LEAST";
-			break ;
-		case EXACTLY:
-			typeStr = "EXACTLY";
-			break ;
-		case AT_MOST:
-			typeStr = "AT_MOST";
-			break ;
-		default:
-			typeStr = "*bad type*";
-	}
-	std::cout << YELLOW << "**Debug: hasValidNumberOfParams\n" \
-	<< "Validating params: " << params \
-	<< " | Token count: " << paramNum \
-	<< " | Expected: " << typeStr << " " << expectedNum \
-	<< " params" << RESET << std::endl;
-	
+	// debug_param_tokens(params, type, expectedNum, paramNum); // Debug
+
 	switch (type)
 	{
 		case AT_LEAST:
@@ -122,11 +97,15 @@ bool	hasValidNumberOfParams(const std::string &params, int expectedNum, Verifica
 	}
 }
 
-bool	hasMultipleEntries(const std::string &param)
+/*
+Checks for the presence of a comma (',') in 'input'
+*/
+bool	hasMultipleEntries(const std::string &input)
 {
-	return (param.find(',') != std::string::npos);
+	return (input.find(',') != std::string::npos);
 }
 
+/* ************************************************************************** */ // String Formatting
 
 /*
 Remove leading and trailing whitespace
@@ -143,11 +122,16 @@ std::string trim(const std::string &str)
 }
 
 /*
-Reformat a string by replacing multiple space char (' ') by a single space
+Reformats a string by replacing multiple space char (' ') by a single space
 ** (Also removes the "\r\n" sequence or any standalone '\r' or '\n')
+** If used on the IRC message input, will also normalize the trailing part...
+
 ex: 
+
 	":nickname   JOIN    #channel   :Hello    world!"
-would become 
+
+becomes:
+
 	":nickname JOIN #channel :Hello world!"
 */
 std::string normalizeInput(const std::string &input)
@@ -183,51 +167,106 @@ std::string normalizeInput(const std::string &input)
 /*
 Returns formatted string with appropriate line-ending sequence
 */
-std::string	crlf(const std::string &str)
-{
-	// #define CRLF "\r\n"
-	// return (str + CRLF);
-	
-	return (str + "\r\n");
-}
+std::string	crlf(const std::string &str) { return (str + "\r\n"); }
+
+/* ************************************************************************** */ // Debug
 
 /*
-Print map<string, string> content:
-"  [key]: [value]"
-
+Debug output
+Prints the content of a  std::vector<std::string>
 */
-void	printMap(const std::map<std::string, std::string> &parsedCommand, const std::string &msg)
+void	printVec(const t_vecStr &vec, const std::string &msg, bool printIndex)
 {
-	// if (!DEBUG)
-		// return ;
+	if (!msg.empty())
+		std::cout << msg << std::endl;
 
-	std::cout << msg << std::endl;
-
-	std::map<std::string, std::string>::const_iterator	it = parsedCommand.begin();
-	while (it != parsedCommand.end())
+	size_t	i = 0;
+	while (i < vec.size())
 	{
-		std::cout << "  " << it->first << ": " << it->second << std::endl;
+		std::cout << "  ";
+		if (printIndex)
+			std::cout << "[" << i << "]: ";
+		std::cout << vec[i] << std::endl;
+		++i;
+	}
+
+	if (vec.empty())
+		std::cout << "  <empty vector>" << std::endl;
+
+	std::cout << std::endl;
+}
+
+
+/*
+Debug output
+Prints the content of a  std::map<std::string, std::string>
+*/
+void	printMap(const t_mapStrStr &map, const std::string &msg)
+{
+	if (!msg.empty())
+		std::cout << msg << std::endl;
+
+	t_mapStrStr::const_iterator	it = map.begin();
+	while (it != map.end())
+	{
+		std::cout << "  Key:   " << it->first << "\n";
+		std::cout << "  Value: " << it->second << "\n" << std::endl;
 		++it;
 	}
 }
 
-void	printChannelKeyPairs(const std::vector<std::pair<std::string, std::string> > &pairs)
+/*
+Debug output
+Prints the contents of a std::vector<std::pair<std::string, std::string> >
+*/
+void	printPairs(const t_vecPairStrStr &pairs, const std::string &msg)
 {
-	// Print each pair in a readable format
+	if (!msg.empty())
+		std::cout << msg << std::endl;
+
 	size_t	i = 0;
 	while (i < pairs.size())
 	{
-		std::cout << "Channel: " << pairs[i].first;
+		std::cout << "  First:  " << pairs[i].first << "\n";
 		if (!pairs[i].second.empty())
 		{
-			std::cout << ", Key: " << pairs[i].second;
+			std::cout << "  Second: " << pairs[i].second << "\n";
 		}
 		else
 		{
-			std::cout << ", Key: <none>";
+			std::cout << "  Second: <none>" << "\n";
 		}
 		std::cout << std::endl;
 		++i;
 	}
+}
+
+/*
+Debug output
+Usable in 'hasValidNumberOfParams()'
+*/
+void	debug_param_tokens(const std::string &params, VerificationType type, int expectedNum, int paramNum)
+{
+	std::cout << YELLOW << "** Debug: hasValidNumberOfParams **" << RESET << std::endl;
+	
+	std::string typeStr;
+
+	switch (type)
+	{
+		case AT_LEAST:
+			typeStr = "AT LEAST";
+			break ;
+		case EXACTLY:
+			typeStr = "EXACTLY";
+			break ;
+		case AT_MOST:
+			typeStr = "AT MOST";
+			break ;
+		default:
+			typeStr = "*Bad VerificationType enum*";
+	}
+	std::cout << "  Validating params: " << params << "\n";
+	std::cout << "  Token count: " << paramNum << "\n";
+	std::cout << "  Expected:    " << typeStr << " " << expectedNum << " params" << std::endl;
 }
 

@@ -10,10 +10,7 @@
 class Reply
 {
 	public:
-		// singleton accessor
-		static Reply&	getInstance(void);
-
-		// accessor for the server name (used in helper functions)
+		static Reply&				getInstance(void);
 		static const std::string&	getServerName(void);
 
 		// public methods to generate replies (might remove if we only use non-member wrappers)
@@ -23,16 +20,12 @@ class Reply
 		std::string	reply(int key, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 
 	private:
-		// private constructor and destructor
 		Reply(void);
-		~Reply(void);
-
-		// prevent copying and assignment
 		Reply(const Reply&);
+		~Reply(void);
 		Reply&	operator=(const Reply&);
 
-		// internal helper methods
-		std::string	_replyHelper(ReplyType key, const std::vector<std::string> &args) const;
+		// Internal helper methods
 		std::string	_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const;
 
 		// internal state
@@ -40,16 +33,16 @@ class Reply
 		std::map<ReplyType, std::string>	_replyTemplates;
 };
 
-// non-member wrapper functions
+// Non-member wrapper functions
 std::string	reply(ReplyType key, const std::vector<std::string> &args);
 std::string	reply(int key, const std::vector<std::string> &args);
 std::string	reply(ReplyType key, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 std::string	reply(int key, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
 
-// replies 1, 2, 3 and 4 on successful authentication
+// Replies 1, 2, 3 and 4 (successful authentication)
 std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate);
 
-// pseudo replies
+// Pseudo replies
 std::string	joinMsg(const std::string &clientNickname, const std::string &channelName);
 std::string	partMsg(const std::string &clientNickname, const std::string &channelName, const std::string &partingMessage = "");
 std::string kickMsg(const std::string &kickerNickname, const std::string &channelName, const std::string &targetNickname, const std::string &reason = "");

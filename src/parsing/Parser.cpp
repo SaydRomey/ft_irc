@@ -1,20 +1,9 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Parser.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/15 13:11:39 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/20 14:43:12 by cdumais          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "Parser.hpp"
 #include "parsing_utils.hpp"
 #include "Reply.hpp"
-#include <stdexcept>
-# include <utility>				// std::make_pair()
+// #include <stdexcept>
+#include <utility>				// std::make_pair()
 
 Parser::Parser(void) {}
 Parser::~Parser(void) {}
@@ -35,15 +24,6 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	command["command"] = "";
 	command["params"] = "";
 	command["trailing"] = "";
-
-	// Debug: print tokens
-	std::cout << YELLOW << "**DEBUG: tokens after tokenize(input):" << RESET << std::endl;
-	size_t	i = 0;
-	while (i < tokens.size())
-	{
-		std::cout << "  Token " << i << ": " << tokens[i] << std::endl;
-		++i;
-	} 
 	
 	if (tokens.empty())
 		return (command);
@@ -90,16 +70,6 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	}
 	command["params"] = params;
 
-	// Debug: print parsed command structure
-	std::cout << YELLOW << "**DEBUG: parsed command structure:" << RESET << std::endl;
-	
-	t_mapStrStr::const_iterator	it = command.begin();
-	while (it != command.end())
-	{
-		std::cout << "  key: " << it->first << ", Value: " << (it->second.empty() ? "<empty>" : it->second) << std::endl;
-		++it;
-	}
-
 	return (command);
 }
 
@@ -134,11 +104,9 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 	{
 		std::string	key = "";
 		
-		if (i < keyTokens.size())
+		if (i < keyTokens.size() && keyTokens[i] != "*")
 		{
 			key = keyTokens[i];
-			if (key == "*")
-				key = "";
 		}
 		
 		result.push_back(std::make_pair(channelTokens[i], key));
@@ -150,3 +118,22 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 	std::vector<std::string>	channelTokens = tokenize(params.substr(0, params.find(' ')), ',', true);
 	std::vector<std::string>	keyTokens = tokenize(params.substr(params.find(' ') + 1), ',', true);
 */
+
+t_vecStr	Parser::parseKickParams(const std::string &params) const
+{
+	t_vecStr	paramsTokens = tokenize(params);
+	std::string	channel = paramsTokens[0];
+		
+	t_vecStr	kickParams;
+	kickParams.push_back(channel);
+		
+	if (hasMultipleEntries(paramsTokens[1]))
+	{
+		t_vecStr	userTokens = tokenize(paramsTokens[1], ',', true);
+		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
+	}
+	else
+		kickParams.push_back(paramsTokens[1]);
+
+	return (kickParams);
+}

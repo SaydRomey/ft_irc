@@ -1,5 +1,3 @@
-/* ************************************************************************** */
-/* ************************************************************************** */
 
 #include "Reply.hpp"
 #include "parsing_utils.hpp"	// makeArgs()
@@ -17,63 +15,19 @@ Reply&	Reply::getInstance(void)
 
 	return (instance);
 }
-
+// Accessor for the server name (used in helper functions)
 const std::string&	Reply::getServerName(void) { return (SERVER_NAME); }
 
-// Private constructor to initialize the _replyTemplates map
-Reply::Reply(void)
-{
-	#include "ReplyTemplates.ipp"
-}
-
-// Destructor
-Reply::~Reply(void) {}
-
-// ** prevent copying and assignment
-Reply::Reply(const Reply&) {}
-Reply&	Reply::operator=(const Reply&) { return (*this); }
+/* ************************************************************************** */ // Public methods to generate replies
 
 /*
 Generates an RPL numeric reply
+
+** use key in '_replyTemplates' map,
+** use helper function 'makeArgs()' to generate variadic vector for 'args' parameter
 ** 'args' number must match template
 */
 std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) const
-{
-	return (_replyHelper(key, args));
-}
-
-/*
-overload to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
-*/
-std::string	Reply::reply(int key, const std::vector<std::string> &args) const
-{
-	// return (_replyHelper(static_cast<ReplyType>(key), args));
-	return (reply(static_cast<ReplyType>(key), args));
-}
-
-/*
-overloaded reply for direct string arguments
-*/
-std::string	Reply::reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
-{
-	return (reply(key, makeArgs(arg1, arg2, arg3, arg4)));
-}
-
-/*
-overload to use an int instead of a ReplyType as well as direct string arguments
-*/
-std::string	Reply::reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
-{
-	// return (reply(static_cast<ReplyType>(key), makeArgs(arg1, arg2, arg3, arg4)));
-	return (reply(static_cast<ReplyType>(key), arg1, arg2, arg3, arg4));
-}
-
-/*
-Internal method to generate reply using templates
-** use key in '_replyTemplates' map,
-** use helper function 'makeArgs()' to generate variadic vector for 'args' parameter
-*/
-std::string	Reply::_replyHelper(ReplyType key, const std::vector<std::string> &args) const
 {
 	std::map<ReplyType, std::string>::const_iterator	it = _replyTemplates.find(key);
 
@@ -88,6 +42,46 @@ std::string	Reply::_replyHelper(ReplyType key, const std::vector<std::string> &a
 	
 	return (_formatReply(it->second, args));
 }
+
+/*
+Generates an RPL numeric reply
+Overloaded to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
+*/
+std::string	Reply::reply(int key, const std::vector<std::string> &args) const
+{
+	return (reply(static_cast<ReplyType>(key), args));
+}
+
+/*
+Generates an RPL numeric reply
+Overloaded to use direct string arguments
+*/
+std::string	Reply::reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+{
+	return (reply(key, makeArgs(arg1, arg2, arg3, arg4)));
+}
+
+/*
+Generates an RPL numeric reply
+Overloaded to use an int instead of a ReplyType as well as direct string arguments
+*/
+std::string	Reply::reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+{
+	return (reply(static_cast<ReplyType>(key), arg1, arg2, arg3, arg4));
+}
+
+/* ************************************************************************** */ // Private Constructors and Destructor
+
+Reply::Reply(void)
+{
+	#include "ReplyTemplates.ipp"
+}
+
+Reply::Reply(const Reply&) {}
+Reply::~Reply(void) {}
+Reply&	Reply::operator=(const Reply&) { return (*this); }
+
+/* ************************************************************************** */ // Internal helper methods
 
 /*
 Formats a reply based on a template and arguments
@@ -138,34 +132,57 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 		// std::cout << oss.str() << std::endl;
 		return (oss.str());
 	}
+	// return (oss.str());
 	return (crlf(oss.str()));
 }
 
-/* ************************************************************************** */
+/* ************************************************************************** */ // Non-member wrapper functions
+
+/*
+Generates an RPL numeric reply
+*/
 std::string	reply(ReplyType key, const std::vector<std::string> &args)
 {
 	return (Reply::getInstance().reply(key, args));
 }
 
+/*
+Generates an RPL numeric reply
+Overloaded to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
+*/
 std::string	reply(int key, const std::vector<std::string> &args)
 {
 	return (Reply::getInstance().reply(key, args));
 }
 
+/*
+Generates an RPL numeric reply
+Overloaded to use direct string arguments
+*/
 std::string	reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
 {
 	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
 }
 
+/*
+Generates an RPL numeric reply
+Overloaded to use an int instead of a ReplyType as well as direct string arguments
+*/
 std::string	reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
 {
 	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
 }
 
-/* ************************************************************************** */
-/* ************************************************************************** */
+/* ************************************************************************** */ // Replies 1, 2, 3 and 4 (successful authentication)
 
 /*
+Returns a vector containing the 4 replies
+expected after a successful authentication
+
+	001 RPL_WELCOME
+	002 RPL_YOURHOST
+	003 RPL_CREATED
+	004 RPL_MYINFO
 */
 std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate)
 {
@@ -181,11 +198,10 @@ std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, con
 	return (replies);
 }
 
-/* ************************************************************************** */
-/* ************************************************************************** */
+/* ************************************************************************** */ // Pseudo replies
 
 /*
-generates a message for when a client joins a channel
+Generates a message for when a client joins a channel
 
 :<clientNickname> JOIN :<channelName>
 */
@@ -198,7 +214,9 @@ std::string	joinMsg(const std::string &clientNickname, const std::string &channe
 }
 
 /*
-If the parting message is not provided, omits the trailing colon and message.
+Generates a PART message
+
+** If no parting message is provided, omits the trailing colon and message.
 
 :<clientNickname> PART <channelName> [:<partingMessage>]
 */
@@ -214,7 +232,9 @@ std::string	partMsg(const std::string &clientNickname, const std::string &channe
 }
 
 /*
-If the reason is not provided, a default message is used.
+Generates a KICK message
+
+** If the reason is not provided, a default message is used.
 
 :<kickerNickname> KICK <channelName> <targetNickname> [:<reason>]
 */
@@ -232,7 +252,9 @@ std::string kickMsg(const std::string &kickerNickname, const std::string &channe
 }
 
 /*
-The channel name is always included as the trailing parameter.
+Generates an INVITE message
+
+** The channel name is always included as the trailing parameter.
 
 :<senderNickname> INVITE <targetNickname> :<channelName>
 */
@@ -243,18 +265,3 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 
 	return (oss.str());
 }
-
-
-/* ************************************************************************** */
-// singleton Reply implementation tests
-/*
-Reply	Reply::_instance;
-
-Reply&	Reply::getInstance(void)
-{
-	return (_instance);
-}
-*/
-// usage
-// std::string response = Reply::getInstance().reply(RPL_WELCOME, makeArgs("nickname", "nickname"));
-/* ************************************************************************** */

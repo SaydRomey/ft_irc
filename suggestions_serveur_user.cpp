@@ -37,9 +37,9 @@ void Server::user_cmd(User &client, const Message &msg)
 		{
 			std::string creationDate = getServerCreationDate();
 			
-			std::vector<std::string> welcomeReplies = _rplGenerator.generateWelcomeReplies(client.getNickname(), creationDate);
+			std::vector<std::string> welcomeReplies = generateWelcomeReplies(client.getNickname(), creationDate);
 			client.pendingPush(welcomeReplies);
-			// client.pendingPush(_rplGenerator.generateWelcomeReplies(client.getNickname(), creationDate));
+			// client.pendingPush(generateWelcomeReplies(client.getNickname(), creationDate));
 		}
 	}
 }

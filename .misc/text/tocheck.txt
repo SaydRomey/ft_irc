@@ -1,6 +1,8 @@
 
 TODO:
 
+*!! the trailing should not be normalized ? (i think)
+
 /*
 Params
 

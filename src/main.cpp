@@ -6,7 +6,7 @@
 /*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 15:14:54 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/20 14:53:58 by cdumais          ###   ########.fr       */
+/*   Updated: 2024/12/20 22:22:55 by cdumais          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,12 @@ int	main(int argc, char *argv[])
 
 	tmp_test(argc, argv);	
 	test_message();
+	test_reply();
+	test_pseudo_replies();
+	test_reply_templates();
+	test_welcome_replies();
+	
 	// test_tokenizer(argc, argv);
-	// test_reply();
 
 	return (0);
 }

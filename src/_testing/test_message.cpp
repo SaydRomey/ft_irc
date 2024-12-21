@@ -1,21 +1,80 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   test_message.cpp                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: cdumais <cdumais@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/05 22:45:48 by cdumais           #+#    #+#             */
-/*   Updated: 2024/12/20 14:57:22 by cdumais          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "Message.hpp"
 #include "Reply.hpp"
 #include "_test_header.hpp"
+#include <iomanip>
 #include <iostream>
 
-static void printMsg(const Message &message, size_t i, bool success)
+static size_t	getPrintableLength(const std::string &str)
+{
+	size_t	length = 0;
+	bool	inEscape = false;
+	
+	std::string::const_iterator it = str.begin();
+	while (it != str.end())
+	{
+		if (*it == '\033')
+			inEscape = true;
+		else if (inEscape && *it == 'm')
+			inEscape = false;
+		else if (!inEscape)
+			++length;
+		++it;
+	}
+	return (length);
+}
+
+static void	printBox(const std::string &text, char borderChar = '*', const std::string &color = "", bool newLines = true)
+{
+	size_t		textLength = getPrintableLength(text);
+	size_t		boxWidth = textLength + 4; // 2 spaces + 2 border chars
+
+	std::string	borderLine(boxWidth, borderChar);
+	std::string newLine = (newLines) ? "\n" : "";
+
+	std::cout << newLine << color << borderLine << "\n";
+
+	std::cout << borderChar << RESET << " ";
+	std::cout << text << RESET;
+	std::cout << " " << color << borderChar << "\n";
+
+	std::cout << borderLine << RESET << newLine << std::endl;
+}
+
+/*
+Formats the text for a box with optional bold and italic style
+** Will format the string as "Testing <testType> Messages"
+*/
+static std::string	formatBoxText(const std::string &testType, const std::string &typeColor, bool bold = false, bool italic = false)
+{
+	std::string	formattedText;
+
+	if (bold)
+		formattedText += BOLD;
+
+	formattedText += "Testing";
+	
+	if (italic)
+		formattedText += ITALIC;
+
+	formattedText += " " + typeColor + testType + RESET;
+
+	if (bold)
+		formattedText += BOLD;
+
+	formattedText += " Messages" + std::string(RESET);
+
+	return (formattedText);
+}
+
+static void	printInput(const std::string &input, bool prefixNewLine = false)
+{
+	std::cout << GRAYTALIC \
+	<< (prefixNewLine ? "\n" : "") \
+	<< "\"" << input << "\"" << RESET << std::endl;
+}
+
+static void printMsg(const Message &message, size_t i, const std::string &testType, bool success)
 {
 	std::string	result;
 	
@@ -24,40 +83,38 @@ static void printMsg(const Message &message, size_t i, bool success)
 	else
 		result = std::string(std::string(RED) + "FAILURE!");
 
-
-	std::cout << GRAYTALIC << "\"" << message.getInput() << "\"" << RESET << std::endl;
-	std::cout << "Test " << (i + 1) << ": " << result << RESET << std::endl;
+	printInput(message.getInput());
+	std::cout << testType << " Message Test " << (i + 1) << ": " << result << RESET << std::endl;
 
 	if (success)
-		std::cout << message << "\n" << std::endl;
+		std::cout << message << std::endl;
 	else
-		std::cout << "  Reply: " << message.getReply() << "\n" << std::endl;
+		std::cout << "  Reply: " << message.getReply() << std::endl;
 }
 
 void	runTests(const std::string messages[], size_t count, const std::string &testType, bool expectSuccess)
 {
-	std::cout << UNDERLINE << "\nTesting " << testType << " Messages:\n" << RESET << std::endl;
+	std::string	expectColor = (expectSuccess) ? YELLOW : ORANGE;
+	std::string	typeColor = (testType == "Valid") ? GREEN : RED;
+
+	std::string	boxText = formatBoxText(testType, typeColor);
+	printBox(boxText, '*', expectColor);
 
 	size_t	i = 0;
-	
 	while (i < count)
 	{
 		try
 		{
 			Message	msg(messages[i]);
 			bool	success = msg.getReply().empty() == expectSuccess; // comparing reply state with expected result
-			
-			printMsg(msg, i, success);
+			// bool	success = msg.isValid() == expectSuccess; // comparing Message '_valid' attribute with expected result (to test)
+			printMsg(msg, i, testType, success);
 		}
 		catch (const std::exception &e)
 		{
-			std::cout << "Unexpected exception: " << e.what(); // std::endl;
+			std::cout << "Unexpected exception: " << e.what() << std::endl;
 		}
 		++i;
-		if (expectSuccess)
-			std::cout << GREEN << "/* ************************************* */\n" << RESET << std::endl;
-		else
-			std::cout << RED << "/* ************************************* */\n" << RESET << std::endl;
 	}
 }
 
@@ -101,24 +158,4 @@ void	test_message(void)
 
 	runTests(validMessages, validCount, "Valid", true);
 	runTests(invalidMessages, invalidCount, "Invalid", false);
-}
-
-void	test_pseudo_replies(void)
-{
-	std::cout << PURPLE << "/* ************************************* */\n" << RESET << std::endl;
-	std::cout << UNDERLINE << "\nTesting pseudo replies\n" << RESET << std::endl;
-
-	std::cout << GRAYTALIC << "\":<clientNickname> JOIN :<channelName>\"" << RESET << std::endl;
-	std::cout << joinMsg("HonorableGuest", "#general") << std::endl;
-
-	std::cout << GRAYTALIC << "\":<clientNickname> PART <channelName> [:<partingMessage>]\"" << RESET << std::endl;
-	std::cout << partMsg("HonorableGuest", "#general") << std::endl;
-	std::cout << partMsg("HonorableGuest", "#general", "Goodbye!") << std::endl;
-
-	std::cout << GRAYTALIC << "\":<kickerNickname> KICK <channelName> <targetNickname> [:<reason>]\"" << RESET << std::endl;
-	std::cout << kickMsg("UptightTim", "#general", "SleepyHead") << std::endl;
-	std::cout << kickMsg("UptightTim", "#general", "SleepyHead", "Too sleepy...") << std::endl;
-	
-	std::cout << GRAYTALIC << "\":<senderNickname> INVITE <targetNickname> :<channelName>\"" << RESET << std::endl;
-	std::cout << inviteMsg("HonorableHost", "HonorableGuest", "#general") << std::endl;
 }
