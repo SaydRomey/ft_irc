@@ -1,6 +1,5 @@
 
-# TODO: modify file structure:
-# instead of inc/section and src/section, use ./section/[*.hpp, *.cpp] **(still inc and src or not?)
+# TODO: test using .d
 
 NAME	:= ircserv
 AUTHOR	:= cdumais
