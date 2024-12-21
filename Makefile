@@ -23,8 +23,8 @@ ifeq ($(shell uname), Linux)
 endif
 
 # Source code files
-SRC_DIR	:= src
-SRCS	:= $(shell find $(SRC_DIR) -name "*.cpp")
+SRC_DIR		:= irc
+SRCS		:= $(shell find $(SRC_DIR) -name "*.cpp")
 
 # Object files
 OBJ_DIR		:= obj
@@ -32,7 +32,7 @@ OBJS		:= $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 # OBJ_SUBDIRS	:= $(sort $(dir $(OBJS)))
 
 # Header files (including .ipp)
-INC_DIR		:= inc
+INC_DIR		:= irc
 HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
 INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
