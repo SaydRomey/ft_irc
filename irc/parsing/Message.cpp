@@ -9,7 +9,8 @@ Message::Message(void) : _valid(false), _nickname("*"), _input(""), _reply("") {
 Message::Message(const std::string &input, const std::string &nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
-	_processInput(normalizeInput(input));
+	_processInput(input);
+	// _processInput(normalizeInput(input));
 	// _processInput(trim(normalizeInput(input)));
 }
 
@@ -72,9 +73,7 @@ void	Message::_processInput(const std::string &input)
 		_parsedMessage = _parser.parseCommand(input);
 
 		// assign default prefix if not provided
-		t_mapStrStr::iterator	prefixIt = _parsedMessage.find("prefix");
-		
-		if(prefixIt == _parsedMessage.end() || prefixIt->second.empty())
+		if (_parsedMessage["prefix"].empty())
 			_parsedMessage["prefix"] = _nickname;
 		
 		// validate the parsed command
@@ -86,14 +85,19 @@ void	Message::_processInput(const std::string &input)
 		}
 
 		// extract command and params
-		t_mapStrStr::iterator	commandIt = _parsedMessage.find("command");
-		if (commandIt == _parsedMessage.end())
-		{
-			_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Missing command*");
-			_valid = false;
-			return ;
-		}
-		const std::string	&command = commandIt->second;
+		const std::string &command = _parsedMessage["command"];
+
+		// t_mapStrStr::iterator	commandIt = _parsedMessage.find("command");
+		// if (commandIt == _parsedMessage.end())
+		// {
+		// 	_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Missing command*");
+		// 	_valid = false;
+		// 	return ;
+		// }
+		// const std::string	&command = commandIt->second;
+
+		
+
 
 		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
 		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";

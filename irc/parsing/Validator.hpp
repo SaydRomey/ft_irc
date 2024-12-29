@@ -1,9 +1,4 @@
 
-/*	TODO:
-		only set the reply if i can (so on syntax or semantic errors)
-		else, reply is empty, and boolean '_valid' is true
-*/
-
 /*	TOCHECK:
 
 improve nickname validator

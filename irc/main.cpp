@@ -31,11 +31,12 @@ int	main(int argc, char *argv[])
 	// test_channel();
 
 	tmp_test(argc, argv);	
-	test_message();
-	test_reply();
-	test_pseudo_replies();
-	test_reply_templates();
-	test_welcome_replies();
+
+	// test_message();
+	// test_reply();
+	// test_pseudo_replies();
+	// test_reply_templates();
+	// test_welcome_replies();
 	
 	// test_tokenizer(argc, argv);
 
