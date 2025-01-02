@@ -58,6 +58,16 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 /* ************************************************************************** */
 
 Validator::Validator(void) : _rplType(static_cast<ReplyType>(0)), _rplArgs() {}
+Validator::Validator(const Validator &other) : _rplType(other._rplType), _rplArgs(other._rplArgs) {}
+Validator&	Validator::operator=(const Validator &other)
+{
+	if (this != &other)
+	{
+		_rplType = other._rplType;
+		_rplArgs = other._rplArgs;
+	}
+	return (*this);
+}
 Validator::~Validator(void) {}
 
 /* ************************************************************************** */

@@ -35,7 +35,8 @@ class Validator
 {
 	public:
 		Validator(void);
-		Validator(const std::string &nickname);
+		Validator(const Validator &other);
+		Validator&	operator=(const Validator &other);
 		~Validator(void);
 		
 		bool	validateCommand(const std::map<std::string, std::string> &command) const;
