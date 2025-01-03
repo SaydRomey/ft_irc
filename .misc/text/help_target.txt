@@ -1,0 +1,151 @@
+
+- Help target to display available makefile options -
+
+help: ## ⁉️  Display Available 'make' Targets
+	@echo "\nAvailable targets:"
+	@awk 'BEGIN {FS = ":.*##";} \
+		/^[a-zA-Z_0-9-]+:.*?##/ { \
+			printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 \
+		} \
+		/^##@/ { \
+			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
+		}' $(MAKEFILE_LIST)
+
+#
+# Explanations:
+
+BEGIN {FS = ":.*##";}
+
+Sets the Field Separator (FS) to :.*##.
+
+This means:
+	Field $1 → Target name.
+	Field $2 → The comment after ##.
+
+# 
+
+/^[a-zA-Z_0-9-]+:.*?##/
+
+Matches lines that:
+	Start with a valid Makefile target name (a-zA-Z_0-9-).
+	Are followed by a colon (:).
+	Contain ## for inline comments.
+
+# 
+
+printf " $(CYAN)%-15s$(RESET) %s\n", $$1, $$2
+
+Prints:
+	Target name ($$1) in cyan, left-aligned (%-15s).
+	Comment ($$2) as the description.
+
+# 
+
+/^##@/
+
+Matches lines starting with ##@.
+Used for section headers.
+
+# 
+
+substr($$0, 5)
+
+Prints everything after the first 4 characters (##@).
+Used to display section headers in bold.
+
+#
+# Usage:
+
+Standard Inline Documentation (Using ##)
+We should use a short, concise description after ##.
+Example:
+
+---
+clean: ## 🧹 Clean Object Files
+fclean: ## 🧹 Full Clean, including executables
+re: ## 🔄 Recompile everything
+---
+
+Section Headers (Using ##@)
+Example:
+
+---
+##@ Compilation Targets
+
+all: ## 🛠️ Build all modules
+prompt_compile: ## 🚀 Prompt user to select module to compile
+
+##@ Cleanup Targets
+
+clean: ## 🧹 Clean object files
+fclean: ## 🧹 Full clean (includes executables)
+---
+
+In the help target, these headers will appear bold,
+separating different sections of your Makefile.
+
+#
+# Multiple-Line Descriptions
+
+While inline comments (##) are typically one-liners,
+we can add detailed descriptions using separate comment lines:
+
+---
+run: ## 🚀 Run a specific module
+	## Run will:
+	## - Prompt you to select a module
+	## - Compile the module if it hasn't been compiled
+	## - Execute the module
+	@echo "Running..."
+---
+
+However, the help target only displays the first ## comment after the colon.
+
+To make multi-line comments visible in the help target:
+
+We should combine multiple lines into one
+and use clear bullet points.
+ex:
+
+---
+run: ## 🚀 Run a module | Prompts for module selection, compiles if needed, and executes.
+---
+
+We can add a Default Section Header
+at the start of our Makefile:
+
+---
+##@ General Targets
+
+help: ## ⁉️ Display available Makefile targets
+---
+
+# Example help Output:
+
+***
+Available targets:
+
+🛠️ Compilation Targets
+  all             Build all modules
+  prompt_compile  Prompt user to select module to compile
+
+🚀 Execution Targets
+  run             Run a specific module | Prompts for module selection, compiles if needed, and executes.
+
+🧹 Cleanup Targets
+  clean           Clean object files
+  fclean          Full clean (includes executables)
+  re              Recompile everything
+
+⁉️ Utility Targets
+  help            Display available Makefile targets
+  subject         Show subject file for a module
+***
+
+# Recap:
+
+## is for single-line comments.
+##@ is for section headers.
+
+We should combine multi-line descriptions into single lines with clear formatting
+and structure our Makefile logically with section headers.

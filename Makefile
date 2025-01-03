@@ -35,6 +35,11 @@ INC_DIR		:= irc
 HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
 INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
+# Header files
+INC_DIR		:= src
+HEADERS		:= $(shell find $(INC_DIR) -name "*.h"")
+INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
+
 # Dependency flags for .d files
 # DEP_FLAGS	:= -MMD -MP
 
