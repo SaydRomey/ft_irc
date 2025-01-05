@@ -44,12 +44,6 @@ NOTICE: 1 or many params: target1,target2,#targetchan1
 
 fix INVITE validator (valid nick, valid chan) -> more than one ?
 
-fix the templates to take user_nickname
-
-
-
-
-
 check if we remove /t from trim (rfc 1459 2.3.1)
 
 add NUL to forbidden char in params

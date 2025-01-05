@@ -141,10 +141,9 @@ class: ## Automate class creation
 # ------------------------------- TEMPLATES ---------------------------------- #
 # **************************************************************************** #
 define CLASS_HEADER
+
 #ifndef CLASSNAME_UPPER_HPP
 # define CLASSNAME_UPPER_HPP
-
-# include <iostream>
 
 # define RESET		"\\033[0m"
 # define BOLD		"\\033[1m"
@@ -162,9 +161,9 @@ class CLASSNAME
 {
 	public:
 		CLASSNAME(void);
-		~CLASSNAME(void);
 		CLASSNAME(const CLASSNAME &other);
 		CLASSNAME&	operator=(const CLASSNAME &other);
+		~CLASSNAME(void);
 	
 	private:
 
@@ -177,6 +176,7 @@ export CLASS_HEADER
 # **************************************************************************** #
 # **************************************************************************** #
 define CLASS_CPP
+
 #include "CLASSNAME.hpp"
 
 CLASSNAME::CLASSNAME(void) {}
