@@ -1,170 +1,153 @@
 
-# Utility variables
-REMOVE	:= rm -rf
-NPD		:= --no-print-directory
+# # Utility macros
 
-# Shell commands
-OS		:= $(shell uname)
-USER	:= $(shell whoami)
-TIME	:= $(shell date "+%H:%M:%S")
-
-# **************************************************************************** #
-# ---------------------------------- SETUP ----------------------------------- #
-# **************************************************************************** #
-IRC_SERVER_PORT	:= 6667
-IRC_SERVER_IP	:= 127.0.0.1
-WEECHAT_IMAGE	:= weechat/weechat
-WEECHAT_CONT	:= weechat_instance
-
-weechat: ## Starts the weechat docker container
-	@if ! docker info > /dev/null 2>&1; then \
-		echo "Starting Docker..."; \
-		open --background -a Docker; \
-		while ! docker info > /dev/null 2>&1; do \
-			echo "$(GRAYTALIC)Waiting for Docker to be ready...$(RESET)"; \
-			sleep 1; \
-		done; \
+# Check if a command exists
+define CHECK_COMMAND
+	if ! command -v $(1) > /dev/null; then \
+		$(call ERROR,Command Missing:,The required command '$(1)' is not installed.); \
+		exit 1; \
 	fi
-	@echo "Starting Weechat container..."
-	@docker run --rm -it --network=host $(WEECHAT_IMAGE)
+endef
+# $(call CHECK_COMMAND,docker)
 
-.PHONY: weechat
-# **************************************************************************** # # (wip - more robust automation of weechat container target...)
-# docker-start: ## Ensure Docker daemon is running
-# 	@if ! docker info > /dev/null 2>&1; then \
-# 		echo "Starting Docker..."; \
-# 		open --background -a Docker; \
-# 		while ! docker info > /dev/null 2>&1; do \
-# 			echo "$(GRAYTALIC)Waiting for Docker to be ready...$(RESET)"; \
-# 			sleep 1; \
-# 		done; \
-# 	fi
-# 	@echo "Docker is running."
+# Check network connectivity to a specific IP and Port
+define CHECK_CONNECTION
+	if ! nc -z $(1) $(2); then \
+		$(call ERROR,Connection Error,Unable to reach $(1):$(2). Check if the server is running.); \
+		exit 1; \
+	fi
+endef
+# $(call CHECK_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 
-# weechat: docker-start ## Pull Weechat image and prepare container
-# 	@if ! docker images | grep -q "$(WEECHAT_IMAGE)"; then \
-# 		echo "Pulling Weechat image..."; \
-# 		docker pull $(WEECHAT_IMAGE); \
-# 	fi
-# 	@if docker ps --format '{{.Names}}' | grep -q "$(WEECHAT_CONT)"; then \
-# 		echo "Stopping existing Weechat container..."; \
-# 		docker stop $(WEECHAT_CONT); \
-# 	fi
-# 	@echo "Weechat image is ready."
+# Wait for a specific IP and port to become available
+define WAIT_FOR_CONNECTION
+	while ! nc -z $(1) $(2); do \
+		$(call INFO,Connection,,Waiting for $(1):$(2) to become available...); \
+		sleep 1; \
+		$(call UPCUT); \
+	done
+	@$(call SUCCESS,Connection,$(1):$(2) is now reachable!)
+endef
+# $(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 
-# clean-weechat: ## Cleanup the Weechat container if it exists
-# 	@if docker ps -a --format '{{.Names}}' | grep -q "$(WEECHAT_CONT)"; then \
-# 		echo "Removing existing Weechat container..."; \
-# 		docker rm -f $(WEECHAT_CONT); \
-# 	fi
-# 	@echo "Weechat container cleaned up."
+# Check if a port is available
+define CHECK_PORT
+	if command -v lsof > /dev/null; then \
+		if lsof -i :$(1) | grep LISTEN > /dev/null 2>&1; then \
+			$(call ERROR,Port $(1),is already in use!); \
+			exit 1; \
+		fi; \
+	elif command -v netstat > /dev/null; then \
+		if netstat -an | grep ":$(1) .*LISTEN" > /dev/null; then \
+			$(call ERROR,Port $(1),is already in use!); \
+			exit 1; \
+		fi; \
+	else \
+		$(call WARNING,Port Check,Could not determine if port $(1) is in use. Skipping check.); \
+	fi
+endef
+# $(call CHECK_PORT,$(IRC_SERVER_PORT))
 
-# .PHONY: docker-start weechat clean-weechat
-# **************************************************************************** # # (wip)
-IRC_PORT	:= 6667
-IRC_PSWD	:= "42"
+# Macro: CLEANUP
+# Parameters:
+# $(1): Name of the cleanup task (for logging clarity)
+# $(2): Files/Directories to clean
+# $(3): Optional success message (when cleaned)
+# $(4): Optional warning message (when nothing to clean)
+define CLEANUP
+	if [ -n "$(wildcard $(2))" ]; then \
+		$(call INFO,Cleanup,$(1) - Removing $(2)); \
+		$(REMOVE) $(2); \
+		$(if $(strip $(3)), $(call SUCCESS,Cleanup,$(3)), $(call SUCCESS,Cleanup,$(1) - Successfully cleaned)); \
+	else \
+		$(if $(strip $(4)), $(call WARNING,Cleanup,$(4)), $(call WARNING,Cleanup,$(1) - Nothing to clean)); \
+	fi
+endef
 
-run: all ## Compile and run the executable with default arguments
-	@echo "$(GRAYTALIC)./$(NAME) \"$(IRC_PORT)\" \"$(IRC_PSWD)\"$(RESET)"
-	@./$(NAME) $(IRC_PORT) $(IRC_PSWD)
+# ==============================
+##@ 🛠️  Utility
+# ==============================
 
-# run: all weechat ## Starts the IRC server and connects Weechat to it
-# 	@echo "Starting IRC server on $(IRC_SERVER_IP):$(IRC_SERVER_PORT)..."
-# 	@echo "$(GRAYTALIC)./$(NAME) \"$(IRC_PORT)\" \"$(IRC_PSWD)\"$(RESET)"
-# 	@./$(NAME) $(IRC_PORT) $(IRC_PSWD) & \
-# 	sleep 2; \
-
-# 	@echo "Starting Weechat and connecting to the IRC server..."
-# 	@docker run --rm -it \
-# 		--name $(WEECHAT_CONT) \
-# 		--network host \
-# 		$(WEECHAT_IMAGE) \
-# 		--server-connect=$(IRC_SERVER_IP)/$(IRC_SERVER_PORT)
-
-.PHONY: run
-# **************************************************************************** #
-# ---------------------------------- UTILS ----------------------------------- #
-# **************************************************************************** #
 help: ## Display available targets
 	@echo "\nAvailable targets:"
 	@awk 'BEGIN {FS = ":.*##";} \
 		/^[a-zA-Z_0-9-]+:.*?##/ { \
-			printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 \
+			printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 \
 		} \
 		/^##@/ { \
 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 		}' $(MAKEFILE_LIST)
 
-# TODO: add guide for IRC commands (cheetsheet style)
+repo: ## Open the GitHub repository
+	@$(call INFO,,Opening $(AUTHOR)'s github repo...)
+	@open $(REPO_LINK);
 
-TMP_DIR	:= tmp
-
-$(TMP_DIR):
-	@mkdir -p $(TMP_DIR)
-
-# ffclean: fclean clean-weechat ## 'fclean' + Remove temporary files and folders + Remove weechat container
-ffclean: fclean ## 'fclean' + Remove temporary files and folders
-	@if [ -n "$(wildcard $(TMP_DIR))" ]; then \
-		$(REMOVE) $(TMP_DIR) $(TMP_FILES); \
-		echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)] \
-		$(GREEN)Temporary files removed$(RESET)"; \
+CHEATSHEET	:= utils/cheat_sheet.txt ## currently not a real thing...
+cheatsheet: ## Display IRC commands cheat sheet (TODO)
+	@if [ -f $(CHEATSHEET) ]; then \
+		cat $(CHEATSHEET); \
 	else \
-		echo "[$(BOLD)$(PURPLE)$(NAME)$(RESET)] \
-		$(YELLOW)No temporary files to remove$(RESET)"; \
+		$(call WARNING,$(NAME),$(CHEATSHEET) not found.); \
 	fi
 
-.PHONY: help ffclean
-# **************************************************************************** #
-# --------------------------------- CLASS ------------------------------------ #
-# **************************************************************************** #
+debug: C_FLAGS += $(DEBUG_FLAGS)
+debug: all ## Build with debug flags (e.g., disable specific warnings)
+	@$(call SUCCESS,$(NAME),Debug build complete)
+
+# Class creation automatisation
 class: ## Automate class creation
 	@echo "Enter the class name: "; \
 	read classname; \
 	classname_upper=`echo $$classname | tr a-z A-Z`; \
-	if [ -f inc/$$classname.hpp ] || [ -f src/$$classname.cpp ]; then \
+	\
+	# Check for file existence
+	if [ -f $(INC_DIR)/$$classname.hpp ] || [ -f $(SRC_DIR)/$$classname.cpp ]; then \
 		read -p "Files exist. Overwrite? [y/N]: " confirm; \
 		if [ "$$confirm" != "y" ] && [ "$$confirm" != "Y" ]; then \
 			echo "Canceling class creation"; \
 			exit 1; \
 		fi; \
 	fi; \
-	mkdir -p $(INC_DIR) $(SRC_DIR); \
+	\
+	# Prompt for .hpp directory
+	read -p "Use default header directory '$(INC_DIR)'? [y/Y] for yes, or enter a custom directory: " header_dir; \
+	if [ "$$header_dir" = "y" ] || [ "$$header_dir" = "Y" ] || [ -z "$$header_dir" ]; then \
+		header_dir="$(INC_DIR)"; \
+	fi; \
+	mkdir -p $$header_dir; \
+	\
+	# Prompt for .cpp directory
+	read -p "Use default source directory '$(SRC_DIR)'? [y/Y] for yes, or enter a custom directory: " source_dir; \
+	if [ "$$source_dir" = "y" ] || [ "$$source_dir" = "Y" ] || [ -z "$$source_dir" ]; then \
+		source_dir="$(SRC_DIR)"; \
+	fi; \
+	mkdir -p $$source_dir; \
+	\
+	# Generate header and source files
 	echo "$$CLASS_HEADER" \
 	| sed "s/CLASSNAME_UPPER/$$classname_upper/g" \
-	| sed "s/CLASSNAME/$$classname/g" > inc/$$classname.hpp; \
+	| sed "s/CLASSNAME/$$classname/g" > $$header_dir/$$classname.hpp; \
 	echo "$$CLASS_CPP" \
-	| sed "s/CLASSNAME/$$classname/g" > src/$$classname.cpp; \
-	echo "$$classname created"
+	| sed "s/CLASSNAME/$$classname/g" > $$source_dir/$$classname.cpp; \
+	\
+	echo "$(GREEN)Class '$$classname' created successfully!$(RESET)"; \
+	echo "Header file: $(BOLD)$$header_dir/$$classname.hpp$(RESET)"; \
+	echo "Source file: $(BOLD)$$source_dir/$$classname.cpp$(RESET)"
 
-.PHONY: class
 # **************************************************************************** #
-# ------------------------------- TEMPLATES ---------------------------------- #
-# **************************************************************************** #
+# **************************************************************************** # # .hpp template
 define CLASS_HEADER
+
 #ifndef CLASSNAME_UPPER_HPP
 # define CLASSNAME_UPPER_HPP
-
-# include <iostream>
-
-# define RESET		"\\033[0m"
-# define BOLD		"\\033[1m"
-# define ITALIC		"\\033[2m"
-# define UNDERLINE	"\\033[3m"
-# define RED		"\\033[91m"
-# define GREEN		"\\033[32m"
-# define YELLOW		"\\033[33m"
-# define ORANGE		"\\033[38;5;208m"
-# define PURPLE		"\\033[95m"
-# define CYAN		"\\033[96m"
-# define GRAYTALIC	"\\033[3;90m"
 
 class CLASSNAME
 {
 	public:
 		CLASSNAME(void);
-		~CLASSNAME(void);
 		CLASSNAME(const CLASSNAME &other);
 		CLASSNAME&	operator=(const CLASSNAME &other);
+		~CLASSNAME(void);
 	
 	private:
 
@@ -175,8 +158,9 @@ endef
 
 export CLASS_HEADER
 # **************************************************************************** #
-# **************************************************************************** #
+# **************************************************************************** # # .cpp template
 define CLASS_CPP
+
 #include "CLASSNAME.hpp"
 
 CLASSNAME::CLASSNAME(void) {}

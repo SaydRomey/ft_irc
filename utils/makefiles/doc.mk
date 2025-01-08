@@ -1,20 +1,31 @@
 
-# **************************************************************************** #
-# ---------------------------------- PDF ------------------------------------- #
-# **************************************************************************** #
-# TODO:maybe: add prompt option for french or english version of the pdf
-PDF		:= ft_irc_eng.pdf
-GIT_URL	:= https://github.com/SaydRomey/42_ressources
-PDF_URL	= $(GIT_URL)/blob/main/pdf/$(PDF)?raw=true
 
-pdf: | $(TMP_DIR) ## Opens the PDF instructions
-	@curl -# -L $(PDF_URL) -o $(TMP_DIR)/$(PDF)
-	@open $(TMP_DIR)/$(PDF) || echo "Please install a compatible PDF viewer"
+# ==============================
+##@ 📚 Documentation
+# ==============================
 
-.PHONY: pdf
-# **************************************************************************** #
-# ------------------------------ DOCUMENTATION ------------------------------- #
-# **************************************************************************** #
+# ft_irc
+PDF_EN		:= ft_irc_eng.pdf
+PDF_FR		:= ft_irc_eng.pdf # *!! TODO: set fr pdf in ressource repo
+URL_GIT		:= https://github.com/SaydRomey/
+URL_PDF		:= $(URL_GIT)42_ressources/blob/main/pdf/
+
+# PDF
+pdf: | $(PDF_DIR) ## Opens the PDF instructions
+	@clear
+	@echo "Choose language: (en/fr)"; \
+	read lang_choice; \
+	case $$lang_choice in \
+		en) PDF=$(PDF_EN);; \
+		fr) PDF=$(PDF_FR) ;; \
+		*) $(call ERROR,Invalid choice, defaulting to English) ; PDF=$(PDF_EN) ;; \
+	esac; \
+	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF_DIR)/$$PDF; \
+	@open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
+
+$(PDF_DIR):
+	@mkdir -p $(PDF_DIR)
+
 # C++ documentation
 URL_CPP_REF	:=	https://cplusplus.com/reference/
 
@@ -37,9 +48,7 @@ URL_RFC2813	:= https://datatracker.ietf.org/doc/html/rfc2813
 URL_RFC7194	:= https://datatracker.ietf.org/doc/html/rfc7194
 URL_MODERN	:= https://modern.ircdocs.horse/
 
-# ...
-
-doc: ## Offer a list of documentation URL links
+doc: ## Show documentation links
 	@clear
 	@echo "Select documentation subject:"
 	@echo "\n$(ORANGE)CPP$(RESET)"
@@ -77,35 +86,9 @@ doc: ## Offer a list of documentation URL links
 		2813) CHOICE=$(URL_RFC2813);; \
 		7194) CHOICE=$(URL_RFC7194);; \
 		999) CHOICE=$(URL_MODERN)/#numerics;; \
-		*) echo "Invalid choice. Exiting." ; exit 1;; \
+		*) $(call ERROR,Invalid choice:,$$CHOICE, Exiting.); exit 1;; \
 	esac; \
 	open $$CHOICE
 	@clear
-	@echo "Opening documentation..."
-
-.PHONY: doc
-# **************************************************************************** #
-# ------------------------------ DOCUMENTATION (CPP) ------------------------- #
-# **************************************************************************** #
-CPP_REF_URL		:=	https://cplusplus.com/reference/
-CPP_TUTO_URL	:=	https://cplusplus.com/doc/oldtutorial/
-
-ref: ## Open C++ reference
-	@echo "Opening cplusplus reference's url..."
-	@open $(CPP_REF_URL);
-
-tuto: ## Open C++ old tutorial
-	@echo "Opening cplusplus oldtutorial's url..."
-	@open $(CPP_TUTO_URL);
-
-.PHONY: ref tuto
-# **************************************************************************** #
-# --------------------------------- GITHUB ----------------------------------- #
-# **************************************************************************** #
-REPO_LINK	:= https://github.com/SaydRomey/ft_irc
-
-repo: ## Open the GitHub repository
-	@echo "Opening $(AUTHOR)'s github repo..."
-	@open $(REPO_LINK);
-
-.PHONY: repo
+	@$(call INFO,,Opening documentation...)
+	
