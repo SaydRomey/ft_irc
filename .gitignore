@@ -16,8 +16,8 @@
 **/tmp/
 **/obj/
 
-# files starting with "tmp_"
-tmp_*
+# files starting with "tmp"
+tmp*
 
 # # Executables
 ircserv
