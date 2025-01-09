@@ -1,6 +1,6 @@
 
 # ==============================
-##@ 🐳 Docker / Weechat
+##@ 🐳 Docker / Weechat (wip)
 # ==============================
 
 # Server info
@@ -129,14 +129,6 @@ docker-start: ## Ensure Docker daemon is running
 		done; \
 	fi
 	@$(call SUCCESS,Docker,Ready)
-
-# weechat-clean: ## Cleanup the Weechat container if it exists
-# 	@$(call CHECK_CONTAINER_EXISTS,$(WEECHAT_CONT))
-# 	@if [ "$$CONTAINER_EXISTS" = "true" ]; then \
-# 		$(call REMOVE_CONTAINER,$(WEECHAT_CONT)); \
-# 	else \
-# 		$(call WARNING,Docker,No container '$(WEECHAT_CONT)' to clean up.); \
-# 	fi
 
 weechat-clean: ## Cleanup the Weechat container if it exists
 	@if [ ! -S /var/run/docker.sock ]; then \

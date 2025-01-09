@@ -119,10 +119,10 @@ test_stress:
 	@$(call RUN_TEST,$(TEST_STRESS),Stress Test)
 
 test_clean: ## Clean up test artifacts
-	@$(call CLEANUP,$(NAME),Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
+	@$(call $(NAME),Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
 
-test_logs_clean: ## Remove all test logs
-	@$(call CLEANUP,Log Files,tmp_logs)
+test_logs_clean: ## Remove all test logs (maybe not needed...)
+	@$(call $(NAME),log files,tmp_logs)
 
 .PHONY: test test_all \
 		test_basic test_operator test_file_transfer test_bot test_stress \

@@ -88,7 +88,7 @@ pdf: | $(PDF_DIR) ## Opens the PDF instructions
 		*) $(call ERROR,Invalid choice, defaulting to English) ; PDF=$(PDF_EN) ;; \
 	esac; \
 	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF_DIR)/$$PDF; \
-	@open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
+	open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
 
 $(PDF_DIR):
 	@mkdir -p $(PDF_DIR)

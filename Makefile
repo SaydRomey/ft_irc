@@ -1,27 +1,4 @@
 
-# Flags to check:
-
-# OPT_FLAGS
-# -O1: Basic optimizations, faster compilation.
-# -O2: More aggressive optimizations, good balance between performance and compile time.
-# -O3: Maximum optimizations, might increase compile time and binary size.
-
-# SECUTIRY_FLAGS
-# -fstack-protector: Helps prevent stack buffer overflow attacks.
-
-# EXTRA_WARNINGS
-# -Wconversion: Warn about implicit type conversions.
-# -Wshadow: Warn when a variable declaration shadows another variable.
-# -Wnon-virtual-dtor: Warn if a class with virtual functions has a non-virtual destructor.
-
-# @if [ -d "$(OBJ_DIR)" ]; then \ # to test with multiple nested obj dirs
-
-# **************************************************************************** #
-
-# ==============================
-# Core Configuration & Variables
-# ==============================
-
 # Project info
 NAME		:= ircserv
 AUTHOR		:= cdumais
@@ -30,13 +7,7 @@ REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
 # Build configuration
 COMPILE		:= c++
-C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic #-01
-# MAKEFLAGS	+= -j$(CORES) # Parallel build (to test)
-
-# Platform-specific adjustments
-ifeq ($(OS), Linux)
-	C_FLAGS += -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=0
-endif
+C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
 
 # Source code files
 SRC_DIR		:= irc
@@ -85,39 +56,21 @@ $(NAME): $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
 	@$(call INFO,$(NAME),Compiling...\t,$(notdir $<))
-	@$(COMPILE) $(C_FLAGS) $(DEP_FLAGS) $(INCLUDES) -c $< -o $@
+	@$(COMPILE) $(C_FLAGS) $(INCLUDES) -c $< -o $@
 	@$(call UPCUT)
 
 # ==============================
 ##@ 🧹 Cleanup
 # ==============================
 
-# @$(call CLEANUP,$(NAME),Object Files,$(OBJ_DIR),,"No object files to remove.")
 clean: ## Remove object files
-	@if [ -n "$(wildcard $(OBJ_DIR))" ]; then \
-		$(REMOVE) $(OBJ_DIR); \
-		$(call SUCCESS,$(NAME),Object files removed); \
-	else \
-		$(call WARNING,$(NAME),No object files to remove); \
-	fi
+	@$(call CLEANUP,$(NAME),object files,$(OBJ_DIR))
 
-# @$(call CLEANUP,Executable,$(NAME),$(NAME),"Executable removed.","No executable to remove.")
 fclean: clean ## Remove executable
-	@if [ -f "$(NAME)" ]; then \
-		$(REMOVE) $(NAME); \
-		$(call SUCCESS,$(NAME),Executable removed); \
-	else \
-		$(call WARNING,$(NAME),No executable to remove); \
-	fi
+	@$(call CLEANUP,$(NAME),executable,$(NAME))
 
-# @$(call CLEANUP,Temporary Files,$(NAME),$(TMP_DIRS))
 ffclean: fclean ## Remove all generated files and folders
-	@if [ -n "$(wildcard $(TMP_DIRS))" ]; then \
-		$(REMOVE) $(TMP_DIRS); \
-		$(call INFO,$(NAME),Temporary files removed: ,$(TMP_DIRS)); \
-	else \
-		$(call WARNING,$(NAME),No temporary files to remove); \
-	fi
+	@$(call CLEANUP,$(NAME),temporary files,$(TMP_DIRS))
 	@$(MAKE) weechat-clean $(NPD)
 
 re: fclean all ## Rebuild everything
@@ -126,11 +79,11 @@ re: fclean all ## Rebuild everything
 ##@ 🚀 Execution
 # ==============================
 
+# @$(call SUCCESS,$(NAME),Running...!\n)
 run: all ## Compile and run the executable with default arguments
 	@$(call CHECK_PORT,$(IRC_SERVER_PORT))
 	@$(call INFO,$(NAME),,./$(NAME) \"$(IRC_SERVER_PORT)\" \"$(IRC_SERVER_PSWD)\")
 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD)
-	@$(call SUCCESS,$(NAME),Running...!\n)
 
 run-wee: all ## Start the IRC server and connect Weechat to it
 	@if [ ! -f "$(NAME)" ]; then \

@@ -1,4 +1,18 @@
 
+# Flags to check:
+
+# OPT_FLAGS
+# -O1: Basic optimizations, faster compilation.
+# -O2: More aggressive optimizations, good balance between performance and compile time.
+# -O3: Maximum optimizations, might increase compile time and binary size.
+
+# SECUTIRY_FLAGS
+# -fstack-protector: Helps prevent stack buffer overflow attacks.
+
+# EXTRA_WARNINGS
+# -Wconversion: Warn about implicit type conversions.
+# -Wshadow: Warn when a variable declaration shadows another variable.
+# -Wnon-virtual-dtor: Warn if a class with virtual functions has a non-virtual destructor.
 
 # ==============================
 ##@ 🛠️  Utility
@@ -14,12 +28,18 @@ USER	:= $(shell whoami)
 TIME	:= $(shell date "+%H:%M:%S")
 CORES	:= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc)
 
+# Platform-specific adjustments
+ifeq ($(OS), Linux)
+	C_FLAGS += -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=0
+endif
+
+# Test flags (to remove)
+# MAKEFLAGS	+= -j$(CORES) # Parallel build (to test) : (weird output and troubles with 're' target..)
+
 # Temporary flags for ignoring warnings (development use only)
 DEBUG_FLAGS		:= -DDEBUG # -g
 IGNORE_FLAGS	:= -Wno-comment
 DEBUG_FLAGS		+= $(IGNORE_FLAGS)
-
-CHEATSHEET	:= utils/cheat_sheet.txt ## currently not a real thing...
 
 # ==============================
 # Text colors and style with ANSI
@@ -55,7 +75,7 @@ ERASE_LINE	:= $(ESC)[2K
 # Formats the message with bold and colored context,
 # orange for the main message,
 # and gray italics for details.
-INFO		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(ORANGE)$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)"
+INFO	= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(ORANGE)$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)"
 
 # Macro: SUCCESS
 # Logs a success message.
@@ -65,7 +85,7 @@ INFO		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(ORANGE)$(2)$(RESET)$(GRAYTALIC)$
 # Behavior:
 # Formats the message with bold and colored context
 # and green for the success message.
-SUCCESS		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(GREEN)$(2)$(RESET)"
+SUCCESS	= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(GREEN)$(2)$(RESET)"
 
 # Macro: WARNING
 # Logs a warning message.
@@ -75,7 +95,7 @@ SUCCESS		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(GREEN)$(2)$(RESET)"
 # Behavior:
 # Formats the message with bold and colored context
 # and yellow for the warning message.
-WARNING		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(YELLOW)$(2)$(RESET)"
+WARNING	= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(YELLOW)$(2)$(RESET)"
 
 # Macro: ERROR
 # Logs an error message and highlights it in red.
@@ -84,14 +104,14 @@ WARNING		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(YELLOW)$(2)$(RESET)"
 # $(2): Detailed error message.
 # Behavior:
 # Displays the error with a red icon and message for immediate visibility.
-ERROR		= echo "❌ Error: $(1)$(RED)$(2)$(RESET)"
+ERROR	= echo "❌ Error: $(1)$(RED)$(2)$(RESET)"
 
 # Macro: UPCUT
 # Moves the cursor up one line and clears it,
 # useful for refreshing messages in loops.
 # Behavior:
 # Uses ANSI escape codes to move the cursor up and clear the line.
-UPCUT		= printf "$(UP)$(ERASE_LINE)"
+UPCUT	= printf "$(UP)$(ERASE_LINE)"
 
 # ==============================
 # Utility Macros
@@ -111,11 +131,10 @@ UPCUT		= printf "$(UP)$(ERASE_LINE)"
 # Supports optional custom messages for success and warnings.
 define CLEANUP
 	if [ -n "$(wildcard $(3))" ]; then \
-		$(call INFO,$(1),$(2) - Removing $(3)); \
 		$(REMOVE) $(3); \
-		$(call SUCCESS,$(1),$(if $(strip $(4)),$(4),$(2) - Successfully cleaned)); \
+		$(call SUCCESS,$(1),$(if $(strip $(4)),$(4),Removed $(2).)); \
 	else \
-		$(call WARNING,$(1),$(if $(strip $(5)),$(5),$(2) - Nothing to clean)); \
+		$(call WARNING,$(1),$(if $(strip $(5)),$(5),No $(2) to remove.)); \
 	fi
 endef
 # Example Usage:
@@ -225,6 +244,8 @@ help: ## Display available targets
 		/^##@/ { \
 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 		}' $(MAKEFILE_LIST)
+
+CHEATSHEET	:= utils/cheat_sheet.txt ## currently not a real thing...
 
 cheatsheet: ## Display IRC commands cheat sheet (TODO)
 	@if [ -f $(CHEATSHEET) ]; then \
