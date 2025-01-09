@@ -1,30 +1,7 @@
 
-
 # ==============================
 ##@ 📚 Documentation
 # ==============================
-
-# ft_irc
-PDF_EN		:= ft_irc_eng.pdf
-PDF_FR		:= ft_irc_eng.pdf # *!! TODO: set fr pdf in ressource repo
-URL_GIT		:= https://github.com/SaydRomey/
-URL_PDF		:= $(URL_GIT)42_ressources/blob/main/pdf/
-
-# PDF
-pdf: | $(PDF_DIR) ## Opens the PDF instructions
-	@clear
-	@echo "Choose language: (en/fr)"; \
-	read lang_choice; \
-	case $$lang_choice in \
-		en) PDF=$(PDF_EN);; \
-		fr) PDF=$(PDF_FR) ;; \
-		*) $(call ERROR,Invalid choice, defaulting to English) ; PDF=$(PDF_EN) ;; \
-	esac; \
-	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF_DIR)/$$PDF; \
-	@open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
-
-$(PDF_DIR):
-	@mkdir -p $(PDF_DIR)
 
 # C++ documentation
 URL_CPP_REF	:=	https://cplusplus.com/reference/
@@ -91,4 +68,37 @@ doc: ## Show documentation links
 	open $$CHOICE
 	@clear
 	@$(call INFO,,Opening documentation...)
-	
+
+# ==============================
+# PDF
+# ==============================
+
+PDF_EN		:= ft_irc_eng.pdf
+PDF_FR		:= ft_irc_eng.pdf # *!! TODO: set fr pdf in ressource repo
+URL_GIT		:= https://github.com/SaydRomey/
+URL_PDF		:= $(URL_GIT)42_ressources/blob/main/pdf/
+
+pdf: | $(PDF_DIR) ## Opens the PDF instructions
+	@clear
+	@echo "Choose language: (en/fr)"; \
+	read lang_choice; \
+	case $$lang_choice in \
+		en) PDF=$(PDF_EN);; \
+		fr) PDF=$(PDF_FR) ;; \
+		*) $(call ERROR,Invalid choice, defaulting to English) ; PDF=$(PDF_EN) ;; \
+	esac; \
+	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF_DIR)/$$PDF; \
+	@open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
+
+$(PDF_DIR):
+	@mkdir -p $(PDF_DIR)
+
+# ==============================
+# Github
+# ==============================
+
+repo: ## Open the GitHub repository
+	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
+	@open $(REPO_LINK);
+
+.PHONY: doc pdf repo

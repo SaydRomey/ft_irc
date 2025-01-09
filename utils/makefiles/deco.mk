@@ -1,33 +1,4 @@
 
-
-# Text colors and style with ANSI
-ESC			:= \033
-RESET		:= $(ESC)[0m
-BOLD		:= $(ESC)[1m
-ITALIC		:= $(ESC)[3m
-UNDERLINE	:= $(ESC)[4m
-RED			:= $(ESC)[91m
-GREEN		:= $(ESC)[32m
-YELLOW		:= $(ESC)[93m
-ORANGE		:= $(ESC)[38;5;208m
-BLUE		:= $(ESC)[94m
-PURPLE		:= $(ESC)[95m
-CYAN		:= $(ESC)[96m
-GRAYTALIC	:= $(ESC)[3;90m
-UP			:= $(ESC)[A
-ERASE_LINE	:= $(ESC)[2K
-
-# **************************************************************************** #
-# **************************************************************************** #
-# Standardized output macros
-INFO		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(ORANGE)$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)"
-SUCCESS		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(GREEN)$(2)$(RESET)"
-WARNING		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(YELLOW)$(2)$(RESET)"
-ERROR		= echo "❌ Error: $(1)$(RED)$(2)$(RESET)"
-UPCUT		= printf "$(UP)$(ERASE_LINE)"
-# **************************************************************************** #
-# **************************************************************************** #
-
 # ==============================
 ##@ 🎨 Decorations
 # ==============================
@@ -49,7 +20,7 @@ title: ## Print ft_irc's logo in ASCII art
 		Build time: $(CYAN)$(TIME)$(RESET)\n"
 
 # ==============================
-##@ Sound
+##@ 🔈 Sound
 # ==============================
 ifdef OS
 	ifeq ($(OS), Darwin) # macOS
@@ -62,7 +33,7 @@ else
 endif
 
 # Sound Files
-WAV_DIR		:= .misc/wav
+WAV_DIR		:= ./utils/wav
 WAV_WELCOME	:= $(WAV_DIR)/welcome.wav
 WAV_PUSHIT	:= $(WAV_DIR)/push.wav
 
@@ -71,3 +42,5 @@ pushit: ## push it to the limit
 
 welcome: ## what can i say
 	@aplay $(WAV_WELCOME)
+
+.PHONY: title pushit welcome

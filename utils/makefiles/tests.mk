@@ -1,5 +1,4 @@
 
-
 # ==============================
 ##@ 🧠 Testing (wip)
 # ==============================
@@ -23,9 +22,22 @@ TEST_STRESS		:= $(TEST_SCRIPT_DIR)/test_stress.sh
 
 # Create log directory if it doesn't exist
 $(TEST_LOG_DIR):
-	@mkdir -p %(TEST_LOG_DIR)
+	@mkdir -p $(TEST_LOG_DIR)
 
-# Macro to run a test script with optional logging
+# ==============================
+# Test Related Utilty Macros
+# ==============================
+
+# Macro: RUN_TEST
+# Run a test script with optional logging
+# Parameters:
+# $(1): Path to the test script.
+# $(2): Name of the test (for logging and clarity).
+# Behavior:
+# Ensures the test script exists and is executable.
+# Runs the test script with parameters for server binary, port, and password.
+# If logging is enabled, appends the output to a log file.
+# Displays appropriate success messages based on logging status.
 define RUN_TEST
 	if [ ! -f "$(1)" ]; then \
 		$(call ERROR,Test Script Missing: ,Script '$(1)' does not exist.); \
@@ -43,7 +55,10 @@ define RUN_TEST
 		$(call SUCCESS,Testing,$(2) test completed successfully.); \
 	fi
 endef
-# Usage: $(call RUN_TEST,script_path,Test Name)
+# Example Usage:
+# $(call RUN_TEST,$(TEST_BASIC),Basic Functionality)
+
+# **************************************************************************** #
 
 test: | $(TEST_LOG_DIR) ## Interactive test selection menu
 	@echo "Do you want to log test results? (y/n): "; \
@@ -53,7 +68,7 @@ test: | $(TEST_LOG_DIR) ## Interactive test selection menu
 		*) LOG_ENABLED=false; $(call INFO,Testing,Logging disabled.);; \
 	esac; \
 	\
-	@echo "Choose a test to run:"
+	echo "Choose a test to run:"
 	@echo "1) Basic Functionality"
 	@echo "2) Operator Commands"
 	@echo "3) File Transfer"
@@ -68,7 +83,7 @@ test: | $(TEST_LOG_DIR) ## Interactive test selection menu
 		3) $(MAKE) test_file_transfer $(NPD);; \
 		4) $(MAKE) test_bot $(NPD);; \
 		5) $(MAKE) test_stress $(NPD);; \
-		6) $(MAKE) tests_all $(NPD);; \
+		6) $(MAKE) test_all $(NPD);; \
 		7) $(MAKE) test_clean $(NPD);; \
 		*) $(call ERROR,Invalid Choice:,Please select a number between 1 and 7.);; \
 	esac
@@ -84,29 +99,31 @@ test_all: | $(TEST_LOG_DIR)
 	@$(call SUCCESS,Testing,All tests completed successfully!)
 
 ## Run basic functionality tests
-test_basic: exec_rights
+test_basic:
 	@$(call RUN_TEST,$(TEST_BASIC),Basic Functionality)
 
 ## Run operator command tests
-test_operator: exec_rights
+test_operator:
 	@$(call RUN_TEST,$(TEST_OPERATOR),Operator Commands)
 
 ## Run file transfer tests
-test_file_transfer: exec_rights
+test_file_transfer:
 	@$(call RUN_TEST,$(TEST_FILE_TR),File Transfer)
 
 ## Run bot interaction tests
-test_bot: exec_rights
+test_bot:
 	@$(call RUN_TEST,$(TEST_BOT),Bot Interaction)
 
 ## Run stress tests
-test_stress: exec_rights
+test_stress:
 	@$(call RUN_TEST,$(TEST_STRESS),Stress Test)
 
-## Clean test artifacts
 test_clean: ## Clean up test artifacts
-	@$(call CLEANUP,Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
+	@$(call CLEANUP,$(NAME),Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
 
 test_logs_clean: ## Remove all test logs
-	@$(call CLEANUP,Log Files,tmp_logs,"Logs successfully removed.","No logs found.")
+	@$(call CLEANUP,Log Files,tmp_logs)
 
+.PHONY: test test_all \
+		test_basic test_operator test_file_transfer test_bot test_stress \
+		test_clean test_logs_clean

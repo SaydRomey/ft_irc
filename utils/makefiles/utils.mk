@@ -1,25 +1,175 @@
 
-# # Utility macros
 
-# Check if a command exists
+# ==============================
+##@ 🛠️  Utility
+# ==============================
+
+# Utility commands
+REMOVE	:= rm -rf
+NPD		:= --no-print-directory
+
+# System Information
+OS		:= $(shell uname)
+USER	:= $(shell whoami)
+TIME	:= $(shell date "+%H:%M:%S")
+CORES	:= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc)
+
+# Temporary flags for ignoring warnings (development use only)
+DEBUG_FLAGS		:= -DDEBUG # -g
+IGNORE_FLAGS	:= -Wno-comment
+DEBUG_FLAGS		+= $(IGNORE_FLAGS)
+
+CHEATSHEET	:= utils/cheat_sheet.txt ## currently not a real thing...
+
+# ==============================
+# Text colors and style with ANSI
+# ==============================
+
+ESC			:= \033
+RESET		:= $(ESC)[0m
+BOLD		:= $(ESC)[1m
+ITALIC		:= $(ESC)[3m
+UNDERLINE	:= $(ESC)[4m
+RED			:= $(ESC)[91m
+GREEN		:= $(ESC)[32m
+YELLOW		:= $(ESC)[93m
+ORANGE		:= $(ESC)[38;5;208m
+BLUE		:= $(ESC)[94m
+PURPLE		:= $(ESC)[95m
+CYAN		:= $(ESC)[96m
+GRAYTALIC	:= $(ESC)[3;90m
+UP			:= $(ESC)[A
+ERASE_LINE	:= $(ESC)[2K
+
+# ==============================
+# Standardized Output Macros
+# ==============================
+
+# Macro: INFO
+# Logs an informational message with optional additional details.
+# Parameters:
+# $(1): Context or section name (e.g., task name).
+# $(2): Main informational message.
+# $(3): Optional additional details.
+# Behavior:
+# Formats the message with bold and colored context,
+# orange for the main message,
+# and gray italics for details.
+INFO		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(ORANGE)$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)"
+
+# Macro: SUCCESS
+# Logs a success message.
+# Parameters:
+# $(1): Context or section name (e.g., task name).
+# $(2): Success message.
+# Behavior:
+# Formats the message with bold and colored context
+# and green for the success message.
+SUCCESS		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(GREEN)$(2)$(RESET)"
+
+# Macro: WARNING
+# Logs a warning message.
+# Parameters:
+# $(1): Context or section name (e.g., task name).
+# $(2): Warning message.
+# Behavior:
+# Formats the message with bold and colored context
+# and yellow for the warning message.
+WARNING		= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(YELLOW)$(2)$(RESET)"
+
+# Macro: ERROR
+# Logs an error message and highlights it in red.
+# Parameters:
+# $(1): Main error context (e.g., error type or task).
+# $(2): Detailed error message.
+# Behavior:
+# Displays the error with a red icon and message for immediate visibility.
+ERROR		= echo "❌ Error: $(1)$(RED)$(2)$(RESET)"
+
+# Macro: UPCUT
+# Moves the cursor up one line and clears it,
+# useful for refreshing messages in loops.
+# Behavior:
+# Uses ANSI escape codes to move the cursor up and clear the line.
+UPCUT		= printf "$(UP)$(ERASE_LINE)"
+
+# ==============================
+# Utility Macros
+# ==============================
+
+# Macro: CLEANUP
+# Parameters:
+# $(1): Caller context (e.g., the project name or task name).
+# $(2): Name of the cleanup task (for logging clarity).
+# $(3): Files/Directories to clean.
+# $(4): Optional custom success message (when cleaned).
+# $(5): Optional custom warning message (when nothing to clean).
+# Behavior:
+# Checks if the specified files/directories exist.
+# If they exist, logs an info message, removes the files, and logs a success message.
+# If they do not exist, logs a warning message.
+# Supports optional custom messages for success and warnings.
+define CLEANUP
+	if [ -n "$(wildcard $(3))" ]; then \
+		$(call INFO,$(1),$(2) - Removing $(3)); \
+		$(REMOVE) $(3); \
+		$(call SUCCESS,$(1),$(if $(strip $(4)),$(4),$(2) - Successfully cleaned)); \
+	else \
+		$(call WARNING,$(1),$(if $(strip $(5)),$(5),$(2) - Nothing to clean)); \
+	fi
+endef
+# Example Usage:
+# $(call CLEANUP,$(NAME),Object Files,$(OBJ_DIR),,"No object files to remove.")
+# $(call CLEANUP,$(NAME),Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
+
+# **************************************************************************** #
+
+# Macro: CHECK_COMMAND
+# Check if a specific command is available on the system
+# Parameters:
+# $(1): Command name to check.
+# Behavior:
+# Verifies the command's availability using command -v.
+# If the command is not found, displays an error message and exits with status 1.
 define CHECK_COMMAND
 	if ! command -v $(1) > /dev/null; then \
 		$(call ERROR,Command Missing:,The required command '$(1)' is not installed.); \
 		exit 1; \
 	fi
 endef
+# Example Usage:
 # $(call CHECK_COMMAND,docker)
 
+# **************************************************************************** #
+
+# Macro: CHECK_CONNECTION
 # Check network connectivity to a specific IP and Port
+# Parameters:
+# $(1): IP address to check.
+# $(2): Port number to check.
+# Behavior:
+# Uses nc -z to check connectivity to the given IP and port.
+# If unreachable, an error message is displayed, and the script exits with status 1.
 define CHECK_CONNECTION
 	if ! nc -z $(1) $(2); then \
 		$(call ERROR,Connection Error,Unable to reach $(1):$(2). Check if the server is running.); \
 		exit 1; \
 	fi
 endef
+# Example Usage:
 # $(call CHECK_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 
-# Wait for a specific IP and port to become available
+# **************************************************************************** #
+
+# Macro: WAIT_FOR_CONNECTION
+# Wait for a specific IP and port to become available before proceeding
+# Parameters:
+# $(1): IP address to wait for.
+# $(2): Port number to wait for.
+# Behavior:
+# Continuously checks the IP and port using nc -z.
+# Displays an info message every second while waiting.
+# Once reachable, displays a success message.
 define WAIT_FOR_CONNECTION
 	while ! nc -z $(1) $(2); do \
 		$(call INFO,Connection,,Waiting for $(1):$(2) to become available...); \
@@ -28,9 +178,20 @@ define WAIT_FOR_CONNECTION
 	done
 	@$(call SUCCESS,Connection,$(1):$(2) is now reachable!)
 endef
+# Example Usage:
 # $(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 
-# Check if a port is available
+# **************************************************************************** #
+
+# Macro: CHECK_PORT
+# Check if a specific port is already in use
+# Parameters:
+# $(1): Port number to check.
+# Behavior:
+# First attempts to use lsof to detect the port's status.
+# Falls back to netstat if lsof is unavailable.
+# If the port is occupied, an error message is displayed, and the script exits with status 1.
+# If neither tool is available, a warning message is displayed, and the check is skipped.
 define CHECK_PORT
 	if command -v lsof > /dev/null; then \
 		if lsof -i :$(1) | grep LISTEN > /dev/null 2>&1; then \
@@ -46,26 +207,13 @@ define CHECK_PORT
 		$(call WARNING,Port Check,Could not determine if port $(1) is in use. Skipping check.); \
 	fi
 endef
+# Example Usage:
 # $(call CHECK_PORT,$(IRC_SERVER_PORT))
 
-# Macro: CLEANUP
-# Parameters:
-# $(1): Name of the cleanup task (for logging clarity)
-# $(2): Files/Directories to clean
-# $(3): Optional success message (when cleaned)
-# $(4): Optional warning message (when nothing to clean)
-define CLEANUP
-	if [ -n "$(wildcard $(2))" ]; then \
-		$(call INFO,Cleanup,$(1) - Removing $(2)); \
-		$(REMOVE) $(2); \
-		$(if $(strip $(3)), $(call SUCCESS,Cleanup,$(3)), $(call SUCCESS,Cleanup,$(1) - Successfully cleaned)); \
-	else \
-		$(if $(strip $(4)), $(call WARNING,Cleanup,$(4)), $(call WARNING,Cleanup,$(1) - Nothing to clean)); \
-	fi
-endef
+# **************************************************************************** #
 
 # ==============================
-##@ 🛠️  Utility
+# Utility Targets
 # ==============================
 
 help: ## Display available targets
@@ -78,11 +226,6 @@ help: ## Display available targets
 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 		}' $(MAKEFILE_LIST)
 
-repo: ## Open the GitHub repository
-	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
-	@open $(REPO_LINK);
-
-CHEATSHEET	:= utils/cheat_sheet.txt ## currently not a real thing...
 cheatsheet: ## Display IRC commands cheat sheet (TODO)
 	@if [ -f $(CHEATSHEET) ]; then \
 		cat $(CHEATSHEET); \
@@ -94,7 +237,10 @@ debug: C_FLAGS += $(DEBUG_FLAGS)
 debug: all ## Build with debug flags (e.g., disable specific warnings)
 	@$(call SUCCESS,$(NAME),Debug build complete)
 
+# ==============================
 # Class creation automation
+# ==============================
+
 class: ## Automate class creation
 	@echo "Enter the class name: "; \
 	read classname; \
@@ -134,8 +280,8 @@ class: ## Automate class creation
 	echo "Header file: $(BOLD)$$header_dir/$$classname.hpp$(RESET)"; \
 	echo "Source file: $(BOLD)$$source_dir/$$classname.cpp$(RESET)"
 
-# **************************************************************************** #
 # **************************************************************************** # # .hpp template
+
 define CLASS_HEADER
 
 #ifndef CLASSNAME_UPPER_HPP
@@ -157,8 +303,9 @@ class CLASSNAME
 endef
 
 export CLASS_HEADER
-# **************************************************************************** #
+
 # **************************************************************************** # # .cpp template
+
 define CLASS_CPP
 
 #include "CLASSNAME.hpp"
@@ -183,5 +330,5 @@ CLASSNAME&	CLASSNAME::operator=(const CLASSNAME &other)
 endef
 
 export CLASS_CPP
-# **************************************************************************** #
+
 # **************************************************************************** #

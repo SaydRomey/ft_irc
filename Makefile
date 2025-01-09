@@ -28,31 +28,10 @@ AUTHOR		:= cdumais
 TEAM		:= "namoisan, jdemers and $(AUTHOR)"
 REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
-# Server info
-IRC_SERVER_IP	:= 127.0.0.1
-IRC_SERVER_PORT	:= 6667
-IRC_SERVER_PSWD	:= 4242
-
-# Utility commands
-REMOVE	:= rm -rf
-NPD		:= --no-print-directory
-
-# System Information
-OS		:= $(shell uname)
-USER	:= $(shell whoami)
-TIME	:= $(shell date "+%H:%M:%S")
-CORES	:= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc)
-
 # Build configuration
 COMPILE		:= c++
 C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic #-01
-# DEP_FLAGS	:= -MMD -MP
 # MAKEFLAGS	+= -j$(CORES) # Parallel build (to test)
-DEBUG_FLAGS	:= -DDEBUG # -g
-
-# Temporary flags for ignoring warnings (development use only)
-IGNORE_FLAGS	:= -Wno-comment
-DEBUG_FLAGS		+= $(IGNORE_FLAGS)
 
 # Platform-specific adjustments
 ifeq ($(OS), Linux)
@@ -80,11 +59,11 @@ TMP_DIRS		:= $(PDF_DIR) $(TEST_LOG_DIR)
 # Helper makefiles
 MK_DIR	:= ./utils/makefiles
 
-include $(MK_DIR)/deco.mk	# ANSI Colors, Output Formatting
-include $(MK_DIR)/utils.mk	# Utility Targets and Automation
+include $(MK_DIR)/utils.mk	# ANSI Colors, Output Formatting, Utility Targets and Automation
 include $(MK_DIR)/setup.mk	# Docker and Weechat Logic
 include $(MK_DIR)/doc.mk	# Documentation Targets
 include $(MK_DIR)/tests.mk	# Testing Logic
+include $(MK_DIR)/deco.mk	# Title and Sounds (not really relevant...)
 
 # ==============================
 ##@ 🎯 Compilation
@@ -109,14 +88,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@$(COMPILE) $(C_FLAGS) $(DEP_FLAGS) $(INCLUDES) -c $< -o $@
 	@$(call UPCUT)
 
-# Include dependency files
-# -include $(OBJS:.o=.d)
-
 # ==============================
 ##@ 🧹 Cleanup
 # ==============================
 
-# @$(call CLEANUP,Object Files,$(OBJ_DIR),"Object files removed successfully.","No object files to remove.")
+# @$(call CLEANUP,$(NAME),Object Files,$(OBJ_DIR),,"No object files to remove.")
 clean: ## Remove object files
 	@if [ -n "$(wildcard $(OBJ_DIR))" ]; then \
 		$(REMOVE) $(OBJ_DIR); \
@@ -125,7 +101,7 @@ clean: ## Remove object files
 		$(call WARNING,$(NAME),No object files to remove); \
 	fi
 
-# @$(call CLEANUP,Executable,$(NAME),"Executable removed successfully.","No executable to remove.")
+# @$(call CLEANUP,Executable,$(NAME),$(NAME),"Executable removed.","No executable to remove.")
 fclean: clean ## Remove executable
 	@if [ -f "$(NAME)" ]; then \
 		$(REMOVE) $(NAME); \
@@ -134,11 +110,11 @@ fclean: clean ## Remove executable
 		$(call WARNING,$(NAME),No executable to remove); \
 	fi
 
-# @$(call CLEANUP,Temporary Files,$(TMP_DIRS),"All temporary files removed successfully.","No temporary files to remove.")
+# @$(call CLEANUP,Temporary Files,$(NAME),$(TMP_DIRS))
 ffclean: fclean ## Remove all generated files and folders
 	@if [ -n "$(wildcard $(TMP_DIRS))" ]; then \
 		$(REMOVE) $(TMP_DIRS); \
-		$(call INFO, $(NAME),Temporary files removed: ,$(TMP_DIRS)); \
+		$(call INFO,$(NAME),Temporary files removed: ,$(TMP_DIRS)); \
 	else \
 		$(call WARNING,$(NAME),No temporary files to remove); \
 	fi
@@ -170,12 +146,7 @@ run-wee: all ## Start the IRC server and connect Weechat to it
 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
 	@$(MAKE) $(NPD) weechat
 
-
 # Define .PHONY targets
 .PHONY: all clean fclean ffclean re \
-		run run-wee doc pdf repo \
-		weechat docker-start weechat-clean \
-		help cheatsheet debug class \
-		title pushit welcome \
-		test test_all test_clean test_logs_clean
+		run run-wee
 
