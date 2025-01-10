@@ -28,6 +28,16 @@ $(TEST_LOG_DIR):
 # Test Related Utilty Macros
 # ==============================
 
+# Macro: RUN_TEST
+# Run a test script with optional logging
+# Parameters:
+# $(1): Path to the test script.
+# $(2): Name of the test (for logging and clarity).
+# Behavior:
+# Ensures the test script exists and is executable.
+# Runs the test script with parameters for server binary, port, and password.
+# If logging is enabled, appends the output to a log file.
+# Displays appropriate success messages based on logging status.
 define RUN_TEST
 	if [ ! -f "$(1)" ]; then \
 		$(call ERROR,Test Script Missing: ,Script '$(1)' does not exist.); \
@@ -45,10 +55,10 @@ define RUN_TEST
 		$(call SUCCESS,Testing,$(2) test completed successfully.); \
 	fi
 endef
+# Example Usage:
+# $(call RUN_TEST,$(TEST_BASIC),Basic Functionality)
 
-# ==============================
-# Test Related Targets
-# ==============================
+# **************************************************************************** #
 
 test: | $(TEST_LOG_DIR) ## Interactive test selection menu
 	@echo "Do you want to log test results? (y/n): "; \
@@ -109,10 +119,10 @@ test_stress:
 	@$(call RUN_TEST,$(TEST_STRESS),Stress Test)
 
 test_clean: ## Clean up test artifacts
-	@$(call CLEANUP,$(NAME),test artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
+	@$(call $(NAME),Test Artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
 
-test_logs_clean: ## Remove all test logs
-	@$(call CLEANUP,$(NAME),log files,tmp_logs)
+test_logs_clean: ## Remove all test logs (maybe not needed...)
+	@$(call $(NAME),log files,tmp_logs)
 
 .PHONY: test test_all \
 		test_basic test_operator test_file_transfer test_bot test_stress \

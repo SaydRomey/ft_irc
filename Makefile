@@ -22,19 +22,16 @@ INC_DIR		:= irc
 HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
 INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
-# Temporary generated files/folders
-PDF_DIR			:= tmp_pdf
-TEST_LOG_DIR	:= tmp_logs
-TMP_DIRS		:= $(PDF_DIR) $(TEST_LOG_DIR)
-
 # Helper makefiles
-MK_DIR	:= ./utils/makefiles
+MAKE_DIR	:= ./utils/makefiles
 
-include $(MK_DIR)/utils.mk	# ANSI Colors, Output Formatting, Utility Targets and Automation
-include $(MK_DIR)/setup.mk	# Docker and Weechat Logic
-include $(MK_DIR)/doc.mk	# Documentation Targets
-include $(MK_DIR)/tests.mk	# Testing Logic
-include $(MK_DIR)/deco.mk	# Title and Sounds (not really relevant...)
+include $(MAKE_DIR)/utils.mk	# Output Formatting
+include $(MAKE_DIR)/info.mk		# Target Descriptions
+include $(MAKE_DIR)/doc.mk		# Documentation Targets
+include $(MAKE_DIR)/weechat.mk	# Docker and Weechat Logic
+include $(MAKE_DIR)/tests.mk	# Testing Logic
+include $(MAKE_DIR)/class.mk	# Class Creation with templates
+include $(MAKE_DIR)/misc.mk		# Title and Sounds (not really relevant...)
 
 # ==============================
 ##@ 🎯 Compilation
@@ -70,10 +67,14 @@ fclean: clean ## Remove executable
 	@$(call CLEANUP,$(NAME),executable,$(NAME))
 
 ffclean: fclean ## Remove all generated files and folders
-	@$(call CLEANUP,$(NAME),temporary files,$(TMP_DIRS))
-	@$(MAKE) weechat-clean $(NPD)
+	@$(MAKE) pdf_clean $(NPD)
+	@$(MAKE) test_clean $(NPD)
+	@$(MAKE) test_logs_clean $(NPD)
+	@$(MAKE) weechat_clean $(NPD)
 
 re: fclean all ## Rebuild everything
+
+.PHONY: all clean fclean ffclean re
 
 # ==============================
 ##@ 🚀 Execution
@@ -97,9 +98,6 @@ run-wee: all ## Start the IRC server and connect Weechat to it
 	sleep 1; \
 	@$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
-	@$(MAKE) $(NPD) weechat
+	@$(MAKE) weechat $(NPD)
 
-# Define .PHONY targets
-.PHONY: all clean fclean ffclean re \
-		run run-wee
-
+.PHONY: run run-wee

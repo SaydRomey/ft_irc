@@ -36,7 +36,7 @@ doc: ## Show documentation links
 	@echo "\n$(ORANGE)Guides/Tutorials$(RESET)"
 	@echo "  100. ft_irc guide - on medium.com"
 	@echo "  101. ft_irc guide - on reactive.so"
-	@echo "  102. chirc - similar project with good documentation (MUST READ)**"
+	@echo "  102. chirc - similar project with good documentation"
 	@echo "  103. Beej's guide to network programming"
 	@echo "\n$(ORANGE)IRC Protocols - RFC$(RESET)"
 	@echo "  1459. IRC Protocol"
@@ -69,36 +69,35 @@ doc: ## Show documentation links
 	@clear
 	@$(call INFO,,Opening documentation...)
 
+.PHONY: doc
+
 # ==============================
 # PDF
 # ==============================
 
-PDF_EN		:= ft_irc_eng.pdf
-PDF_FR		:= ft_irc_eng.pdf # *!! TODO: set fr pdf in ressource repo
 URL_GIT		:= https://github.com/SaydRomey/
 URL_PDF		:= $(URL_GIT)42_ressources/blob/main/pdf/
+PDF_DIR		:= tmp_pdf
+PDF_NAME	:= ft_irc
+PDF			:= $(PDF_DIR)/$(PDF_NAME).pdf
 
 pdf: | $(PDF_DIR) ## Opens the PDF instructions
 	@clear
 	@echo "Choose language: (en/fr)"; \
 	read lang_choice; \
 	case $$lang_choice in \
-		en) PDF=$(PDF_EN);; \
-		fr) PDF=$(PDF_FR) ;; \
-		*) $(call ERROR,Invalid choice, defaulting to English) ; PDF=$(PDF_EN) ;; \
+		en) PDF=$(PDF_NAME)_en.pdf;; \
+		fr) PDF=$(PDF_NAME)_fr.pdf;; \
+		*) $(call ERROR,Invalid choice, defaulting to English); PDF=$(PDF_NAME)_en.pdf;; \
 	esac; \
-	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF_DIR)/$$PDF; \
-	open $(PDF_DIR)/$$PDF || echo "Please install a compatible PDF viewer"
+	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF); \
+	echo "Opening $(PDF)..."
+	@open $(PDF) || echo "Please install a compatible PDF viewer"
 
 $(PDF_DIR):
 	@mkdir -p $(PDF_DIR)
 
-# ==============================
-# Github
-# ==============================
+pdf_clean: ## Removes PDF generated directory
+	@$(call CLEANUP,$(NAME),$(PDF),$(PDF_DIR))
 
-repo: ## Open the GitHub repository
-	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
-	@open $(REPO_LINK);
-
-.PHONY: doc pdf repo
+.PHONY: pdf pdf_clean

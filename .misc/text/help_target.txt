@@ -149,3 +149,64 @@ Available targets:
 
 We should combine multi-line descriptions into single lines with clear formatting
 and structure our Makefile logically with section headers.
+
+
+// using a macro:
+
+# How It Works
+# awk Basics:
+
+# awk processes input line by line.
+# FS (Field Separator) is set to :.*## to split the target line:
+# Field $1: Target name (e.g., all, clean).
+# Field $2: Description after ##.
+# Conditional Handling (INCLUDE_HEADERS):
+
+# ENVIRON["INCLUDE_HEADERS"] reads the value of the shell environment variable INCLUDE_HEADERS within the awk script.
+# If INCLUDE_HEADERS=1, the macro includes section headers (##@) in the output.
+# If INCLUDE_HEADERS=0, only the targets and their descriptions (##) are displayed.
+# Reusability:
+
+# The macro dynamically adapts to help and info targets by changing INCLUDE_HEADERS.
+
+# What is ENVIRON[] in awk?
+# ENVIRON is a built-in associative array in awk that gives access to environment variables.
+
+# ex:
+# INCLUDE_HEADERS=1 awk 'BEGIN {print ENVIRON["INCLUDE_HEADERS"]}'
+
+# (this prints1)
+
+
+# Macro to display Makefile targets and descriptions
+# define DISPLAY_TARGETS
+# awk 'BEGIN { \
+# 		# Set field separator to split target and description \
+# 		FS = ":.*##"; \
+# 		# Read the INCLUDE_HEADERS environment variable \
+# 		INCLUDE_HEADERS = ENVIRON["INCLUDE_HEADERS"]; \
+# 	} \
+# 	# Print section headers if INCLUDE_HEADERS is enabled \
+# 	INCLUDE_HEADERS && /^##@/ { \
+# 		printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5); \
+# 	} \
+# 	# Print target names and descriptions \
+# 	/^[a-zA-Z_0-9-]+:.*?##/ { \
+# 		printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2; \
+# 	}' $(MAKEFILE_LIST)
+# endef
+define DISPLAY_TARGETS
+awk 'BEGIN { \
+		FS = ":.*##"; \
+		INCLUDE_HEADERS = ENVIRON["INCLUDE_HEADERS"];} \
+	INCLUDE_HEADERS && /^##@/ { \
+		printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5); \
+	} \
+	/^[a-zA-Z_0-9-]+:.*?##/ { \
+		printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2; \
+	}' $(MAKEFILE_LIST)
+endef
+
+help: ## Display available 'make' targets
+	@echo "\nAvailable targets:"
+	@INCLUDE_HEADERS=1 $(DISPLAY_TARGETS)
