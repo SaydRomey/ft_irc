@@ -61,7 +61,7 @@ ERASE_LINE	:= $(ESC)[2K
 # Formats the message with bold and colored context,
 # orange for the main message,
 # and gray italics for details.
-INFO	= echo "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)"
+INFO	= printf "[$(BOLD)$(PURPLE)$(1)$(RESET)]\t$(2)$(RESET)$(GRAYTALIC)$(3)$(RESET)\n"
 
 # Macro: SUCCESS
 # Logs a success message.
@@ -100,6 +100,7 @@ ERROR	= echo "❌ Error: $(1)$(RED)$(2)$(RESET)"
 UPCUT	= printf "$(UP)$(ERASE_LINE)"
 
 TITLE	= echo "\n$(BOLD)$(UNDERLINE)$(1)$(RESET)\n"
+NEWLINE	= printf "\n"
 
 
 # ==============================
@@ -159,7 +160,7 @@ endef
 # If unreachable, an error message is displayed, and the script exits with status 1.
 define CHECK_CONNECTION
 	if ! nc -z $(1) $(2); then \
-		$(call ERROR,Connection Error,Unable to reach $(1):$(2). Check if the server is running.); \
+		$(call ERROR,Connection Error: Unable to reach $(1):$(2).\nCheck if the server is running.); \
 		exit 1; \
 	fi
 endef
@@ -194,21 +195,28 @@ endef
 # Check if a specific port is already in use
 # Parameters:
 # $(1): Port number to check.
+# $(2): use "print" to display port's availabilty
 # Behavior:
 # First attempts to use lsof to detect the port's status.
 # Falls back to netstat if lsof is unavailable.
+# If the port is available and "print" was used as second parameter,
+# displays a message indicating port's availability
 # If the port is occupied, an error message is displayed, and the script exits with status 1.
 # If neither tool is available, a warning message is displayed, and the check is skipped.
 define CHECK_PORT
 	if command -v lsof > /dev/null; then \
 		if lsof -i :$(1) | grep LISTEN > /dev/null 2>&1; then \
-			$(call ERROR,Port $(1),is already in use!); \
+			$(call ERROR,Port $(1) is already in use!); \
 			exit 1; \
+		elif [ "$(2)" = "print" ]; then \
+			$(call SUCCESS,Port $(1),Port is available.); \
 		fi; \
 	elif command -v netstat > /dev/null; then \
 		if netstat -an | grep ":$(1) .*LISTEN" > /dev/null; then \
-			$(call ERROR,Port $(1),is already in use!); \
+			$(call ERROR,Port $(1) is already in use!); \
 			exit 1; \
+		elif [ "$(2)" = "print" ]; then \
+			$(call SUCCESS,Port $(1),Port is available.); \
 		fi; \
 	else \
 		$(call WARNING,Port Check,Could not determine if port $(1) is in use. Skipping check.); \
@@ -216,5 +224,17 @@ define CHECK_PORT
 endef
 # Example Usage:
 # $(call CHECK_PORT,$(IRC_SERVER_PORT))
+# $(call CHECK_PORT,$(IRC_SERVER_PORT),print)
 
 # **************************************************************************** #
+
+define KILL_PROCESS_ON_PORT
+	if lsof -t -i :$(1) > /dev/null 2>&1; then \
+		PID=$$(lsof -t -i :$(1)); \
+		$(call INFO,Port $(1),$(ORANGE)Killing process $$PID using port $(1)...); \
+		kill -9 $$PID; \
+		$(call SUCCESS,Port $(1),Process $$PID has been killed.); \
+	else \
+		$(call INFO,Port $(1),No process is using port $(1).); \
+	fi
+endef

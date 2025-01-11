@@ -3,6 +3,20 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
+void	serverStatePrint(bool state)
+{
+	std::cout << BOLD << UNDERLINE << "ircserv" << RESET;
+	if (state == true)
+	{
+		std::cout << "\t\t" << GREEN << "Server is runing..." << RESET;
+	}
+	else if (state == false)
+	{
+		std::cout << "\t\t" << RED << "Server terminated!" << RESET;
+	}
+	std::cout << std::endl;
+}
+
 int	test_server(int ac, char **av)
 {
 	Server* serv = NULL;
@@ -11,13 +25,25 @@ int	test_server(int ac, char **av)
 	try
 	{
 		serv = new Server(av[1], av[2]);
+		
+		// 
+		serverStatePrint(true);
+		// 
+
 		serv->run();
 		serv->stop();
+		
+		// 
+		serverStatePrint(false);
+		// 
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << "main-catch:" << e.what() << std::endl;
 		delete serv;
+		// 
+		serverStatePrint(false);
+		// 
 		return 1;
 	}
 	delete serv;
