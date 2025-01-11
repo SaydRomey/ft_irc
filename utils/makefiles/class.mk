@@ -1,6 +1,6 @@
 
 # ==============================
-##@ 🤖 Class creation automation
+##@ 🤖 Class creator
 # ==============================
 
 class: ## Prompt assisted class creation

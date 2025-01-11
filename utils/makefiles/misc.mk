@@ -3,7 +3,7 @@
 ##@ 🎨 Decorations
 # ==============================
 
-define TITLE
+define PROJECT_TITLE
 
 ███████╗████████╗     ██╗██████╗  ██████╗
 ██╔════╝╚══██╔══╝     ██║██╔══██╗██╔════╝
@@ -13,11 +13,11 @@ define TITLE
 ╚═╝        ╚═╝╚══════╝╚═╝╚═╝  ╚═╝ ╚═════╝
 
 endef
-export TITLE
+export PROJECT_TITLE
 
 title: ## Print ft_irc's logo in ASCII art
 	@echo "$(BOLD)$(PURPLE)$(NAME)$(GREEN) created$(RESET)"
-	@echo "$(GREEN)$$TITLE$(RESET)"
+	@echo "$(GREEN)$$PROJECT_TITLE$(RESET)"
 	@echo "Created by $(BOLD)$(TEAM)$(RESET)"
 	@echo "Compiled for $(ITALIC)$(BOLD)$(PURPLE)$(USER)$(RESET) \
 		\t$(CYAN)$(TIME)$(RESET)\n"
@@ -28,25 +28,34 @@ title: ## Print ft_irc's logo in ASCII art
 ##@ 🔈 Sound
 # ==============================
 
-# ifdef OS
-# 	ifeq ($(OS), Darwin) # macOS
-# 		PLAY_SOUND = afplay
-# 	else # Linux
-# 		PLAY_SOUND = aplay
-# 	endif
-# else
-# 	$(error "Unsupported OSL Unable to determine sound playback command")
-# endif
-
 # Sound Files
 WAV_DIR		:= ./utils/wav
 WAV_WELCOME	:= $(WAV_DIR)/welcome.wav
 WAV_PUSHIT	:= $(WAV_DIR)/push.wav
 
 pushit: ## push it to the limit
-	@aplay $(WAV_PUSHIT)
+	@$(PLAY_SOUND) $(WAV_PUSHIT)
 
 welcome: ## what can i say
-	@aplay $(WAV_WELCOME)
+	@$(PLAY_SOUND) $(WAV_WELCOME)
 
 .PHONY: pushit welcome
+
+# ==============================
+##@ 💾 Backup
+# ==============================
+
+BACKUP_NAME	:=$(ROOT_DIR)_$(USER)_$(TIMESTAMP).zip
+BACKUP_NAME	:=$(ROOT_DIR)_$(USER)_$(TIMESTAMP).zip
+MOVE_TO		:= ~/Desktop/$(BACKUP_NAME)
+
+backup: ffclean ## Creates a zip file of the project
+	@if which zip > $(VOID); then \
+		zip -r --quiet $(BACKUP_NAME) ./*; \
+		mv $(BACKUP_NAME) $(MOVE_TO); \
+		$(call INFO,$(NAME),compressed as: ,$(CYAN)$(UNDERLINE)$(MOVE_TO)$(RESET)); \
+	else \
+		$(call ERROR,Please install zip to use the backup feature); \
+	fi
+
+.PHONY: backup

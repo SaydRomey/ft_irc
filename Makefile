@@ -5,6 +5,11 @@ AUTHOR		:= cdumais
 TEAM		:= "namoisan, jdemers and $(AUTHOR)"
 REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
+# Server info
+IRC_SERVER_IP	:= 127.0.0.1
+IRC_SERVER_PORT	:= 6667
+IRC_SERVER_PSWD	:= 4242
+
 # Build configuration
 COMPILE		:= c++
 C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
@@ -25,13 +30,13 @@ INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 # Helper makefiles
 MAKE_DIR	:= ./utils/makefiles
 
-include $(MAKE_DIR)/utils.mk	# Output Formatting
-include $(MAKE_DIR)/info.mk		# Target Descriptions
+include $(MAKE_DIR)/utils.mk	# Utility Variables and Macros
+include $(MAKE_DIR)/docker.mk	# Docker Macros
 include $(MAKE_DIR)/doc.mk		# Documentation Targets
-include $(MAKE_DIR)/weechat.mk	# Docker and Weechat Logic
+include $(MAKE_DIR)/weechat.mk	# Weechat Targets
 include $(MAKE_DIR)/tests.mk	# Testing Logic
-include $(MAKE_DIR)/class.mk	# Class Creation with templates
-include $(MAKE_DIR)/misc.mk		# Title and Sounds (not really relevant...)
+include $(MAKE_DIR)/class.mk	# Class Creation with Templates
+include $(MAKE_DIR)/misc.mk		# Misc, Title and Sounds (not really relevant...)
 
 # ==============================
 ##@ 🎯 Compilation
@@ -52,7 +57,7 @@ $(NAME): $(OBJS)
 # Object compilation rules
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
-	@$(call INFO,$(NAME),Compiling...\t,$(notdir $<))
+	@$(call INFO,$(NAME),$(ORANGE)Compiling...\t,$(CYAN)$(notdir $<))
 	@$(COMPILE) $(C_FLAGS) $(INCLUDES) -c $< -o $@
 	@$(call UPCUT)
 
@@ -67,10 +72,9 @@ fclean: clean ## Remove executable
 	@$(call CLEANUP,$(NAME),executable,$(NAME))
 
 ffclean: fclean ## Remove all generated files and folders
-	@$(MAKE) pdf_clean $(NPD)
-	@$(MAKE) test_clean $(NPD)
-	@$(MAKE) test_logs_clean $(NPD)
-	@$(MAKE) weechat_clean $(NPD)
+	@$(MAKE) pdf-clean $(NPD)
+	@$(MAKE) test-clean $(NPD)
+	@$(MAKE) weechat-clean $(NPD)
 
 re: fclean all ## Rebuild everything
 
@@ -100,4 +104,26 @@ run-wee: all ## Start the IRC server and connect Weechat to it
 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
 	@$(MAKE) weechat $(NPD)
 
-.PHONY: run run-wee
+# run-lime: all ## Start the IRC server and connect Limechat to it
+
+.PHONY: run run-wee #run-lime
+
+# ==============================
+##@ 🛠  Utility
+# ==============================
+
+help: ## Display available targets
+	@echo "\nAvailable targets:"
+	@awk 'BEGIN {FS = ":.*##";} \
+		/^[a-zA-Z_0-9-]+:.*?##/ { \
+			printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 \
+		} \
+		/^##@/ { \
+			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
+		}' $(MAKEFILE_LIST)
+
+repo: ## Open the GitHub repository
+	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
+	@open $(REPO_LINK);
+
+.PHONY: help repo

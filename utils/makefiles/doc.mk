@@ -92,12 +92,12 @@ pdf: | $(PDF_DIR) ## Opens the PDF instructions
 	esac; \
 	curl -# -L $(URL_PDF)$$PDF?raw=true -o $(PDF); \
 	echo "Opening $(PDF)..."
-	@open $(PDF) || echo "Please install a compatible PDF viewer"
+	@$(OPEN) $(PDF) || echo "Please install a compatible PDF viewer"
 
 $(PDF_DIR):
-	@mkdir -p $(PDF_DIR)
+	@$(MKDIR) $(PDF_DIR)
 
-pdf_clean: ## Removes PDF generated directory
-	@$(call CLEANUP,$(NAME),$(PDF),$(PDF_DIR))
+pdf-clean: ## Removes PDF generated directory
+	@$(call CLEANUP,$(NAME),,$(PDF_DIR),PDF files removed.,No PDF files to remove.)
 
-.PHONY: pdf pdf_clean
+.PHONY: pdf pdf-clean

@@ -102,12 +102,3 @@ info: ## Display detailed information about a specific target (wip)
 # 			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
 # 		}' $(MAKEFILE_LIST)
 
-# ==============================
-# Project Repository
-# ==============================
-
-repo: ## Open the GitHub repository
-	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
-	@open $(REPO_LINK);
-
-.PHONY: repo
