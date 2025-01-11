@@ -1,6 +1,7 @@
 
 #include "Reply.hpp"
 #include "_test_header.hpp"
+#include <ctime>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -192,6 +193,16 @@ void	test_pseudo_replies(void)
 
 }
 
+std::string getCurrentDate(void)
+{
+	char		buffer[80];
+	std::time_t	now = std::time(0);
+	std::tm		*localTime = std::localtime(&now);
+	std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
+	
+	return (std::string(buffer));
+}
+
 void	test_welcome_replies(void)
 {
 	printBox(formatBoxText("Welcome", PURPLE), '*', YELLOW);
@@ -199,7 +210,7 @@ void	test_welcome_replies(void)
 	// printSectionHeader("Testing Welcome Replies", "(On successful authentication)");
 	
 	std::string	nickname = "WelcomedGuest";
-	std::string	creationDate = "2025-01-31";
+	std::string	creationDate = getCurrentDate();
 
 	try
 	{

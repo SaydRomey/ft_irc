@@ -1,9 +1,4 @@
 
-/*	TODO:
-		only set the reply if i can (so on syntax or semantic errors)
-		else, reply is empty, and boolean '_valid' is true
-*/
-
 /*	TOCHECK:
 
 improve nickname validator
@@ -40,7 +35,8 @@ class Validator
 {
 	public:
 		Validator(void);
-		Validator(const std::string &nickname);
+		Validator(const Validator &other);
+		Validator&	operator=(const Validator &other);
 		~Validator(void);
 		
 		bool	validateCommand(const std::map<std::string, std::string> &command) const;

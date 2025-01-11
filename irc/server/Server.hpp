@@ -17,13 +17,14 @@ class Server
 {
 public:
 	Server(const std::string& port, const std::string& password);
-	void		run();
+
+	void	run();
+	void	stop();
 	static void	signalHandler(int signum);
 
 	static t_strIntMap commandMap;
 
 private:
-	static bool	_isRunning;
 	int			_port;
 	std::string	_password;
 	time_t		_time;

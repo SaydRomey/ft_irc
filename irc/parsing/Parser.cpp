@@ -29,10 +29,6 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 		return (command);
 	
 	size_t	index = 0;
-
-	// // ignore prefix if present ?
-	// if (tokens[index][0] == ':')
-	// 	index++;
 	
 	// extract prefix if present
 	if (tokens[index][0] == ':')
@@ -60,7 +56,7 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 			{
 				trailing += " " + tokens[index];
 			}
-			command["trailing"] = trailing;
+			command["trailing"] = trim(trailing);
 			break ;
 		}
 		if (!params.empty())
@@ -68,7 +64,7 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 		params += tokens[index];
 		++index;
 	}
-	command["params"] = params;
+	command["params"] = normalizeInput(params);
 
 	return (command);
 }
@@ -114,10 +110,6 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 	}
 	return (result);
 }
-/*
-	std::vector<std::string>	channelTokens = tokenize(params.substr(0, params.find(' ')), ',', true);
-	std::vector<std::string>	keyTokens = tokenize(params.substr(params.find(' ') + 1), ',', true);
-*/
 
 t_vecStr	Parser::parseKickParams(const std::string &params) const
 {

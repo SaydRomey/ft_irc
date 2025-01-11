@@ -37,7 +37,6 @@ class Message
 		
 	private:
 		void	_processInput(const std::string &input);
-		void	_parseKickParams(const std::string &params);
 		
 		bool			_valid;
 		std::string		_nickname;

@@ -2,6 +2,11 @@
 
 # Tests basic functionality like authentication, joining channels, and sending messages.
 
+# ANSI color codes
+GREEN="\033[32m"
+RED="\033[31m"
+RESET="\033[0m"
+
 SERVER=$1
 PORT=$2
 PASSWORD=$3
@@ -23,9 +28,9 @@ sleep 1
 
 # Check server response
 if [ $? -eq 0 ]; then
-  echo "Basic functionality test passed!"
+  echo -e "${GREEN}Basic functionality test passed!${RESET}"
 else
-  echo "Basic functionality test failed!"
+  echo -e "${RED}Basic functionality test failed!${RESET}"
 fi
 
 # Clean up

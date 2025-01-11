@@ -42,22 +42,32 @@ const std::map<std::string, CommandType>	Validator::_commandMap = initCommandMap
 /* ************************************************************************** */
 
 const Validator::ValidatorFunc	Validator::_validators[] = {
-	&Validator::_validatePassCommand,   // PASS
-	&Validator::_validateNickCommand,   // NICK
-	&Validator::_validateUserCommand,   // USER
-	&Validator::_validateJoinCommand,   // JOIN
-	&Validator::_validatePartCommand,   // PART
-	&Validator::_validateTopicCommand,  // TOPIC
-	&Validator::_validateModeCommand,   // MODE
-	&Validator::_validateKickCommand,   // KICK
-	&Validator::_validateInviteCommand, // INVITE
-	&Validator::_validatePrivmsgCommand,// PRIVMSG
-	&Validator::_validateNoticeCommand  // NOTICE
+	&Validator::_validatePassCommand,
+	&Validator::_validateNickCommand,
+	&Validator::_validateUserCommand,
+	&Validator::_validateJoinCommand,
+	&Validator::_validatePartCommand,
+	&Validator::_validateTopicCommand,
+	&Validator::_validateModeCommand,
+	&Validator::_validateKickCommand,
+	&Validator::_validateInviteCommand,
+	&Validator::_validatePrivmsgCommand,
+	&Validator::_validateNoticeCommand
 };
 
 /* ************************************************************************** */
 
 Validator::Validator(void) : _rplType(static_cast<ReplyType>(0)), _rplArgs() {}
+Validator::Validator(const Validator &other) : _rplType(other._rplType), _rplArgs(other._rplArgs) {}
+Validator&	Validator::operator=(const Validator &other)
+{
+	if (this != &other)
+	{
+		_rplType = other._rplType;
+		_rplArgs = other._rplArgs;
+	}
+	return (*this);
+}
 Validator::~Validator(void) {}
 
 /* ************************************************************************** */
@@ -84,9 +94,6 @@ bool	Validator::_setRpl(ReplyType rplType, const std::string &arg1, const std::s
 	_rplType = rplType;
 	_rplArgs.clear();
 
-	// std::vector<std::string>	args = makeArgs(arg1, arg2, arg3, arg4);
-	// _rplArgs.insert(_rplArgs.end(), args.begin(), args.end());
-
 	_rplArgs = makeArgs(arg1, arg2, arg3, arg4);
 	
 	return (false);
@@ -105,11 +112,7 @@ bool	Validator::_noRpl(void) const
 
 /* ************************************************************************** */
 
-/*	**TODO:
-		validateCommand is to return 'true' if command is valid,
-		and still set a valid reply !!!
-
-
+/*
 Validates the syntax (structure and validity) of a command,
 tokenized in a map of string key and values
 
@@ -165,41 +168,6 @@ bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::
 
 	return ((this->*(_validators[cmdType]))(command));
 }
-
-/*
-Validates the command semantically based on its type
-Uses command-specific methods (e.g., ValidateJoinCommand)
-*/
-// bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const
-// {
-// 	switch (cmdType)
-// 	{
-// 		case PASS:
-// 			return (_validatePassCommand(command));
-// 		case NICK:
-// 			return (_validateNickCommand(command));
-// 		case USER:
-// 			return (_validateUserCommand(command));
-// 		case JOIN:
-// 			return (_validateJoinCommand(command));
-// 		case PART:
-// 			return (_validatePartCommand(command));
-// 		case TOPIC:
-// 			return (_validateTopicCommand(command));
-// 		case MODE:
-// 			return (_validateModeCommand(command));
-// 		case KICK:
-// 			return (_validateKickCommand(command));
-// 		case INVITE:
-// 			return (_validateInviteCommand(command));
-// 		case PRIVMSG:
-// 			return (_validatePrivmsgCommand(command));
-// 		case NOTICE:
-// 			return (_validateNoticeCommand(command));
-// 		default:
-// 			return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("command")));
-// 	}
-// }
 
 /* ************************************************************************** */ // syntax validation
 
