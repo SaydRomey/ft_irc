@@ -7,6 +7,8 @@
 #include <cstring>
 #include <fcntl.h>
 #include <utility>
+#include <csignal> //SIGINT, SIGQUIT
+#include <cerrno> // errno, EINTR
 
 static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("PASS", PASS),
@@ -24,8 +26,11 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 
 Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
-	_clientMap(), _nickMap(), _rplGenerator(), _chanManager(_rplGenerator)
+	_clientMap(), _nickMap()
 {
+	// 
+	_chanManager = new ChannelManager(*this); //
+	// 
 	long tmp_port = std::strtol(port.c_str(), NULL, 10);
 	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
 		throw std::invalid_argument("Server::invalid_port");
@@ -58,6 +63,8 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 	pollfd pfd = {sockfd, POLLIN, 0};
 	_pollFds.push_back(pfd);
 }
+
+Server::~Server() { delete _chanManager; }
 
 void Server::run(void)
 {
@@ -226,7 +233,7 @@ void Server::pass_cmd(User &client, const Message& msg)
 	std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
-		client.pendingPush(_rplGenerator.reply(462, client.getNickname()));
+		client.pendingPush(reply(462, client.getNickname()));
 	else
 		client.setPass(msg.getParams() == _password);
 }
@@ -235,14 +242,14 @@ void Server::user_cmd(User &client, const Message& msg)
 {
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
-		client.pendingPush(_rplGenerator.reply(462));
+		client.pendingPush(reply(462, client.getNickname()));
 	else if (perms == PERM_NICK)
-		client.pendingPush(_rplGenerator.reply(464));
+		client.pendingPush(reply(464, client.getNickname()));
 	else
 	{
 		client.setUsername(msg.getParams());
 		if (client.getPerms() == PERM_ALL)
-			client.pendingPush(_rplGenerator.reply(1, client.getNickname(), client.getNickname()));
+			client.pendingPush(reply(1, client.getNickname(), client.getNickname()));
 	}
 }
 
@@ -253,17 +260,17 @@ void Server::nick_cmd(User &client, const Message& msg)
 	short perms = client.getPerms();
 	if (perms == PERM_USER)
 	{
-		client.pendingPush(_rplGenerator.reply(464));
+		client.pendingPush(reply(464, client.getNickname()));
 		return;
 	}
 
 	const std::string& nick = msg.getParams();
 	std::string oldNick = client.getNickname();
 	if (_nickMap.count(nick) == 1)
-		client.pendingPush(_rplGenerator.reply(433, oldNick, nick));
+		client.pendingPush(reply(433, oldNick, nick));
 	else if (leadCharBan.find(nick[0]) != std::string::npos
 			|| nick.find(' ') != std::string::npos)
-		client.pendingPush(_rplGenerator.reply(432, oldNick, nick));
+		client.pendingPush(reply(432, oldNick, nick));
 	else
 	{
 		_nickMap.erase(oldNick);
@@ -272,12 +279,14 @@ void Server::nick_cmd(User &client, const Message& msg)
 		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@ft-irc NICK " + nick;
 		broadcast(msg);
 		if (perms == ~PERM_NICK)
-			client.pendingPush(_rplGenerator.reply(1, nick, nick));
+			client.pendingPush(reply(1, nick, nick));
 	}
 }
 
 void Server::privmsg_cmd(User &client, const Message &msg)
 {
+	(void)client;
+	(void)msg;
 	// std::vector<std::string> targets(tokenize(msg.getParams(), ','));
 
 	// for (size_t i=0; i < targets.size(); i++)
@@ -285,8 +294,26 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	// 	if (targets[i][0] == '#')
 	// 		_chanManager.privmsg(client, targets[i], msg.getReply());
 	// 	else if (_nickMap.count(targets[i]) == 0)
-	// 		client.pendingPush(_rplGenerator.reply(401, targets[i]));
+	// 		client.pendingPush(reply(401, targets[i]));
 	// 	else if (_nickMap[targets[i]] != client.getFd())
 	// 		_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply());
 	// }
 }
+
+// 
+User*	Server::getUserByNickname(const std::string& nickname)
+{
+	// Check if the nickname exists in the _nickMap
+	t_strIntMap::iterator	it = _nickMap.find(nickname);
+	if (it != _nickMap.end())
+	{
+		int	fd = it->second; // Get the corresponding FD
+		t_clientMap::iterator	clientIt = _clientMap.find(fd);
+		if (clientIt != _clientMap.end())
+		{
+			return &clientIt->second; // Return the User object
+		}
+	}
+	return NULL;
+}
+// 
