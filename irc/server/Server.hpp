@@ -13,14 +13,21 @@ typedef std::map<int, User>			t_clientMap;
 typedef std::vector<pollfd>			t_pfdVect;
 typedef std::map<std::string, int>	t_strIntMap;
 
+class ChannelManager;
+
 class Server
 {
 public:
 	Server(const std::string& port, const std::string& password);
+	~Server();
 
 	void	run();
 	void	stop();
 	static void	signalHandler(int signum);
+
+	// 
+	User*	getUserByNickname(const std::string& nickname); //
+	// 
 
 	static t_strIntMap commandMap;
 
@@ -32,8 +39,9 @@ private:
 	t_pfdVect		_pollFds;
 	t_clientMap		_clientMap;
 	t_strIntMap		_nickMap;
-	Reply			_rplGenerator;
-	ChannelManager	_chanManager;
+	// Reply			_rplGenerator;
+	// ChannelManager	_chanManager;
+	ChannelManager*	_chanManager;
 
 	int					_safePoll();
 	void				_acceptConnection();

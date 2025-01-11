@@ -159,3 +159,14 @@ void	test_message(void)
 	runTests(validMessages, validCount, "Valid", true);
 	runTests(invalidMessages, invalidCount, "Invalid", false);
 }
+
+// 
+
+void	test_arg_message(int argc, char *argv[])
+{
+	if (argc != 2)
+		return ;
+
+	Message msg(argv[1]);
+	std::cout << msg << std::endl;
+}

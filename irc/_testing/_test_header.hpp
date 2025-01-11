@@ -5,6 +5,7 @@
 # include "parsing_utils.hpp"
 
 void	test_message(void);
+void	test_arg_message(int argc, char *argv[]);
 
 void	test_reply(void);
 void	test_pseudo_replies(void);
