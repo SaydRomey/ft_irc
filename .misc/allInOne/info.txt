@@ -1,0 +1,719 @@
+
+
+
+/*
+
+1. Handling Non-Blocking I/O
+
+Requirement:
+"All I/O operations must be non-blocking."
+
+The setNonBlocking method ensures that
+file descriptors (e.g., sockets) are set to
+non-blocking mode using fcntl(fd, F_SETFL, O_NONBLOCK).
+
+2. Using poll() (or equivalent)
+
+Requirement:
+"Use only one poll() (or equivalent) to handle all operations."
+
+The example main function demonstrates how to use poll() for
+managing multiple file descriptors, including handling new connections
+and I/O readiness on existing connections.
+
+3. Basic Socket Operations
+
+Socket Creation and Configuration:
+
+createSocket:
+Handles socket creation with the required domain, type, and protocol.
+
+setSocketOption:
+Enables socket configuration, such as SO_REUSEADDR.
+
+Binding and Listening:
+
+bindSocket:
+Binds a socket to a specified address and port.
+
+listenSocket:
+Sets the socket to listen mode with a specified backlog.
+
+Accepting Connections:
+
+acceptConnection:
+Handles incoming connections and provides the client's address.
+
+4. Data Transmission
+
+Requirement:
+"Communication between client and server must be done via TCP/IP."
+
+sendData and receiveData support TCP/IP communication using send() and recv().
+Partial data reception or transmission is handled by repeatedly calling these functions.
+
+5. Handling Client Authentication and Commands
+
+The NetworkUtils class provides low-level operations,
+but you can extend it or write additional classes to:
+
+Aggregate incoming data packets into complete commands.
+
+Parse and validate commands.
+
+Manage client state (e.g., authenticated, nickname set).
+
+6. Multiplexing Multiple Clients
+
+Requirement: 
+The server must handle multiple clients simultaneously and must not hang."
+
+Using poll() or equivalent ensures efficient handling of
+multiple clients in a single thread without blocking the server.
+
+7. Error Handling
+
+Requirement:
+"Your program must not crash under any circumstances."
+
+The handleError method throws exceptions for fatal errors,
+enabling robust error management and graceful shutdowns.
+For memory exhaustion or edge cases (e.g., malformed packets),
+you can use C++ exception handling (try/catch).
+
+8. Expandability
+
+The NetworkUtils class is extensible for features like:
+
+DNS Resolution:
+The resolveHostName method simplifies hostname-to-IP conversion.
+
+Command Aggregation and Parsing:
+You can write an IrcParser class to handle IRC commands
+using NetworkUtils for communication.
+
+Channel and User Management:
+Implement separate classes for managing users and channels.
+
+9. Example IRC Server Features
+
+Authentication
+Use recvData to gather input from clients and
+validate the provided password against the server's configured password.
+
+Setting Nicknames and Joining Channels
+Maintain a mapping of client sockets to user data
+(e.g., nickname, channels) in your server logic.
+
+Sending and Receiving Messages
+Use sendData to broadcast messages to all members of a channel.
+
+Operator Commands (KICK, INVITE, etc.)
+Implement command handlers that manipulate
+data structures representing channels and users.
+
+10. Project-Specific Challenges
+
+The utility class alone is not enough—it serves as a foundation.
+You'll need to:
+
+Implement the IRC Protocol:
+Parse and process commands (e.g., NICK, JOIN, PRIVMSG).
+Maintain server state (users, channels, topics, permissions).
+
+Handle Partial Data:
+Use a buffer to aggregate incoming packets until a full command is received.
+
+Optimize Performance:
+Ensure minimal resource usage with non-blocking I/O and efficient data structures.
+
+Additional Classes You'll Need
+
+IRCServer
+
+Manages the server state and handles:
+
+Initialization (port binding, socket setup).
+Accepting and managing client connections.
+Routing messages and handling commands.
+
+IRCClient
+
+Represents a connected client:
+
+Tracks nickname, username, and channel memberships.
+Handles authentication and permissions.
+
+IRCChannel
+
+Manages a single channel:
+
+Tracks members, operators, and channel modes (e.g., invite-only).
+
+IrcParser
+Handles command parsing and validation.
+
+Conclusion
+
+The NetworkUtils class simplifies the foundational networking operations,
+allowing you to focus on higher-level IRC protocol implementation.
+It provides everything needed to:
+
+Create a server that adheres to the project requirements.
+Handle non-blocking I/O and multiplexing.
+Manage socket errors robustly.
+
+You can build the additional logic (e.g., parsing, state management)
+on top of this utility class to implement a fully functional IRC server.
+*/
+
+//
+
+/*
+How These Classes Work Together
+
+IRCClient:
+
+Manages individual client information, including nickname,
+authentication state, channel memberships, and buffered incoming messages.
+
+The appendBuffer and getNextCommand methods handle partial data reception,
+reconstructing full IRC commands.
+
+IRCChannel:
+
+Tracks all clients in a specific channel.
+Provides methods to broadcast messages, add/remove clients,
+and check if the channel is empty.
+
+When a user joins or leaves, it broadcasts a message to all channel members.
+
+Usage Workflow in IRCServer
+
+When a client connects:
+
+IRCServer::handleNewConnection creates a new IRCClient instance
+and adds it to the clients map.
+
+When a client sends data:
+
+IRCServer::handleClientMessage aggregates incoming data
+using IRCClient::appendBuffer and processes full commands
+using IRCClient::getNextCommand.
+
+When a client joins a channel:
+
+IRCServer::processCommand invokes IRCChannel::addClient,
+which adds the client to the channel and notifies other members.
+
+When a client sends a message to a channel:
+
+IRCServer::broadcastToChannel invokes IRCChannel::broadcast,
+which sends the message to all channel members except the sender.
+
+When a client disconnects:
+
+IRCServer::removeClient removes the client from all joined channels,
+broadcasting their departure and cleaning up resources.
+
+*/
+
+/*
+Example Workflow
+
+Server Initialization
+
+	IRCServer server("6667", "password123");
+	server.start();
+
+Client Commands
+
+Client 1 connects and authenticates:
+	PASS password123
+	NICK John
+	JOIN #general
+	PRIVMSG #general :Hello everyone!
+
+Client 2 connects and joins the same channel:
+	PASS password123
+	NICK Alice
+	JOIN #general
+
+Messages are broadcast:
+
+John sends: Hello everyone!
+Alice receives: John: Hello everyone!
+*/
+
+//
+
+/*
+General Rules
+Program Stability:
+
+Exception handling (try/catch) ensures that any runtime errors
+(e.g., socket errors) are caught and handled gracefully.
+
+Memory management uses RAII principles to prevent leaks,
+with delete appropriately used for dynamically allocated objects.
+
+Non-blocking I/O prevents the program from hanging or crashing
+due to blocking operations.
+
+Makefile Compliance:
+
+You can include a Makefile with the required rules
+(all, clean, fclean, re, and $(NAME)).
+
+Avoid unnecessary relinking by setting dependencies properly in the Makefile.
+
+C++98 Standard:
+The code uses C++98-compliant features.
+
+Refrains from using external libraries or post-C++98 features.
+
+Preferred C++ Features:
+C++ features (e.g., <string> for strings and <map> for containers)
+are used over their C counterparts.
+
+Forbidden Libraries:
+The implementation does not use external libraries like Boost.
+
+Mandatory Part Compliance
+
+Program Name:
+The executable is expected to be named ircserv.
+
+Files and Makefile:
+The implementation separates headers (.hpp) and source files (.cpp),
+aligning with the requirement for clear file organization.
+
+Arguments:
+The program accepts <port> and <password> as command-line arguments,
+as demonstrated in the IRCServer constructor.
+
+Allowed Functions:
+The code uses only the listed allowed functions for socket operations
+and I/O management (socket, bind, listen, accept, poll, recv, send, etc.).
+
+TCP/IP Communication:
+Communication between the server and clients is handled over
+TCP/IP using IPv4 (AF_INET) or IPv6 if extended.
+
+Non-Blocking I/O:
+The NetworkUtils::setNonBlocking function ensures that
+all sockets are set to non-blocking mode using fcntl(fd, F_SETFL, O_NONBLOCK).
+
+poll() for I/O Operations:
+The implementation uses a single poll() loop to manage all
+read, write, and listen events, avoiding direct use of
+recv or send outside of poll().
+
+IRC Protocol Features:
+
+Authentication: Password validation is implemented in the PASS command.
+
+Set Nickname and Username: The NICK command assigns nicknames to clients.
+
+Join Channels: The JOIN command allows clients to join channels.
+
+Private Messages: The PRIVMSG command handles direct messages and broadcasts.
+
+Channel Forwarding: Messages are forwarded to all members of a channel except the sender.
+
+Operator Commands: Fully supports:
+
+KICK: Removes a client from a channel.
+
+INVITE: Invites a user to a channel.
+
+TOPIC: Views/modifies the channel topic.
+
+MODE: Modifies channel modes (i, t, k, o, l).
+
+Advanced Compliance
+
+No Forking:
+The server operates within a single-threaded event loop
+without forking or creating additional processes.
+
+Multiple Clients:
+The poll() loop ensures that multiple clients
+are managed efficiently within a single thread.
+
+Partial Data Handling:
+The IRCClient::appendBuffer method accumulates incomplete commands,
+and IRCClient::getNextCommand processes complete commands.
+This ensures that partial or fragmented data is handled properly.
+
+Testing with nc:
+The implementation is compatible with the nc test example,
+as it aggregates packets correctly using the buffer.
+
+Graceful Disconnections:
+Disconnected clients are removed using IRCServer::removeClient,
+which cleans up their resources and removes them from all channels.
+
+Bonus Part Compatibility
+
+File Transfer:
+You can extend the server to handle file transfer
+by implementing additional commands (e.g., SEND and RECEIVE)
+and leveraging the existing send and recv functions.
+
+Bot:
+A bot could be implemented as an IRCClient that listens to commands
+on specific channels and responds with automated messages.
+
+*/
+
+//
+
+/*
+Testing
+
+File transfer test
+
+Upload a file:
+	echo "Sample File Content" > testfile.txt
+	nc 127.0.0.1 6667
+	PASS password123
+	NICK User1
+	UPLOAD testfile.txt
+
+Dowload a file:
+	nc 127.0.0.1 6667
+	PASS password123
+	NICK User2
+	DOWNLOAD testfile.txt
+
+Bot test
+
+Inteact with the bot:
+	nc 127.0.0.1 6667
+	PASS password123
+	NICK BotUser
+	BOT HELLO
+	BOT TIME
+
+The bot will respond:
+
+Hello! I'm HelperBot, your friendly bot.
+The current time is: <timestamp>
+
+*/
+
+
+
+/*
+Testing Setup
+
+Step 1: Compile the Project
+
+Ensure your Makefile is in the root directory with all source files.
+
+Run the following command to compile the project:
+	make
+
+Verify the binary ircserv is created:
+	ls
+
+You should see ircserv.
+
+Step 2: Run the IRC Server
+
+Start the server with the required arguments:
+	./ircserv 6667 password123
+	6667: Port number.
+	password123: Connection password.
+
+The server will listen for incoming connections on port 6667.
+
+Step 3: Test Basic Functionality
+
+Using nc for Basic Tests
+
+Open a new terminal and connect to the server using nc:
+	nc 127.0.0.1 6667
+
+Authenticate with the server:
+	PASS password123
+
+Set a nickname:
+	NICK User1
+
+Join a channel:
+	JOIN #general
+
+Send a message to the channel:
+	PRIVMSG #general :Hello, everyone!
+
+You can open multiple terminals with nc to simulate different users.
+
+Step 4: Test Operator Commands
+
+KICK Command
+
+Add a second user:
+	nc 127.0.0.1 6667
+	PASS password123
+	NICK User2
+	JOIN #general
+
+As User1 (assumed operator), kick User2:
+	KICK #general User2
+
+INVITE Command
+
+Invite User2 back to the channel:
+	INVITE User2 #general
+
+TOPIC Command
+
+Set a new topic:
+	TOPIC #general :New channel topic!
+	MODE Command
+
+Set the channel to invite-only:
+	MODE #general +i
+
+Step 5: Test File Transfer
+
+Upload a File
+
+Create a test file:
+	echo "Sample file content" > testfile.txt
+
+Upload the file:
+	UPLOAD testfile.txt
+
+The server will acknowledge receipt and write the file to disk.
+
+Download a File
+
+Request the same file:
+	DOWNLOAD testfile.txt
+
+The server will send the file content in chunks.
+Verify the received content matches the original file.
+
+Step 6: Test the Bot
+
+Interact with the Bot
+
+Use the BOT command to interact with the bot:
+	BOT HELLO
+
+The bot should respond:
+	Hello! I'm HelperBot, your friendly bot.
+
+Request the current time:
+	BOT TIME
+
+The bot will return:
+	The current time is: <timestamp>
+
+Stress Testing
+
+Simulating Multiple Clients
+
+Use multiple nc connections or automated scripts
+to simulate many clients connecting to the server simultaneously.
+
+For example, create 10 clients using a script:
+	for i in {1..10}; do
+	    echo "PASS password123; NICK User$i; JOIN #general" | nc 127.0.0.1 6667 &
+	done
+
+Simulating Partial Data
+
+Use Ctrl+D in nc to send partial data:
+	PRIV^DMSG^D#gene^Dral :Hello!
+
+Ensure the server processes the fragmented command properly.
+
+Simulating High Load
+
+Use a tool like ab (ApacheBench) or a custom script
+to simulate hundreds of connections.
+	ab -n 100 -c 10 http://127.0.0.1:6667/
+
+Monitor the server for stability
+and proper handling of incoming connections.
+
+Error Handling Tests
+
+Invalid Password
+
+Connect with an invalid password:
+	PASS wrongpassword
+
+Ensure the server disconnects the client
+and sends an appropriate error message.
+
+Malformed Commands
+
+Send incomplete or malformed commands:
+	BADCOMMAND
+
+The server should ignore these commands and not crash.
+
+Exceeding User Limits
+
+Set a user limit using MODE:
+	MODE #general +l 2
+
+Attempt to add a third user.
+The server should reject the connection:
+	Channel is full.
+
+Advanced Tests
+
+File Upload with Fragmentation
+
+Simulate fragmented file uploads by
+splitting the file into chunks manually:
+	split -b 512 testfile.txt part_
+
+Send each part manually via nc and
+ensure the server reassembles the file correctly.
+
+Bot Automated Response
+
+Test if the bot can respond to multiple users simultaneously:
+	BOT HELLO
+	BOT TIME
+
+Open several nc sessions and issue BOT commands concurrently.
+*/
+
+/*
+setsockopt Options
+The setsockopt function configures options for a socket. The following parameters are used in your code:
+
+sockfd: The socket file descriptor for which the option is being set.
+level: The protocol level at which the option is applied.
+SOL_SOCKET: Applies the option to the socket layer itself (not protocol-specific).
+optname: The name of the socket option being set.
+SO_REUSEADDR:  Allows the socket to bind to an address and port that was recently used by another socket. This is useful to avoid errors like "address already in use" when restarting a server.
+optval: A pointer to the value of the option.
+Typically, this is set to 1 (true) to enable the option.
+For example:
+
+setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
+This enables the SO_REUSEADDR option, allowing immediate reuse of the address after the socket is closed.
+*/
+
+/*
+AF_INET in bindSocket
+AF_INET: Refers to the IPv4 address family. It is used to specify that the socket will use IPv4 for network communication. Other address families include AF_INET6 (for IPv6) and AF_UNIX (for local communication within the same system).
+Example:
+
+addr.sin_family = AF_INET;
+
+This sets the socket to work with IPv4 addresses.
+
+*/
+
+/*
+Parameters of inet_pton in bindSocket
+The inet_pton function converts an IP address from its human-readable string format (e.g., "127.0.0.1") into its binary representation, which is required for low-level networking.
+
+Parameters:
+AF_INET: Specifies the address family (IPv4 in this case). For IPv6, use AF_INET6.
+src: The source string containing the human-readable IP address (e.g., "127.0.0.1").
+dst: A pointer to the destination buffer where the binary representation of the IP address will be stored (typically a struct in_addr for IPv4).
+Return Value:
+1 if the conversion is successful.
+0 if the input is not a valid IP address.
+-1 if an error occurred (e.g., invalid address family).
+Example:
+
+if (inet_pton(AF_INET, address.c_str(), &addr.sin_addr) <= 0)
+{
+    handleError("Invalid address");
+}
+
+This checks whether the provided IP address is valid and stores the binary format in addr.sin_addr.
+*/
+
+/*
+**Flags in fcntl for setNonBlocking
+The fcntl function is used to manipulate file descriptor properties. In setNonBlocking, two operations are performed:
+
+Retrieve Current Flags:
+
+int flags = fcntl(sockfd, F_GETFL, 0);
+
+F_GETFL: Retrieves the current file descriptor flags.
+
+Set Non-Blocking Mode:
+
+fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
+F_SETFL:
+Sets new flags for the file descriptor.
+
+O_NONBLOCK:
+Enables non-blocking mode, where system calls like read or recv
+will return immediately if no data is available,
+instead of blocking until data arrives.
+
+If O_NONBLOCK is not set:
+
+Calls like recv will block the program execution until data is available.
+If O_NONBLOCK is set:
+recv will return -1 and set errno to EAGAIN or EWOULDBLOCK if no data is available.
+
+*/
+
+/*
+**Arguments of recv in receiveData
+The recv function reads data from a connected socket.
+
+Parameters:
+sockfd: The socket file descriptor from which data will be read.
+buffer: A pointer to a buffer where the received data will be stored.
+len: The maximum number of bytes to read into the buffer.
+flags: Modifies the behavior of the recv function. Common values:
+0: Default behavior (blocking or non-blocking, depending on socket settings).
+MSG_DONTWAIT: Forces the operation to be non-blocking, regardless of socket settings.
+MSG_PEEK: Allows peeking at the incoming data without removing it from the queue.
+Return Value:
+Number of bytes received: If data is successfully read.
+0: Indicates the connection has been gracefully closed by the peer.
+-1: Indicates an error occurred (e.g., no data available in non-blocking mode, or other errors).
+Example:
+
+int bytesReceived = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+if (bytesReceived < 0)
+    handleError("Failed to receive data");
+
+This attempts to read up to sizeof(buffer) - 1 bytes from the socket.
+If the call fails, it throws an error.
+
+*/
+
+/*
+Processes a command received from a client.
+Executes the appropriate action based on the command type.
+
+Parameters:
+    client - The IRCClient that sent the command.
+    command - The full command string sent by the client.
+
+Supported commands:
+    - PASS <password>: Authenticate the client.
+    - NICK <nickname>: Set the client's nickname.
+    - JOIN <channel>: Join the specified channel.
+    - PRIVMSG <channel> <message>: Send a private message to a channel.
+    - KICK <channel> <nickname>: Remove a user from a channel (operator only).
+    - INVITE <nickname> <channel>: Invite a user to a channel.
+    - TOPIC <channel> <topic>: Set or view the channel topic.
+    - MODE <channel> [mode] [parameters]: Modify channel settings (operator only).
+    - BOT <command>: Interact with a bot to process specific commands.
+    - UPLOAD <fileName>: Handle file upload from a client.
+    - DOWNLOAD <fileName>: Handle file download to a client.
+*/
+
