@@ -13,11 +13,16 @@ typedef std::map<int, User>			t_clientMap;
 typedef std::vector<pollfd>			t_pfdVect;
 typedef std::map<std::string, int>	t_strIntMap;
 
+class ServerShutdown: public std::exception
+{};
+
 class Server
 {
 public:
 	Server(const std::string& port, const std::string& password);
-	void		run();
+
+	void	run();
+	void	stop();
 	static void	signalHandler(int signum);
 
 	static t_strIntMap commandMap;
