@@ -8,7 +8,7 @@ ChannelManager::ChannelManager(Reply& reply) : _reply(reply)
 ChannelManager::~ChannelManager()
 {
 }
-
+/*
 void ChannelManager::join(User &sender, const Message &msg)
 {
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
@@ -112,3 +112,4 @@ void ChannelManager::privmsg(User &sender, const std::string &chan, const std::s
 			it->first->pendingPush(reply);
 	}
 }
+*/

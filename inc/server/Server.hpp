@@ -13,9 +13,6 @@ typedef std::map<int, User>			t_clientMap;
 typedef std::vector<pollfd>			t_pfdVect;
 typedef std::map<std::string, int>	t_strIntMap;
 
-class ServerShutdown: public std::exception
-{};
-
 class Server
 {
 public:
@@ -28,7 +25,6 @@ public:
 	static t_strIntMap commandMap;
 
 private:
-	static bool	_isRunning;
 	int			_port;
 	std::string	_password;
 	time_t		_time;

@@ -64,10 +64,9 @@ void Server::run(void)
 	char buffer[1024];
 	ssize_t bytes;
 
-	_isRunning = true;
 	signal(SIGINT, Server::signalHandler); // catch the signal (CTRL + c)
 	signal(SIGQUIT, Server::signalHandler); // catch the signal (CTRL + \)
-	while (_isRunning)
+	while (true)
 	{
 		for (t_pfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
 		{
@@ -118,19 +117,24 @@ void Server::run(void)
 			}
 		}
 	}
+	// TODO: Look up how to close server socket
+}
+
+void Server::stop()
+{
 	for (t_pfdVect::iterator it=_pollFds.begin()+1; it != _pollFds.end(); it++)
 	{
 		send(it->fd, "ERROR :Server shutdown\r\n", 24, 0);
 		close(it->fd);
 	}
-	// TODO: Look up how to close server socket
+	close(_pollFds[0].fd);
 }
 
 void Server::signalHandler(int signum)
 {
 	(void)signum;
-	std::cerr << RED << "Interrupt signal received!" << RESET << std::endl;
-	Server::_isRunning = false;
+	std::cerr << RED << "\nInterrupt signal received!" << RESET << std::endl;
+	// Server::_isRunning = false;
 }
 
 int Server::_safePoll()
@@ -170,7 +174,7 @@ t_pfdVect::iterator Server::_closeConnection(t_pfdVect::iterator &it)
 
 void Server::_messageRoundabout(User& client, const Message& msg)
 {
-	switch (Validator::commandMap[msg.getCommand()])
+	switch (Server::commandMap[msg.getCommand()])
 	{
 	case PASS:
 		pass_cmd(client, msg);
@@ -181,21 +185,21 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
-	case JOIN:
-		_chanManager.join(client, msg);
-		break;
-	case PART:
-		_chanManager.part(client, msg);
-		break;
-	case TOPIC:
-		_chanManager.topic(client, msg);
-		break;
-	case MODE:
-		_chanManager.mode(client, msg);
-		break;
-	case KICK:
-		_chanManager.kick(client, msg);
-		break;
+	// case JOIN:
+	// 	_chanManager.join(client, msg);
+	// 	break;
+	// case PART:
+	// 	_chanManager.part(client, msg);
+	// 	break;
+	// case TOPIC:
+	// 	_chanManager.topic(client, msg);
+	// 	break;
+	// case MODE:
+	// 	_chanManager.mode(client, msg);
+	// 	break;
+	// case KICK:
+	// 	_chanManager.kick(client, msg);
+	// 	break;
 	case INVITE:
 		break;
 	case PRIVMSG:
@@ -274,15 +278,15 @@ void Server::nick_cmd(User &client, const Message& msg)
 
 void Server::privmsg_cmd(User &client, const Message &msg)
 {
-	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
+	// std::vector<std::string> targets(tokenize(msg.getParams(), ','));
 
-	for (size_t i=0; i < targets.size(); i++)
-	{
-		if (targets[i][0] == '#')
-			_chanManager.privmsg(client, targets[i], msg.getReply());
-		else if (_nickMap.count(targets[i]) == 0)
-			client.pendingPush(_rplGenerator.reply(401, targets[i]));
-		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply());
-	}
+	// for (size_t i=0; i < targets.size(); i++)
+	// {
+	// 	if (targets[i][0] == '#')
+	// 		_chanManager.privmsg(client, targets[i], msg.getReply());
+	// 	else if (_nickMap.count(targets[i]) == 0)
+	// 		client.pendingPush(_rplGenerator.reply(401, targets[i]));
+	// 	else if (_nickMap[targets[i]] != client.getFd())
+	// 		_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply());
+	// }
 }
