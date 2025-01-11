@@ -1,20 +1,28 @@
 
 #include "_test_header.hpp"
-// #include "Server.hpp"
+#include "Server.hpp"
+#include "Message.hpp"
 
 // int	test_server(int ac, char **av)
 // {
+// 	Server* serv = NULL;
 // 	if (ac != 3)
+// 		return 1;
+// 	try
 // 	{
-// 		return (1);
+// 		serv = new Server(av[1], av[2]);
+// 		serv->run();
+// 		serv->stop();
 // 	}
-// 	ft::Server	serv(av[1], av[2]);
-// 	serv.start();
-
+// 	catch(const std::exception& e)
+// 	{
+// 		std::cerr << "main-catch:" << e.what() << std::endl;
+// 		delete serv;
+// 		return 1;
+// 	}
+// 	delete serv;
 // 	return (0);
 // }
-
-#include "Message.hpp"
 
 void	tmp_test(int argc, char *argv[])
 {
