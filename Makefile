@@ -89,20 +89,19 @@ run: all ## Compile and run the executable with default arguments
 	@$(call INFO,$(NAME),,./$(NAME) \"$(IRC_SERVER_PORT)\" \"$(IRC_SERVER_PSWD)\")
 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD)
 
-# run-nc: all ## Start the IRC server and connect to it using nc
-# 	@if [ ! -f "$(NAME)" ]; then \
-# 		echo "Build Failed: Executable $(NAME) not found!"; \
-# 		exit 1; \
-# 	fi
-# 	@echo "$(call CHECK_COMMAND,nc)"
-# 	@echo "$(call CHECK_PORT,$(IRC_SERVER_PORT))"
-# 	@echo "$(call INFO,$(NAME),Starting IRC server on:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT)...)"
-# 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD) & \
-# 	sleep 1; \
-# 	@echo "$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))"
-# 	@echo "$(call SUCCESS,$(NAME),IRC server is up and running!)"
-# 	@echo "$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))"
-# 	@nc $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
+# run-server: all ## Run only the IRC server
+# 	@$(call INFO,$(NAME),Starting IRC server on:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT)...)
+# 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD)
+
+nc: all ## Connect to the server using nc (wip)
+	@if [ ! -f "$(NAME)" ]; then \
+		$(call ERROR,Build Failed:,Executable $(NAME) not found!); \
+		exit 1; \
+	fi
+	@$(call CHECK_COMMAND,nc)
+	@$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
+	@$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))
+	@nc $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
 
 run-nc: all ## Start the IRC server and connect to it using nc (wip)
 	@if [ ! -f "$(NAME)" ]; then \
@@ -135,7 +134,48 @@ run-wee: all ## Start the IRC server and connect Weechat to it (WIP)
 
 # run-lime: all ## Start the IRC server and connect Limechat to it
 
-.PHONY: run run-nc run-wee #run-lime
+.PHONY: run nc run-nc run-wee #run-lime
+
+define SPLIT_RUN_SCRIPT
+tell application "iTerm"
+    create window with default profile
+    tell current session of current window
+        write text "cd $(shell pwd) && make run"
+        split vertically with default profile
+    end tell
+    tell second session of current tab of current window
+        write text "cd $(shell pwd) && make nc"
+    end tell
+end tell
+endef
+export SPLIT_RUN_SCRIPT
+
+split-run: all ## Start the IRC server and connect to it using nc in a split terminal
+	@if [ "$(OS)" != "Darwin" ]; then \
+		echo "This target is only supported on macOS."; \
+		exit 1; \
+	fi
+	@osascript -e "$$SPLIT_RUN_SCRIPT"
+	@$(call SUCCESS,$(NAME),Split terminal setup complete!)
+
+# split-run: all ## Start the IRC server and connect to it using nc in a split terminal
+# 	@if [ "$(OS)" != "Darwin" ]; then \
+# 		echo "This target is only supported on macOS."; \
+# 		exit 1; \
+# 	fi
+# 	@osascript -e 'tell application "iTerm"' \
+# 	-e 'create window with default profile' \
+# 	-e 'tell current session of current window' \
+# 	-e 'write text "cd $(shell pwd) && make run"' \
+# 	-e 'split vertically with default profile' \
+# 	-e 'end tell' \
+# 	-e 'tell second session of current tab of current window' \
+# 	-e 'write text "cd $(shell pwd) && make nc"' \
+# 	-e 'end tell' \
+# 	-e 'end tell'
+# 	@$(call SUCCESS,$(NAME),Split terminal setup complete!)
+
+.PHONY: split-run
 
 # ==============================
 ##@ 🛠  Utility
