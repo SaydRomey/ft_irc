@@ -1,6 +1,6 @@
 
 # ==============================
-##@ Weechat (wip)
+##@ 🌀 Weechat (wip)
 # ==============================
 
 WEECHAT_IMAGE	:= weechat/weechat
@@ -13,6 +13,7 @@ weechat: get-weechat ## Start the Weechat docker container
 		--name $(WEECHAT_CONT) \
 		--network=host \
 		$(WEECHAT_IMAGE) \
+		weechat \
 		--server-connect=$(IRC_SERVER_IP)/$(IRC_SERVER_PORT)
 
 get-weechat: docker-start ## Pull the Weechat docker image
