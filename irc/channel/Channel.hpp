@@ -21,6 +21,7 @@ class Channel
 		std::map<char, bool>	_modes; //+ pour ajouté ou - pour enlever, peut enchainer les modes a suivre (ex: +itk)
 		std::string 			_password;
 		size_t					_memberLimit;
+		std::set<std::string>	_invitedList;
 
 	public:
 		Channel();
@@ -41,8 +42,8 @@ class Channel
 		void						printMembers();
 		std::string 				membersList();
 		void						printMode();
-		//ajouter un getmember et getmode (car MODE sans parametres retourne 
-		//les mode activés "Mode du channel xx activé : +i +o etc") 
+		//ajouter un getmode (car MODE sans parametres retourne 
+		//les mode activés "Mode du channel xx activé : +i +o etc")
 		//mais si c'Est un op ca montrerait aussi genre les données types limite, pwd etc..
 		const MapUser&				getMembers(void) const;
 

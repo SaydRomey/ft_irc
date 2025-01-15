@@ -77,8 +77,8 @@ void ChannelManager::inviteManager(User &sender, const Message &msg)
 		// Broadcast the invitation to the channel members
 		// std::cout << ":" << sender.getNickname() << " INVITE " << inviteeNickname << " " << channelName << std::endl;
 		// std::string	message = ":" + sender.getNickname() + " INVITE " + inviteeNickname + " " + channelName + "\r\n";
-		std::string	message = reply(RPL_INVITING, sender.getNickname(), inviteeNickname, channelName);
-		_channels[channelName].broadcast(sender, message); // already handled in Channel.invite() ?
+		// std::string	message = reply(RPL_INVITING, sender.getNickname(), inviteeNickname, channelName);
+		// _channels[channelName].broadcast(sender, message); // already handled in Channel.invite() ?
 	}
 }
 
@@ -129,9 +129,8 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
 {
-	// std::string channelName = msg.getParams();
-	const std::string&	channelName = msg.getParams(); //
-	const std::string&	newTopic = msg.getTrailing(); //
+	const std::string&	channelName = msg.getParams();
+	const std::string&	newTopic = msg.getTrailing();
 
 	if (_channels.find(channelName) == _channels.end())
 	{
@@ -139,15 +138,12 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 		// std::cout << ":server 403 " << sender.getNickname() << " " << channelName << " :No such channel" << std::endl;
 		return ;
 	}
-	// if (msg.getTrailing().empty())
-	if (newTopic.empty()) //
+	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	// else if (msg.getTrailing().compare(":") == 0)
-	else if (newTopic.compare(":") == 0) //
+	else if (newTopic.compare(":") == 0)
 		_channels[channelName].setTopic(sender, "");
 	else
-		_channels[channelName].setTopic(sender, newTopic); //
-		// _channels[channelName].setTopic(sender, msg.getTrailing());
+		_channels[channelName].setTopic(sender, newTopic);
 }
 
 void ChannelManager::quitManager(User &sender)
@@ -155,6 +151,7 @@ void ChannelManager::quitManager(User &sender)
 	(void)sender;
 	//boucle dans tout les channels pour chercher si le sender est dedans car deconnexion = part des channels.
 	//voir pour mettre un message PART different genre "disconnected", avec RPL_QUIT ou autre ou ajouté parametre à removeMembers
+	//voir pour creer dans channel fonction quit sinon et faire un message different
 
 	// for (std::map<std::string, Channel>::iterator it = _channels.begin(); it != _channels.end();)
 	// {

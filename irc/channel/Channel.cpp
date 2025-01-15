@@ -27,6 +27,7 @@ Channel& Channel::operator=(const Channel& other)
 	this->_modes = other._modes;
 	this->_password = other._password;
 	this->_memberLimit = other._memberLimit;
+	this->_invitedList = other._invitedList;
 	return *this;
 }
 
@@ -40,9 +41,9 @@ Channel::~Channel()
 // 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
 void	Channel::addMember(User& user, std::string pswIfNeeded)
 {
-	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
+	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
 	{
-		user.pendingPush(reply(ERR_INVITEONLYCHAN, user.getNickname(), this->_name));
+		user.pendingPush(reply(ERR_CHANNELISFULL, user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0) //ERR_BADCHANNELKEY
@@ -50,16 +51,22 @@ void	Channel::addMember(User& user, std::string pswIfNeeded)
 		user.pendingPush(reply(ERR_BADCHANNELKEY, user.getNickname(), this->_name));
 		return ;
 	}
-	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+	if (_modes['i'] == true) //ERR_INVITEONLYCHAN
 	{
-		user.pendingPush(reply(ERR_CHANNELISFULL, user.getNickname(), this->_name));
-		return ;
+		if (_invitedList.count(user.getNickname()) == 0)//user est dans la list des invités
+			_invitedList.erase(user.getNickname()); //supp car l'invitation aura servi
+		else
+		{
+			user.pendingPush(reply(ERR_INVITEONLYCHAN, user.getNickname(), this->_name));
+			return ;
+		}
 	}
 	_members[&user]=false;
 	if (_members.find(&user) != _members.end()) //RPL_JOIN
 	{
-		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			it->first->pendingPush(reply(RPL_JOIN, user.getNickname(), this->_name));
+		this->broadcast(user, reply(RPL_JOIN, user.getNickname(), this->_name));
+		// for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		// 	it->first->pendingPush(reply(RPL_JOIN, user.getNickname(), this->_name));
 		if (this->_topic.empty())
 			user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 		else
@@ -85,8 +92,7 @@ void	Channel::removeMember(User& user, const std::string& reason)
 			rep += " :";
 			rep += reason;
 		}
-		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			it->first->pendingPush(rep);
+		this->broadcast(user, rep);
 	}
 }
 
@@ -160,9 +166,38 @@ void	Channel::kick(User &user, User& op, std::string reason)
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			it->first->pendingPush(reply(RPL_KICK, user.getNickname(), this->_name, reason));
+		this->broadcast(op, reply(RPL_KICK, user.getNickname(), this->_name, reason));
+		// for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+		// 	it->first->pendingPush(reply(RPL_KICK, user.getNickname(), this->_name, reason));
 }
+
+// void	Channel::invite(User &user, User& op)
+// {
+// 	if (_members.find(&op) == _members.end()) //ERR_NOTONCHANNEL
+// 	{
+// 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
+// 		return ;
+// 	}
+// 	if (_modes['i'] == true && _members[&op] != true) //ERR_CHANOPRIVSNEEDED
+// 	{
+// 		op.pendingPush(reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
+// 		return ;
+// 	}
+// 	if (_members.find(&user) != _members.end()) //ERR_USERONCHANNEL
+// 	{
+// 		op.pendingPush(reply(ERR_USERONCHANNEL, op.getNickname(), user.getNickname(), this->_name));
+// 		return ;
+// 	}
+// 	if (_modes['l'] == true && _members.size() >= _memberLimit) //ERR_CHANNELISFULL
+// 	{
+// 		op.pendingPush(reply(ERR_CHANNELISFULL, op.getNickname(), this->_name));
+// 		return ;
+// 	}
+// 	_members[&user]=false;
+// 	if (_members.find(&user) != _members.end())
+// 		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
+// 			it->first->pendingPush(reply(RPL_INVITING, op.getNickname(), user.getNickname(), this->_name));
+// }
 
 void	Channel::invite(User &user, User& op)
 {
@@ -186,10 +221,8 @@ void	Channel::invite(User &user, User& op)
 		op.pendingPush(reply(ERR_CHANNELISFULL, op.getNickname(), this->_name));
 		return ;
 	}
-	_members[&user]=false;
-	if (_members.find(&user) != _members.end())
-		for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
-			it->first->pendingPush(reply(RPL_INVITING, op.getNickname(), user.getNickname(), this->_name));
+	_invitedList.insert(user.getNickname());
+	this->broadcast(op, reply(RPL_INVITING, op.getNickname(), user.getNickname(), this->_name));
 }
 
 static bool	isValidNb(const std::string& str)
@@ -324,6 +357,8 @@ void Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 		else //ERR_UNKNOWNMODE
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
+	//:operateur!user@host MODE #channel +im -k
+	//this->broadcast(op, reply(RPL_MODE, op.getNickname(), mode, this->_name)) ?
 }
 
 
@@ -371,7 +406,7 @@ const std::map<User *, bool> &Channel::getMembers(void) const
 	return _members;
 }
 
-// 
+//a revoir car apparement il y a plusieurs reply a ne pas enlevé le sender
 void	Channel::broadcast(User& sender, const std::string& message)
 {
 	for (ItMembers it = _members.begin(); it != _members.end(); ++it)
@@ -384,4 +419,3 @@ void	Channel::broadcast(User& sender, const std::string& message)
 		}
 	}
 }
-// 
