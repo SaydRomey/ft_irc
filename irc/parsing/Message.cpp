@@ -55,6 +55,13 @@ void	Message::_processInput(const std::string &input)
 		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
 		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
 
+		// // handle ping-pong
+		// if (command == "PING")
+		// {
+		// 	_valid = true;
+		// 	_reply = pongMsg()
+		// }
+
 		// dispatch to command-specific parsing handlers (multi params)
 		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
 		{
