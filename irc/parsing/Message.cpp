@@ -3,9 +3,6 @@
 #include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
 #include <iomanip>				// std::setw()
 
-// ** should we move this to private ?
-Message::Message(void) : _valid(false), _nickname("*"), _input(""), _reply("") {}
-
 Message::Message(const std::string &input, const std::string &nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
@@ -14,37 +11,6 @@ Message::Message(const std::string &input, const std::string &nickname)
 	// _processInput(trim(normalizeInput(input)));
 }
 
-Message::Message(const Message &other)
-	: _valid(other._valid),
-	  _nickname(other._nickname),
-	  _input(other._input),
-	  _parsedMessage(other._parsedMessage),
-	  _reply(other._reply),
-	  _channelsAndKeys(other._channelsAndKeys),
-	  _tokenizedParams(other._tokenizedParams)
-{
-	// might need to implement assignable for Parser and Validator .. ?
-	// _parser(other._parser),
-	// _validator(other._validator)
-	// *this = other;
-}
-
-Message&	Message::operator=(const Message &other)
-{
-	if (this != &other)
-	{
-		_valid = other._valid;
-		_nickname = other._nickname;
-		_input = other._input;
-		_parsedMessage = other._parsedMessage;
-		_reply = other._reply;
-		_channelsAndKeys = other._channelsAndKeys;
-		_tokenizedParams = other._tokenizedParams;
-		// _parser = other._parser;
-		// _validator = other._validator;
-	}
-	return (*this);
-}
 
 Message::~Message(void) {}
 
@@ -73,8 +39,11 @@ void	Message::_processInput(const std::string &input)
 		_parsedMessage = _parser.parseCommand(input);
 
 		// assign default prefix if not provided
-		if (_parsedMessage["prefix"].empty())
-			_parsedMessage["prefix"] = _nickname;
+		// if (_parsedMessage["prefix"].empty())
+		// 	_parsedMessage["prefix"] = _nickname;
+
+		// override parsed prefix with User's nickname ("*" by default)
+		_parsedMessage["prefix"] = _nickname;
 		
 		// validate the parsed command
 		if (!_validator.validateCommand(_parsedMessage))

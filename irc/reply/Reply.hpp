@@ -43,6 +43,7 @@ std::string	reply(int key, const std::string &arg1 = "", const std::string &arg2
 std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate);
 
 // Pseudo replies
+std::string	privmsgMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &trailingMsg);
 std::string	joinMsg(const std::string &clientNickname, const std::string &channelName);
 std::string	partMsg(const std::string &clientNickname, const std::string &channelName, const std::string &partingMessage = "");
 std::string kickMsg(const std::string &kickerNickname, const std::string &channelName, const std::string &targetNickname, const std::string &reason = "");

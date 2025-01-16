@@ -97,10 +97,7 @@ void Server::run(void)
 				bzero(buffer, sizeof(buffer));
 				bytes = recv(it->fd, buffer, sizeof(buffer), 0);
 				if (bytes > 0)
-				{
-					std::cout << "Recieved data: " << std::string(buffer, bytes) << std::endl; // debug **
 					client.addToMsgBuffer(std::string(buffer, bytes));
-				}
 				else
 					client.resetMsgBuffer("QUIT :Obsolete message?\r\n");
 			}
@@ -117,17 +114,13 @@ void Server::run(void)
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
-				std::cout << "Raw message string: " << msg_str << std::endl; // debug **
-				Message msg(msg_str);
-				std::cout << "Parsed Message: " << msg << std::endl; // debug **
-				// std::cout << msg << std::endl;
+				// Message msg(msg_str);
+				Message msg(msg_str, client.getNickname()); // *!!
+				std::cout << msg << std::endl;
 				// 
 				if (msg.isValid() == true)
 				// if (msg.getReply().empty())
-				{
-					std::cout << "Routing command: " << msg.getCommand() << std::endl; // debug **
 					_messageRoundabout(client, msg);
-				}
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
 				msg_str = client.extractFromBuffer();

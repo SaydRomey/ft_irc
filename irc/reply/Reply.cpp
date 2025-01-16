@@ -201,7 +201,21 @@ std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, con
 /* ************************************************************************** */ // Pseudo replies
 
 /*
-Generates a message for when a client joins a channel
+Generates a message when a user sends a PRIVMSG
+
+:<senderNickname> PRIVMSG <targetNickname> :<trailingMsg>
+*/
+std::string	privmsgMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &trailingMsg)
+{
+	std::ostringstream oss;
+	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
+
+	return (oss.str());
+}
+
+
+/*
+Generates a message for when a user joins a channel
 
 :<clientNickname> JOIN :<channelName>
 */
@@ -282,8 +296,6 @@ std::string setodeMsg(const std::string &userNickname, const std::string &channe
 	{
 		adjustedModeStr.insert(minusPos, " ");
 	}
-
-	if (minusPos !=)
 
 	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
 

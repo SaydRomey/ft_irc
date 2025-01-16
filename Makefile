@@ -101,7 +101,7 @@ nc: all ## Connect to the server using nc (wip)
 	@$(call CHECK_COMMAND,nc)
 	@$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 	@$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))
-	@nc -C $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
+	@nc $(NC_FLAG) $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
 
 run-nc: all ## Start the IRC server and connect to it using nc (wip)
 	@if [ ! -f "$(NAME)" ]; then \
@@ -116,7 +116,7 @@ run-nc: all ## Start the IRC server and connect to it using nc (wip)
 	$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
 	@$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))
-	@nc -C $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
+	@nc $(NC_FLAG) $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
 
 run-wee: all ## Start the IRC server and connect Weechat to it (WIP)
 	@if [ ! -f "$(NAME)" ]; then \

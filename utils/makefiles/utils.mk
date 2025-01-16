@@ -18,14 +18,17 @@ ifeq ($(OS), Linux)
 	C_FLAGS		+= -Wno-error=implicit-fallthrough -Wimplicit-fallthrough=0
 	OPEN		:= xdg-open
 	PLAY_SOUND	:= aplay
+	NC_FLAG		:= -C
 else ifeq ($(OS), Darwin)
 	OPEN		:= open
 	PLAY_SOUND	:= afplay
+	NC_FLAG		:= -c
 endif
 
 # Default values if OS detection fails
 OPEN		?= open
 PLAY_SOUND	?= afplay
+NC_FLAG		?= -c
 
 # ==============================
 # Text colors and style with ANSI

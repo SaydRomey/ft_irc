@@ -50,21 +50,8 @@ int	test_server(int ac, char **av)
 	return (0);
 }
 
-void	debug_output(void)
-{
-	// 
-	// std::string	testMsg = "NICK nickname";
-	// Message	msg(testMsg);
-	// std::cout << msg << std::endl;
-	// 
-
-}
-
-
 int	main(int argc, char *argv[])
 {
-	// debug_output();
-
 	test_server(argc, argv);
 	
 	// test_channel();
