@@ -34,6 +34,7 @@ include $(MAKE_DIR)/utils.mk	# Utility Variables and Macros
 include $(MAKE_DIR)/docker.mk	# Docker Macros
 include $(MAKE_DIR)/doc.mk		# Documentation Targets
 include $(MAKE_DIR)/weechat.mk	# Weechat Targets
+include $(MAKE_DIR)/limechat.mk	# Limechat Targets
 include $(MAKE_DIR)/tests.mk	# Testing Logic
 include $(MAKE_DIR)/class.mk	# Class Creation with Templates
 include $(MAKE_DIR)/misc.mk		# Misc, Title and Sounds (not really relevant...)
@@ -75,6 +76,7 @@ ffclean: fclean ## Remove all generated files and folders
 	@$(MAKE) pdf-clean $(NPD)
 	@$(MAKE) test-clean $(NPD)
 	@$(MAKE) weechat-clean $(NPD)
+	@$(MAKE) cleanup-port $(NPD)
 
 re: fclean all ## Rebuild everything
 

@@ -236,8 +236,8 @@ define KILL_PROCESS_ON_PORT
 		PID=$$(lsof -t -i :$(1)); \
 		$(call INFO,Port $(1),$(ORANGE)Killing process $$PID using port $(1)...); \
 		kill -9 $$PID; \
-		$(call SUCCESS,Port $(1),Process $$PID has been killed.); \
+		$(call SUCCESS,Port $(1),$(GREEN)Process $$PID has been killed.); \
 	else \
-		$(call INFO,Port $(1),No process is using port $(1).); \
+		$(call INFO,Port $(1),$(YELLOW)No process is using port $(1).); \
 	fi
 endef

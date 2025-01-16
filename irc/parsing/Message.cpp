@@ -38,10 +38,6 @@ void	Message::_processInput(const std::string &input)
 	{
 		_parsedMessage = _parser.parseCommand(input);
 
-		// assign default prefix if not provided
-		// if (_parsedMessage["prefix"].empty())
-		// 	_parsedMessage["prefix"] = _nickname;
-
 		// override parsed prefix with User's nickname ("*" by default)
 		_parsedMessage["prefix"] = _nickname;
 		
@@ -56,22 +52,10 @@ void	Message::_processInput(const std::string &input)
 		// extract command and params
 		const std::string &command = _parsedMessage["command"];
 
-		// t_mapStrStr::iterator	commandIt = _parsedMessage.find("command");
-		// if (commandIt == _parsedMessage.end())
-		// {
-		// 	_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Missing command*");
-		// 	_valid = false;
-		// 	return ;
-		// }
-		// const std::string	&command = commandIt->second;
-
-		
-
-
 		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
 		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
 
-		// dispatch to command-specific handlers
+		// dispatch to command-specific parsing handlers (multi params)
 		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
 		{
 			if (hasValidNumberOfParams(params, AT_MOST, 2))

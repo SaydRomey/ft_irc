@@ -4,7 +4,7 @@
 # ==============================
 
 WEECHAT_IMAGE	:= weechat/weechat
-WEECHAT_CONT	:= weechat_instance
+WEECHAT_CONT	:= weechat
 
 weechat: get-weechat ## Start the Weechat docker container
 	@$(call CHECK_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
