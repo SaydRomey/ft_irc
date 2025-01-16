@@ -265,3 +265,27 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 
 	return (oss.str());
 }
+
+/*
+Generates a SETMODE message
+
+** need to add parsing to split tokens of modes as "+*" "-*"
+
+*/
+std::string setodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+{
+	std::ostringstream	oss;
+	std::string			adjustedModeStr = modeStr;
+	size_t				minusPos = adjustedModeStr.find('-');
+
+	if (minusPos != std::string::npos)
+	{
+		adjustedModeStr.insert(minusPos, " ");
+	}
+
+	if (minusPos !=)
+
+	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
+
+	return (oss.str());
+}
