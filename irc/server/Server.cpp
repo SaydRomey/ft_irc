@@ -97,7 +97,10 @@ void Server::run(void)
 				bzero(buffer, sizeof(buffer));
 				bytes = recv(it->fd, buffer, sizeof(buffer), 0);
 				if (bytes > 0)
+				{
+					std::cout << "Recieved data: " << std::string(buffer, bytes) << std::endl; // debug **
 					client.addToMsgBuffer(std::string(buffer, bytes));
+				}
 				else
 					client.resetMsgBuffer("QUIT :Obsolete message?\r\n");
 			}
@@ -116,8 +119,12 @@ void Server::run(void)
 			{
 				Message msg(msg_str);
 				std::cout << msg << std::endl;
-				if (msg.getReply().empty())
+				if (msg.isValid() == true)
+				// if (msg.getReply().empty())
+				{
+					std::cout << "Routing command: " << msg.getCommand() << std::endl; // debug **
 					_messageRoundabout(client, msg);
+				}
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
 				msg_str = client.extractFromBuffer();

@@ -53,6 +53,12 @@ int	test_server(int ac, char **av)
 
 int	main(int argc, char *argv[])
 {
+	// 
+	// std::string	testMsg = "NICK nickname";
+	// Message	msg(testMsg);
+	// std::cout << msg << std::endl;
+	// 
+
 	test_server(argc, argv);
 	
 	// test_channel();
