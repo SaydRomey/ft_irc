@@ -117,8 +117,11 @@ void Server::run(void)
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
+				std::cout << "Raw message string: " << msg_str << std::endl; // debug **
 				Message msg(msg_str);
-				std::cout << msg << std::endl;
+				std::cout << "Parsed Message: " << msg << std::endl; // debug **
+				// std::cout << msg << std::endl;
+				// 
 				if (msg.isValid() == true)
 				// if (msg.getReply().empty())
 				{
