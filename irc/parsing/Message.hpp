@@ -3,8 +3,8 @@
 # define MESSAGE_HPP
 
 # include "Parser.hpp"
-# include "Validator.hpp"
 # include "Reply.hpp"
+# include "Validator.hpp"
 # include <iostream>
 # include <map>
 # include <string>
@@ -16,12 +16,8 @@ typedef std::vector<std::string>							t_vecStr;
 class Message
 {
 	public:
-	
 		// Constructors/Destructors
-		Message(void);
 		Message(const std::string &input, const std::string &nickname = "*");
-		Message(const Message &other);
-		Message& operator=(const Message &other);
 		~Message(void);
 		
 		// Getters
@@ -36,6 +32,10 @@ class Message
 		const t_vecPairStrStr	&getChannelsAndKeys(void) const;
 		
 	private:
+		Message(void);
+		Message(const Message&);
+		Message& operator=(const Message&);
+
 		void	_processInput(const std::string &input);
 		
 		bool			_valid;

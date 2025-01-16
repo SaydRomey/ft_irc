@@ -83,7 +83,6 @@ class Validator
 };
 
 bool	isValidNickname(const std::string &nickname);
-
 bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck);
 
 #endif // VALIDATOR_HPP

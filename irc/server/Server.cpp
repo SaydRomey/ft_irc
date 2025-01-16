@@ -114,9 +114,12 @@ void Server::run(void)
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
-				Message msg(msg_str);
+				// Message msg(msg_str);
+				Message msg(msg_str, client.getNickname()); // *!!
 				std::cout << msg << std::endl;
-				if (msg.getReply().empty())
+				// 
+				if (msg.isValid() == true)
+				// if (msg.getReply().empty())
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
