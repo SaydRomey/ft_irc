@@ -93,6 +93,7 @@ size_t User::pendingSize(void) const
 
 void User::pendingPush(const std::string& msg)
 {
+	std::cout << "[DEBUG] User::pendingPush called" << std::endl;
 	_pending.push(msg);
 }
 
