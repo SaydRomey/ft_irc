@@ -358,7 +358,7 @@ void Channel::setMode(std::string mode, User& op, const std::string& pwd, const 
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
 	//:operateur!user@host MODE #channel +im -k
-	//this->broadcast(op, reply(RPL_MODE, op.getNickname(), mode, this->_name)) ?
+	//this->broadcast(op, reply(RPL_MODE, op.getNickname(), this->_name, mode))
 }
 
 
