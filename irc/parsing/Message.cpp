@@ -7,10 +7,7 @@ Message::Message(const std::string &input, const std::string &nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
 	_processInput(input);
-	// _processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));
 }
-
 
 Message::~Message(void) {}
 
@@ -62,6 +59,7 @@ void	Message::_processInput(const std::string &input)
 		// 	_reply = pongMsg()
 		// }
 
+		// ** place this in _parser
 		// dispatch to command-specific parsing handlers (multi params)
 		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
 		{
