@@ -33,23 +33,18 @@ class Channel
 		void						removeMember(User& user, const std::string& reason = "");
 		void						setTopic(User& user, const std::string& topic);
 		void						getTopic(User& user);
-		void						kick(User &user, User& op, std::string reason);
+		void						kick(User &user, User& op, std::string reason = "");
 		void						invite(User &user, User& op);
-		// bool	isValidNb(const std::string& str);
-		void						setMode(std::string mode, User& op, const std::string& pwd, const std::string& limit, User* user);
+		void						setMode(std::string mode, User& op, const std::string& pswd, const std::string& limit, User* user);
 		void						addOperator(User *user, const char addOrRemove);
 
-		void						printMembers();
 		std::string 				membersList();
+		void						getModes();
 		void						printMode();
-		//ajouter un getmode (car MODE sans parametres retourne 
-		//les mode activés "Mode du channel xx activé : +i +o etc")
-		//mais si c'Est un op ca montrerait aussi genre les données types limite, pwd etc..
 		const MapUser&				getMembers(void) const;
 
-		// 
-		void						broadcast(User& sender, const std::string& message); //
-		// 
+		void						broadcast(User& sender, const std::string& message);
+
 };
 
 #endif

@@ -284,7 +284,7 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 Generates a SETMODE message
 
 */
-std::string setodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
 {
 	std::ostringstream	oss;
 	std::string			adjustedModeStr = modeStr;
