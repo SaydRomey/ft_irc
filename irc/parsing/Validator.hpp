@@ -28,6 +28,7 @@ enum CommandType
 	INVITE,
 	PRIVMSG,
 	NOTICE,
+	PING,
 	CMD_UNKNOWN
 };
 
