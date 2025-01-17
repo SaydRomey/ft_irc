@@ -4,11 +4,6 @@ MKDIR		:= mkdir -p
 REMOVE		:= rm -rf
 NPD			:= --no-print-directory
 VOID		:= /dev/null
-# Utility commands
-MKDIR		:= mkdir -p
-REMOVE		:= rm -rf
-NPD			:= --no-print-directory
-VOID		:= /dev/null
 
 # System Information
 OS			:= $(shell uname)
@@ -156,42 +151,7 @@ endef
 # Example Usage:
 # $(call CHECK_COMMAND,docker)
 
-
-# Macro: CHECK_COMMAND
-# Check if a specific command is available on the system
-# Parameters:
-# $(1): Command name to check.
-# Behavior:
-# Verifies the command's availability using command -v.
-# If the command is not found, displays an error message and exits with status 1.
-define CHECK_COMMAND
-	if ! command -v $(1) > /dev/null; then \
-		$(call ERROR,Command Missing:,The required command '$(1)' is not installed.); \
-		exit 1; \
-	fi
-endef
-# Example Usage:
-# $(call CHECK_COMMAND,docker)
-
 # **************************************************************************** #
-
-# Macro: CHECK_CONNECTION
-# Check network connectivity to a specific IP and Port
-# Parameters:
-# $(1): IP address to check.
-# $(2): Port number to check.
-# Behavior:
-# Uses nc -z to check connectivity to the given IP and port.
-# If unreachable, an error message is displayed, and the script exits with status 1.
-define CHECK_CONNECTION
-	if ! nc -z $(1) $(2); then \
-		$(call ERROR,Connection Error: Unable to reach $(1):$(2).\nCheck if the server is running.); \
-		exit 1; \
-	fi
-endef
-# Example Usage:
-# $(call CHECK_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
-
 
 # Macro: CHECK_CONNECTION
 # Check network connectivity to a specific IP and Port
@@ -232,27 +192,6 @@ endef
 # Example Usage:
 # $(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
 
-
-# Macro: WAIT_FOR_CONNECTION
-# Wait for a specific IP and port to become available before proceeding
-# Parameters:
-# $(1): IP address to wait for.
-# $(2): Port number to wait for.
-# Behavior:
-# Continuously checks the IP and port using nc -z.
-# Displays an info message every second while waiting.
-# Once reachable, displays a success message.
-define WAIT_FOR_CONNECTION
-	while ! nc -z $(1) $(2); do \
-		$(call INFO,Connection,,Waiting for $(1):$(2) to become available...); \
-		sleep 1; \
-		$(call UPCUT); \
-	done
-	@$(call SUCCESS,Connection,$(1):$(2) is now reachable!)
-endef
-# Example Usage:
-# $(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
-
 # **************************************************************************** #
 
 # Macro: CHECK_PORT
@@ -271,37 +210,7 @@ define CHECK_PORT
 	if command -v lsof > /dev/null; then \
 		if lsof -i :$(1) | grep LISTEN > /dev/null 2>&1; then \
 			$(call ERROR,Port $(1) is already in use!); \
-
-# Macro: CHECK_PORT
-# Check if a specific port is already in use
-# Parameters:
-# $(1): Port number to check.
-# $(2): use "print" to display port's availabilty
-# Behavior:
-# First attempts to use lsof to detect the port's status.
-# Falls back to netstat if lsof is unavailable.
-# If the port is available and "print" was used as second parameter,
-# displays a message indicating port's availability
-# If the port is occupied, an error message is displayed, and the script exits with status 1.
-# If neither tool is available, a warning message is displayed, and the check is skipped.
-define CHECK_PORT
-	if command -v lsof > /dev/null; then \
-		if lsof -i :$(1) | grep LISTEN > /dev/null 2>&1; then \
-			$(call ERROR,Port $(1) is already in use!); \
 			exit 1; \
-		elif [ "$(2)" = "print" ]; then \
-			$(call SUCCESS,Port $(1),Port is available.); \
-		fi; \
-	elif command -v netstat > /dev/null; then \
-		if netstat -an | grep ":$(1) .*LISTEN" > /dev/null; then \
-			$(call ERROR,Port $(1) is already in use!); \
-			exit 1; \
-		elif [ "$(2)" = "print" ]; then \
-			$(call SUCCESS,Port $(1),Port is available.); \
-		fi; \
-	else \
-		$(call WARNING,Port Check,Could not determine if port $(1) is in use. Skipping check.); \
-	fi
 		elif [ "$(2)" = "print" ]; then \
 			$(call SUCCESS,Port $(1),Port is available.); \
 		fi; \
@@ -316,9 +225,6 @@ define CHECK_PORT
 		$(call WARNING,Port Check,Could not determine if port $(1) is in use. Skipping check.); \
 	fi
 endef
-# Example Usage:
-# $(call CHECK_PORT,$(IRC_SERVER_PORT))
-# $(call CHECK_PORT,$(IRC_SERVER_PORT),print)
 # Example Usage:
 # $(call CHECK_PORT,$(IRC_SERVER_PORT))
 # $(call CHECK_PORT,$(IRC_SERVER_PORT),print)
