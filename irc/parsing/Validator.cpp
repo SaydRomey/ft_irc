@@ -34,6 +34,8 @@ static std::map<std::string, CommandType>	initCommandMap(void)
 	cmdMap["PRIVMSG"] = PRIVMSG;
 	cmdMap["NOTICE"] = NOTICE;
 
+	cmdMap["PING"] = PING;
+
 	return (cmdMap);
 }
 
@@ -52,7 +54,8 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validateKickCommand,
 	&Validator::_validateInviteCommand,
 	&Validator::_validatePrivmsgCommand,
-	&Validator::_validateNoticeCommand
+	&Validator::_validateNoticeCommand,
+	&Validator::_validatePingCommand
 };
 
 /* ************************************************************************** */
@@ -756,6 +759,17 @@ bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>&
 	}
 
 	return (_noRpl()); // todo: find a higher level way of ignoring silently instead if cmd is invalid..
+}
+
+bool Validator::_validatePingCommand(const std::map<std::string, std::string> &command) const
+{
+	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+		return (_setRpl(ERR_NEEDMOREPARAMS, "PING"));
+
+	const std::string	&token = command.at("trailing");
+	// std::string	response = "PONG :" + token + "\r\n";
+
+	return (_noRpl());
 }
 
 /* ************************************************************************** */ // ideas
