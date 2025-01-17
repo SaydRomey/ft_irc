@@ -59,12 +59,12 @@ int	test_server(int ac, char **av)
 
 int	main(int argc, char *argv[])
 {
-	test_server(argc, argv);
+	// test_server(argc, argv);
 	
 	// test_channel();
 
 	// test_message();
-	// test_arg_message(argc, argv);
+	test_arg_message(argc, argv);
 
 	// test_reply();
 	// test_pseudo_replies();

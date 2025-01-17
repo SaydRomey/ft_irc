@@ -298,11 +298,11 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	{
 		std::cout << "Target: " << targets[i] << std::endl;
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getInput());
+			_chanManager->privmsgManager(client, targets[i], msg);
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getInput());
+			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply()); // ***
 	}
 }
 

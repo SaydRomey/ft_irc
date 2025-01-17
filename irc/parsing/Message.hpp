@@ -30,6 +30,10 @@ class Message
 		const std::string		&getTrailing(void) const;
 		const std::string		&getReply(void) const;
 		const t_vecPairStrStr	&getChannelsAndKeys(void) const;
+
+		const std::string		&getModeKey(void) const;
+		const std::string		&getModeNick(void) const;
+		const std::string		&getModeLimit(void) const;
 		
 	private:
 		Message(void);
@@ -45,6 +49,10 @@ class Message
 		std::string		_reply;
 		t_vecPairStrStr	_channelsAndKeys;
 		t_vecStr		_tokenizedParams;
+
+		std::string		_modeKey;
+		std::string		_modeNick;
+		std::string		_modeLimit;
 
 		Parser			_parser;
 		Validator		_validator;

@@ -503,7 +503,7 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	t_vecStr	paramsTokens = tokenize(command.at("params"));
 
 	// ensure channel is specified
-	if (paramsTokens.size() < 2)
+	if (paramsTokens.size() < 1)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
 	const std::string	&channel = paramsTokens[0];

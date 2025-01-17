@@ -23,6 +23,10 @@ const std::string		&Message::getTrailing(void) const { return (_parsedMessage.at
 const std::string		&Message::getReply(void) const { return (_reply); } // replies have a "\r\n" appended to them
 const t_vecPairStrStr	&Message::getChannelsAndKeys(void) const { return (_channelsAndKeys); }
 
+const std::string		&Message::getModeKey(void) const { return (_modeKey); }
+const std::string		&Message::getModeNick(void) const { return (_modeNick); }
+const std::string		&Message::getModeLimit(void) const { return (_modeLimit); }
+
 /* ************************************************************************** */
 
 /*
@@ -67,6 +71,14 @@ void	Message::_processInput(const std::string &input)
 		{
 			if (hasValidNumberOfParams(params, AT_MOST, 2))
 				_channelsAndKeys = _parser.parseChannelsAndKeys(params);
+		}
+		else if (command == "MODE" && hasValidNumberOfParams(params, AT_LEAST, 2))
+		{
+			t_vecStr	modeParams = _parser.parseModeParams(params);
+
+			_modeKey = modeParams[0];
+			_modeNick = modeParams[0];
+			_modeLimit = modeParams[0];
 		}
 		else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
 			_tokenizedParams = _parser.parseKickParams(params);
@@ -144,6 +156,19 @@ static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int
 	}
 }
 
+static void	handleModeParams(std::ostream &oss, const Message &message, int labelWidth)
+{
+	if (message.getCommand() == "MODE")
+	{
+		oss << "\nMode Params:\n";
+
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Key: " << message.getModeKey() << RESET << "\n";
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Nick: " << message.getModeNick() << RESET << "\n";
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Limit: " << message.getModeLimit() << RESET << "\n";
+	}
+}
+
+
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
 	const int	labelWidth = 18;
@@ -164,6 +189,9 @@ std::ostream	&operator<<(std::ostream &oss, const Message &message)
 
 	// Handle channels and keys
 	handleChannelsAndKeys(oss, message, labelWidth);
+
+	// Handle mode params
+	handleModeParams(oss, message, labelWidth);
 
 	return (oss);
 }
