@@ -161,11 +161,8 @@ void ChannelManager::quitManager(User &sender)
 }
 
 // sending messages to a channel
-void ChannelManager::privmsgManager(User &sender, const Message& msg)
+void ChannelManager::privmsgManager(User &sender, const std::string &channelName, const std::string &message)
 {
-	const std::string&	channelName = msg.getParams();
-	const std::string&	message = msg.getTrailing();
-
 	if (_channels.find(channelName) == _channels.end())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
