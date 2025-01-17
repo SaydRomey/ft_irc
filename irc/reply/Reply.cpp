@@ -303,3 +303,16 @@ std::string setodeMsg(const std::string &userNickname, const std::string &channe
 
 	return (oss.str());
 }
+
+
+/*
+Generates PONG message for PING
+
+*/
+std::string	pongMsg(const std::string &token)
+{
+	std::ostringstream	oss;
+	oss << "PONG " << token;
+
+	return (oss.str()); 
+}
