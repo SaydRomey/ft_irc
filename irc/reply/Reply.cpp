@@ -210,7 +210,7 @@ std::string	privmsgMsg(const std::string &senderNickname, const std::string &tar
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 
@@ -224,7 +224,7 @@ std::string	joinMsg(const std::string &clientNickname, const std::string &channe
 	std::ostringstream	oss;
 	oss << ":" << clientNickname << " JOIN :" << channelName;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -242,7 +242,7 @@ std::string	partMsg(const std::string &clientNickname, const std::string &channe
 	if (!partingMessage.empty())
 		oss << " :" << partingMessage;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -262,7 +262,7 @@ std::string kickMsg(const std::string &kickerNickname, const std::string &channe
 	else
 		oss << " :" << targetNickname << " was kicked by " << kickerNickname;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -277,14 +277,14 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " INVITE " << targetNickname << " :" << channelName;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
 Generates a SETMODE message
 
 */
-std::string setodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
 {
 	std::ostringstream	oss;
 	std::string			adjustedModeStr = modeStr;
@@ -301,7 +301,7 @@ std::string setodeMsg(const std::string &userNickname, const std::string &channe
 
 	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 
@@ -312,7 +312,7 @@ Generates PONG message for PING
 std::string	pongMsg(const std::string &token)
 {
 	std::ostringstream	oss;
-	oss << "PONG " << token;
+	oss << "PONG :" << token;
 
-	return (oss.str()); 
+	return (crlf(oss.str())); 
 }

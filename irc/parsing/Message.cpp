@@ -46,18 +46,20 @@ void	Message::_processInput(const std::string &input)
 			return ;
 		}
 
-		// extract command and params
-		const std::string &command = _parsedMessage["command"];
+		// extract command
+		const std::string	&command = _parsedMessage["command"];
 
+		// extract params
 		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
-		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
+		const std::string		params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
 
-		// // handle ping-pong
-		// if (command == "PING")
-		// {
-		// 	_valid = true;
-		// 	_reply = pongMsg()
-		// }
+		// handle ping-pong
+		if (command == "PING")
+		{
+			_reply = pongMsg(_parsedMessage["trailing"]);
+			_valid = true;
+			return ;
+		}
 
 		// ** place this in _parser
 		// dispatch to command-specific parsing handlers (multi params)

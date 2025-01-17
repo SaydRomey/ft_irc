@@ -739,9 +739,6 @@ bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "PING"));
 
-	const std::string	&token = command.at("trailing");
-	// std::string	response = "PONG :" + token + "\r\n";
-
 	return (_noRpl());
 }
 
@@ -752,7 +749,7 @@ bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 // Check if nickname is already in use (higher-level logic) 462
 
 */
-bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck)
+bool	isNickAvailable(const t_mapStrInt &nickMap, const std::string &nickToCheck)
 {
 	std::string	nickname = nickToCheck;
 	
@@ -763,7 +760,7 @@ bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::strin
 		++nickIt;
 	}
 
-	std::map<std::string, int>::const_iterator	it = nickMap.begin();
+	t_mapStrInt::const_iterator	it = nickMap.begin();
 	while (it != nickMap.end())
 	{
 		std::string	nickKey = it->first;

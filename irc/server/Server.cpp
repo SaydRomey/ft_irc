@@ -22,6 +22,7 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("INVITE", INVITE),
 	std::make_pair("PRIVMSG", PRIVMSG),
 	std::make_pair("NOTICE", NOTICE),
+	std::make_pair("PING", PING),
 };
 t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 
@@ -195,27 +196,29 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
-	// case JOIN:
-	// 	_chanManager.join(client, msg);
-	// 	break;
-	// case PART:
-	// 	_chanManager.part(client, msg);
-	// 	break;
-	// case TOPIC:
-	// 	_chanManager.topic(client, msg);
-	// 	break;
-	// case MODE:
-	// 	_chanManager.mode(client, msg);
-	// 	break;
-	// case KICK:
-	// 	_chanManager.kick(client, msg);
-	// 	break;
+	case JOIN:
+		_chanManager.join(client, msg);
+		break;
+	case PART:
+		_chanManager.part(client, msg);
+		break;
+	case TOPIC:
+		_chanManager.topic(client, msg);
+		break;
+	case MODE:
+		_chanManager.mode(client, msg);
+		break;
+	case KICK:
+		_chanManager.kick(client, msg);
+		break;
 	case INVITE:
 		break;
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
 	case NOTICE:
+		break;
+	case PING:
 		break;
 	default:
 		break;

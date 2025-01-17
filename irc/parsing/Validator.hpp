@@ -15,11 +15,6 @@ improve channel name validator
 # include <string>
 # include <vector>
 
-typedef std::vector<std::string>			t_vecStr;
-typedef std::map<std::string, int>			t_mapStrInt;
-typedef std::map<std::string, std::string>	t_mapStrStr;
-typedef std::map<std::string, CommandType>	t_mapStrCmdType;
-
 enum CommandType
 {
 	PASS = 0,
@@ -36,6 +31,11 @@ enum CommandType
 	PING,
 	CMD_UNKNOWN
 };
+
+typedef std::vector<std::string>			t_vecStr;
+typedef std::map<std::string, int>			t_mapStrInt;
+typedef std::map<std::string, std::string>	t_mapStrStr;
+typedef std::map<std::string, CommandType>	t_mapStrCmdType;
 
 class Validator
 {

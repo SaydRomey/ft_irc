@@ -48,7 +48,7 @@ std::string	joinMsg(const std::string &clientNickname, const std::string &channe
 std::string	partMsg(const std::string &clientNickname, const std::string &channelName, const std::string &partingMessage = "");
 std::string kickMsg(const std::string &kickerNickname, const std::string &channelName, const std::string &targetNickname, const std::string &reason = "");
 std::string	inviteMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &channelName);
-std::string setodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr);
+std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr);
 std::string	pongMsg(const std::string &token);
 
 #endif // REPLY_HPP
