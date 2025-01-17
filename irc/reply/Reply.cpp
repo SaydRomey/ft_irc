@@ -201,7 +201,21 @@ std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, con
 /* ************************************************************************** */ // Pseudo replies
 
 /*
-Generates a message for when a client joins a channel
+Generates a message when a user sends a PRIVMSG
+
+:<senderNickname> PRIVMSG <targetNickname> :<trailingMsg>
+*/
+std::string	privmsgMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &trailingMsg)
+{
+	std::ostringstream oss;
+	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
+
+	return (oss.str());
+}
+
+
+/*
+Generates a message for when a user joins a channel
 
 :<clientNickname> JOIN :<channelName>
 */
@@ -262,6 +276,30 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 {
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " INVITE " << targetNickname << " :" << channelName;
+
+	return (oss.str());
+}
+
+/*
+Generates a SETMODE message
+
+*/
+std::string setodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+{
+	std::ostringstream	oss;
+	std::string			adjustedModeStr = modeStr;
+	size_t				plusPos = adjustedModeStr.find('+');
+	size_t				minusPos = adjustedModeStr.find('-');
+
+	if (plusPos != std::string::npos && minusPos != std::string::npos)
+	{
+		if (plusPos < minusPos)
+			adjustedModeStr.insert(minusPos, " ");
+		else
+			adjustedModeStr.insert(plusPos, " ");
+	}
+
+	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
 
 	return (oss.str());
 }
