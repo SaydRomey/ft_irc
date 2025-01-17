@@ -13,6 +13,20 @@ IRC_SERVER_PSWD	:= 4242
 # Build configuration
 COMPILE		:= c++
 C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
+# Project info
+NAME		:= ircserv
+AUTHOR		:= cdumais
+TEAM		:= "namoisan, jdemers and $(AUTHOR)"
+REPO_LINK	:= https://github.com/SaydRomey/ft_irc
+
+# Server info
+IRC_SERVER_IP	:= 127.0.0.1
+IRC_SERVER_PORT	:= 6667
+IRC_SERVER_PSWD	:= 4242
+
+# Build configuration
+COMPILE		:= c++
+C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
 
 # Source code files
 SRC_DIR		:= irc
@@ -28,6 +42,7 @@ HEADERS		:= $(shell find $(INC_DIR) -name "*.hpp" -o -name "*.ipp")
 INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
 # Helper makefiles
+MAKE_DIR	:= ./utils/makefiles
 MAKE_DIR	:= ./utils/makefiles
 
 include $(MAKE_DIR)/utils.mk	# Utility Variables and Macros
@@ -46,15 +61,19 @@ include $(MAKE_DIR)/misc.mk		# Misc, Title and Sounds (not really relevant...)
 .DEFAULT_GOAL	:= all
 
 .DEFAULT:
+.DEFAULT:
 	$(info make: *** No rule to make target '$(MAKECMDGOALS)'.  Stop.)
 	@$(MAKE) help $(NPD)
 
+all: $(NAME) ## Buld the project
 all: $(NAME) ## Buld the project
 
 $(NAME): $(OBJS)
 	@$(COMPILE) $(C_FLAGS) $(OBJS) $(INCLUDES) -o $@
 	@$(call SUCCESS,$@,Build complete)
+	@$(call SUCCESS,$@,Build complete)
 
+# Object compilation rules
 # Object compilation rules
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
