@@ -29,7 +29,6 @@ enum CommandType
 	PRIVMSG,
 	NOTICE,
 	PING,
-	PING,
 	CMD_UNKNOWN
 };
 

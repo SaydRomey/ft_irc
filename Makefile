@@ -61,19 +61,15 @@ include $(MAKE_DIR)/misc.mk		# Misc, Title and Sounds (not really relevant...)
 .DEFAULT_GOAL	:= all
 
 .DEFAULT:
-.DEFAULT:
 	$(info make: *** No rule to make target '$(MAKECMDGOALS)'.  Stop.)
 	@$(MAKE) help $(NPD)
 
-all: $(NAME) ## Buld the project
 all: $(NAME) ## Buld the project
 
 $(NAME): $(OBJS)
 	@$(COMPILE) $(C_FLAGS) $(OBJS) $(INCLUDES) -o $@
 	@$(call SUCCESS,$@,Build complete)
-	@$(call SUCCESS,$@,Build complete)
 
-# Object compilation rules
 # Object compilation rules
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)

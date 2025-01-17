@@ -96,7 +96,6 @@ bool	Validator::_noRpl(void) const
 /* ************************************************************************** */
 
 /*
-/*
 Validates the syntax (structure and validity) of a command,
 tokenized in a map of string key and values
 

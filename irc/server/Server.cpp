@@ -322,21 +322,3 @@ User*	Server::getUserByNickname(const std::string& nickname)
 	}
 	return NULL;
 }
-
-// 
-User*	Server::getUserByNickname(const std::string& nickname)
-{
-	// Check if the nickname exists in the _nickMap
-	t_strIntMap::iterator	it = _nickMap.find(nickname);
-	if (it != _nickMap.end())
-	{
-		int	fd = it->second; // Get the corresponding FD
-		t_clientMap::iterator	clientIt = _clientMap.find(fd);
-		if (clientIt != _clientMap.end())
-		{
-			return &clientIt->second; // Return the User object
-		}
-	}
-	return NULL;
-}
-// 
