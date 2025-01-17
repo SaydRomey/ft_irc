@@ -737,7 +737,7 @@ bool Validator::_validateNoticeCommand(const t_mapStrStr& command) const
 bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 {
 	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setRpl(ERR_NEEDMOREPARAMS, "PING"));
+		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PING"));
 
 	return (_noRpl());
 }

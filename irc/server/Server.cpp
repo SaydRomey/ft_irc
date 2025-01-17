@@ -196,29 +196,27 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
-	case JOIN:
-		_chanManager.join(client, msg);
-		break;
-	case PART:
-		_chanManager.part(client, msg);
-		break;
-	case TOPIC:
-		_chanManager.topic(client, msg);
-		break;
-	case MODE:
-		_chanManager.mode(client, msg);
-		break;
-	case KICK:
-		_chanManager.kick(client, msg);
-		break;
+	// case JOIN:
+	// 	_chanManager.join(client, msg);
+	// 	break;
+	// case PART:
+	// 	_chanManager.part(client, msg);
+	// 	break;
+	// case TOPIC:
+	// 	_chanManager.topic(client, msg);
+	// 	break;
+	// case MODE:
+	// 	_chanManager.mode(client, msg);
+	// 	break;
+	// case KICK:
+	// 	_chanManager.kick(client, msg);
+	// 	break;
 	case INVITE:
 		break;
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
 	case NOTICE:
-		break;
-	case PING:
 		break;
 	default:
 		break;
