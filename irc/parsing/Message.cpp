@@ -72,13 +72,15 @@ void	Message::_processInput(const std::string &input)
 			if (hasValidNumberOfParams(params, AT_MOST, 2))
 				_channelsAndKeys = _parser.parseChannelsAndKeys(params);
 		}
-		else if (command == "MODE" && hasValidNumberOfParams(params, AT_LEAST, 2))
+		else if (command == "MODE")
 		{
-			t_vecStr	modeParams = _parser.parseModeParams(params);
+			t_vecStr			paramTokens = tokenize(params);
+			const std::string	&modes = paramTokens[1];
+			t_vecStr			modeParams = _parser.parseModeParams(modes, t_vecStr(paramTokens.begin() + 2, paramTokens.end()));
 
 			_modeKey = modeParams[0];
-			_modeNick = modeParams[0];
-			_modeLimit = modeParams[0];
+			_modeNick = modeParams[1];
+			_modeLimit = modeParams[2];
 		}
 		else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
 			_tokenizedParams = _parser.parseKickParams(params);
@@ -119,7 +121,7 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 		size_t	i = 0;
 		while (i < paramsTokens.size())
 		{
-			oss << GRAYTALIC << std::setw(labelWidth) << "Param (" << (i + 1) << "): " << RESET << paramsTokens[i] << "\n";
+			oss << GRAYTALIC << std::setw(labelWidth) << "Param (" << (i) << "): " << RESET << paramsTokens[i] << "\n";
 			++i;
 		}
 	}

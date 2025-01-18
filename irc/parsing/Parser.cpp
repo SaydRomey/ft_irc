@@ -130,12 +130,8 @@ t_vecStr	Parser::parseKickParams(const std::string &params) const
 	return (kickParams);
 }
 
-t_vecStr	Parser::parseModeParams(const std::string &params) const
+t_vecStr	Parser::parseModeParams(const std::string &modes, const t_vecStr &paramTokens) const
 {
-	t_vecStr	paramTokens = tokenize(params);
-	std::string	modes = paramTokens[1];
-	t_vecStr	modeParamTokens(paramTokens.begin() + 2, paramTokens.end());
-
 	t_vecStr	result(3, ""); // [key, nickname, limit]
 	size_t		paramIndex = 0;
 
@@ -147,7 +143,7 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 		// only process modes that require parameters
 		if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
 		{
-			const std::string &param = modeParamTokens[paramIndex];
+			const std::string &param = paramTokens[paramIndex];
 
 			// assign parameter to the appropriate index
 			switch (modeFlag)
@@ -168,3 +164,42 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	}
 	return (result);
 }
+
+// t_vecStr	Parser::parseModeParams(const std::string &params) const
+// {
+// 	t_vecStr	paramTokens = tokenize(params);
+// 	std::string	modes = paramTokens[1];
+// 	t_vecStr	modeParamTokens(paramTokens.begin() + 2, paramTokens.end());
+
+// 	t_vecStr	result(3, ""); // [key, nickname, limit]
+// 	size_t		paramIndex = 0;
+
+// 	size_t	i = 0;
+// 	while (i < modes.size())
+// 	{
+// 		char	modeFlag = modes[i];
+
+// 		// only process modes that require parameters
+// 		if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
+// 		{
+// 			const std::string &param = modeParamTokens[paramIndex];
+
+// 			// assign parameter to the appropriate index
+// 			switch (modeFlag)
+// 			{
+// 				case 'k':
+// 					result[0] = param; // key
+// 					break ;
+// 				case 'o':
+// 					result[1] = param; // nickname
+// 					break ;
+// 				case 'l':
+// 					result[2] = param; // limit
+// 					break ;
+// 			}
+// 			++paramIndex;
+// 		}
+// 		++i;
+// 	}
+// 	return (result);
+// }

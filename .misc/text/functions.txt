@@ -1,0 +1,200 @@
+
+- Authorized Functions
+
+* all of cpp98
+
+- Socket Programming
+
+socket():
+Creates a socket file descriptor.
+This is the starting point for network communication,
+allowing you to specify the communication domain
+(e.g., IPv4/IPv6), socket type (e.g., stream or datagram), and protocol (e.g., TCP or UDP).
+
+close():
+Closes an open file descriptor,
+releasing resources associated with it.
+This is used to terminate a connection or clean up resources.
+
+setsockopt():
+Configures options for a socket,
+such as enabling reuse of local addresses (SO_REUSEADDR) or setting timeouts.
+
+getsockname():
+Retrieves the local address and port number of a socket.
+
+getprotobyname():
+Gets information about a protocol by its name (e.g., "tcp" or "udp"),
+often used when creating sockets.
+
+gethostbyname():
+Resolves a hostname (e.g., "example.com") to an IP address.
+Note: This function is considered outdated; consider getaddrinfo() for newer implementations.
+
+getaddrinfo():
+A modern and flexible way to resolve hostnames to addresses and service names to ports.
+It supports both IPv4 and IPv6.
+
+freeaddrinfo():
+Frees the memory allocated by getaddrinfo().
+
+bind():
+Assigns a specific local address and port to a socket.
+This is typically used by servers to listen on a specific address/port.
+
+connect():
+Initiates a connection to a remote host.
+Used by clients to establish communication with a server.
+
+listen():
+Prepares a socket to accept incoming connections,
+setting a queue for pending connections.
+
+accept():
+Accepts an incoming connection on a listening socket,
+creating a new socket for communication with the client.
+
+- Byte Order Conversion
+
+htons() / htonl():
+Converts host byte order to network byte order for short (16-bit)
+and long (32-bit) integers, respectively.
+Necessary for ensuring cross-platform compatibility.
+
+ntohs() / ntohl():
+Converts network byte order to host byte order for short (16-bit) and long (32-bit) integers, respectively.
+
+IP Address Manipulation
+inet_addr():
+Converts an IPv4 address from its string representation (e.g., "192.168.1.1") to its binary form.
+
+inet_ntoa():
+Converts an IPv4 address from its binary form to a human-readable string (e.g., "192.168.1.1").
+
+
+- Data Transmission
+
+send():
+Sends data to a connected socket.
+Useful for transmitting messages in IRC.
+
+recv():
+Receives data from a connected socket. Used to handle messages from clients.
+
+Signal Handling
+signal() / sigaction():
+Sets up handlers for signals (e.g., SIGINT for clean shutdowns).
+sigaction() is preferred for finer control.
+
+File Descriptor Operations
+lseek():
+Repositions the file offset of an open file descriptor.
+Useful for reading or writing specific parts of a file.
+
+fstat():
+Retrieves information about a file based on its file descriptor, such as size and type.
+
+fcntl():
+Modifies file descriptor properties.
+For this project, it will be used to set non-blocking mode:
+
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+
+This ensures that I/O operations do not block execution.
+
+Multiplexing
+
+poll() (or equivalents like select(), kqueue(), or epoll()):
+Monitors multiple file descriptors to see if they are ready for I/O operations (e.g., readable, writable).
+
+poll():
+Monitors multiple descriptors with a simpler interface than select().
+
+select():
+Monitors a fixed number of descriptors and requires manual management of fd_set.
+
+kqueue()/epoll():
+Efficient alternatives for large-scale applications (not always portable).
+
+Key Notes for MacOS:
+Non-blocking Mode:
+Ensure all sockets are set to non-blocking mode using fcntl() with O_NONBLOCK.
+This is essential for compatibility with other Unix-based systems.
+
+Avoidance of Blocking I/O:
+Non-blocking mode prevents operations like read() and write()
+from stalling the program when data is not immediately available or buffers are full.
+
+/* ************************************************************************** */
+
+Commands to Implement
+
+Authentication Commands:
+
+	PASS: Client provides the connection password.
+	NICK: Client sets their nickname.
+	USER: Client sets their username.
+
+Channel Management Commands:
+
+	JOIN: Join a specific channel.
+	PART: Leave a specific channel.
+	TOPIC: View or change the channel's topic.
+	MODE: Change channel modes (i, t, k, o, l).
+	KICK: Eject a client from a channel.
+	INVITE: Invite a client to a channel.
+
+Messaging Commands:
+
+	PRIVMSG: Send a private message to a user or channel.
+	NOTICE: Send a notice to a user or channel.
+
+*****
+
+Authentication Commands:
+
+PASS: No numeric replies specifically associated, but errors include:
+ERR_PASSWDMISMATCH (464): Password incorrect.
+ERR_ALREADYREGISTRED (462): Attempt to send PASS after registration.
+
+NICK:
+ERR_NONICKNAMEGIVEN (431): No nickname provided.
+ERR_NICKNAMEINUSE (433): Nickname already in use.
+
+USER:
+ERR_ALREADYREGISTRED (462): Client already registered.
+
+Channel Management Commands:
+
+JOIN:
+RPL_TOPIC (332): Current topic of the channel.
+ERR_BADCHANNELKEY (475): Incorrect channel key.
+ERR_CHANNELISFULL (471): Channel is full.
+
+PART:
+ERR_NOSUCHCHANNEL (403): Channel does not exist.
+ERR_NOTONCHANNEL (442): Client not in the channel.
+
+TOPIC:
+RPL_TOPIC (332): Channel topic response.
+ERR_CHANOPRIVSNEEDED (482): Operator privileges needed.
+
+MODE:
+RPL_CHANNELMODEIS (324): Current modes for a channel.
+ERR_UNKNOWNMODE (472): Unknown mode.
+
+KICK:
+ERR_NOTONCHANNEL (442): Client not in the channel.
+ERR_CHANOPRIVSNEEDED (482): Operator privileges needed.
+
+INVITE:
+RPL_INVITING (341): Acknowledgment of successful invite.
+ERR_USERONCHANNEL (443): User already in the channel.
+
+Messaging Commands:
+
+PRIVMSG:
+ERR_NORECIPIENT (411): No recipient specified.
+ERR_NOTEXTTOSEND (412): No message text provided.
+
+NOTICE: Similar replies to PRIVMSG.

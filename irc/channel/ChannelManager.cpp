@@ -142,7 +142,6 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 
 void ChannelManager::quitManager(User &sender)
 {
-	(void)sender;
 	//boucle dans tout les channels pour chercher si le sender est dedans car deconnexion = part des channels.
 	//voir pour mettre un message PART different genre "disconnected", avec RPL_QUIT ou autre ou ajouté parametre à removeMembers
 	//voir pour creer dans channel fonction quit sinon et faire un message different
@@ -151,9 +150,12 @@ void ChannelManager::quitManager(User &sender)
 	{
 		if (it->second.getMembers().find(&sender) != it->second.getMembers().end())
 			it->second.removeMember(sender, "Disconnected");
+
 		if (it->second.getMembers().empty())
 		{
-			it = _channels.erase(it);
+			// increment iterator before erasing the current element
+			std::map<std::string, Channel>::iterator toErase = it++;
+			_channels.erase(toErase);
 		}
 		else
 			++it;
