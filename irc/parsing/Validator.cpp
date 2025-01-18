@@ -18,9 +18,9 @@ const size_t 		Validator::MAX_CHANNEL_NAME_LENGTH = 42;
 const std::string	Validator::VALID_MODE_FLAGS = "+-itkol";
 const std::string	Validator::INVALID_CHANNEL_CHARS = " ,\r\n";
 
-static std::map<std::string, CommandType>	initCommandMap(void)
+static t_mapStrCmdType	initCommandMap(void)
 {
-	std::map<std::string, CommandType>	cmdMap;
+	t_mapStrCmdType	cmdMap;
 
 	cmdMap["PASS"] = PASS;
 	cmdMap["NICK"] = NICK;
@@ -33,11 +33,12 @@ static std::map<std::string, CommandType>	initCommandMap(void)
 	cmdMap["INVITE"] = INVITE;
 	cmdMap["PRIVMSG"] = PRIVMSG;
 	cmdMap["NOTICE"] = NOTICE;
+	cmdMap["PING"] = PING;
 
 	return (cmdMap);
 }
 
-const std::map<std::string, CommandType>	Validator::_commandMap = initCommandMap();
+const t_mapStrCmdType	Validator::_commandMap = initCommandMap();
 
 /* ************************************************************************** */
 
@@ -52,48 +53,30 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validateKickCommand,
 	&Validator::_validateInviteCommand,
 	&Validator::_validatePrivmsgCommand,
-	&Validator::_validateNoticeCommand
+	&Validator::_validateNoticeCommand,
+	&Validator::_validatePingCommand
 };
 
 /* ************************************************************************** */
 
 Validator::Validator(void) : _rplType(static_cast<ReplyType>(0)), _rplArgs() {}
-Validator::Validator(const Validator &other) : _rplType(other._rplType), _rplArgs(other._rplArgs) {}
-Validator&	Validator::operator=(const Validator &other)
-{
-	if (this != &other)
-	{
-		_rplType = other._rplType;
-		_rplArgs = other._rplArgs;
-	}
-	return (*this);
-}
 Validator::~Validator(void) {}
 
 /* ************************************************************************** */
 
-ReplyType	Validator::getRplType(void) const
-{
-	return (_rplType);
-}
-
-const std::vector<std::string>&	Validator::getRplArgs(void) const
-{
-	return (_rplArgs);
-}
-
-const std::map<std::string, CommandType>& Validator::getCommandMap(void)
-{
-	return (_commandMap);
-}
+ReplyType				Validator::getRplType(void) const {	return (_rplType); }
+const t_vecStr&			Validator::getRplArgs(void) const {	return (_rplArgs); }
+const t_mapStrCmdType&	Validator::getCommandMap(void) { return (_commandMap); }
 
 /* ************************************************************************** */
 
+/*
+Sets the error state and builds the reply
+*/
 bool	Validator::_setRpl(ReplyType rplType, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4) const
 {
 	_rplType = rplType;
 	_rplArgs.clear();
-
 	_rplArgs = makeArgs(arg1, arg2, arg3, arg4);
 	
 	return (false);
@@ -126,7 +109,7 @@ Checks:
 Errors:
 	421 ERR_UNKNOWNCOMMAND: Unknown command
 */
-bool	Validator::validateCommand(const std::map<std::string, std::string> &command) const
+bool	Validator::validateCommand(const t_mapStrStr &command) const
 {
 	// check if "command" key exists and is non-empty
 	if (command.find("command") == command.end() || command.at("command").empty())
@@ -136,29 +119,18 @@ bool	Validator::validateCommand(const std::map<std::string, std::string> &comman
 	const std::string	&cmd = command.at("command");
 
 	// lookup the command type in the command map
-	std::map<std::string, CommandType>::const_iterator	it = _commandMap.find(cmd);
+	t_mapStrCmdType::const_iterator	it = _commandMap.find(cmd);
 
 	if (it == _commandMap.end())
 		return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("prefix"), cmd));
 
 	CommandType	cmdType = it->second;
 	
-	// // validate optional prefix
-	// if (command.find("prefix") != command.end() && !command.at("prefix").empty())
-	// // if (!_parsedMessage["prefix"].empty())
-	// {
-	// 	if (!_isValidNickname(command.at("prefix")))
-	// 	// if (!_isValidNickname(_parsedMessage["prefix"])
-	// 	return (_setRpl(ERR_ERRONEUSNICKNAME, command.at("prefix"), )); //? is this check needed ? we might not input prefixes at all as users..
-	// }
-	
-	// ... additional validation as needed
-	
 	return (_validateCommandByType(cmdType, command));
 	// return ((this->*(_validators[cmdType]))(command)); // to remove _validateCommandByType() ?
 }
 
-bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::string, std::string> &command) const
+bool	Validator::_validateCommandByType(CommandType cmdType, const t_mapStrStr &command) const
 {
 	// if (cmdType == CMD_UNKNOWN && cmd == "CAP")
 		// return (_noRpl()); // CAP command is ignored without error ??
@@ -169,7 +141,7 @@ bool	Validator::_validateCommandByType(CommandType cmdType, const std::map<std::
 	return ((this->*(_validators[cmdType]))(command));
 }
 
-/* ************************************************************************** */ // syntax validation
+/* ************************************************************************** */ // Syntax Validation
 
 /*	** https://dd.ircdocs.horse/refs/commands/nick
 
@@ -267,7 +239,7 @@ No specific reply is defined in IRC for a successful PASS command,
 but it’s implied as part of the connection process.
 Ensure errors like ERR_NEEDMOREPARAMS or ERR_ALREADYREGISTERED are handled.
 */
-bool	Validator::_validatePassCommand(const std::map<std::string, std::string> &command) const
+bool	Validator::_validatePassCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "PASS"));
@@ -298,7 +270,7 @@ Success Reply:
 	None specified,
 	but errors like ERR_ALREADYREGISTERED should be handled.
 */
-bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &command) const
+bool	Validator::_validateNickCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NONICKNAMEGIVEN));
@@ -324,13 +296,13 @@ Success Reply:
 	None specified for successful NICK changes,
 	but server behavior should update the nickname state.
 */
-bool Validator::_validateUserCommand(const std::map<std::string, std::string> &command) const
+bool Validator::_validateUserCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return(_setRpl(ERR_NEEDMOREPARAMS, "USER"));
 
 	// tokenize parameters
-	std::vector<std::string> params = tokenize(command.at("params"));
+	t_vecStr params = tokenize(command.at("params"));
 
 	// append trailing if it exists
 	if (command.find("trailing") != command.end())
@@ -364,12 +336,12 @@ Success Reply:
 	RPL_NAMEREPLY (353)
 	RPL_ENDOFNAMES (366)
 */
-bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &command) const
+bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
 {
-	std::map<std::string, std::string>::const_iterator	prefixIt = command.find("prefix");
+	t_mapStrStr::const_iterator	prefixIt = command.find("prefix");
 	std::string	prefix = (prefixIt != command.end() && !prefixIt->second.empty()) ? prefixIt->second : "*";
 	
-	std::map<std::string, std::string>::const_iterator	paramsIt = command.find("params");
+	t_mapStrStr::const_iterator	paramsIt = command.find("params");
 	
 	if (paramsIt == command.end() || paramsIt->second.empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, prefix, "JOIN"));
@@ -378,14 +350,14 @@ bool Validator::_validateJoinCommand(const std::map<std::string, std::string> &c
 
 	// extract and tokenize "params"
 	std::string	params = paramsIt->second;
-	std::vector<std::string>	paramsTokens = tokenize(params, ' ');
+	t_vecStr	paramsTokens = tokenize(params, ' ');
 	
 	// validate number of tokens in "params"
 	if (paramsTokens.size() > 2)
 		return (_setRpl(ERR_UNKNOWNCOMMAND, prefix, "JOIN"));
 
 	// validate channels (first parameter)
-	std::vector<std::string>	channelTokens = tokenize(paramsTokens[0], ',');
+	t_vecStr	channelTokens = tokenize(paramsTokens[0], ',');
 
 	size_t	i = 0;
 	while (i < channelTokens.size())
@@ -412,14 +384,14 @@ Success Reply:
 	Typically no numeric reply;
 	success is implied by a PART message broadcasted to the channel.
 */
-bool Validator::_validatePartCommand(const std::map<std::string, std::string>& command) const
+bool Validator::_validatePartCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PART"));
 
 	std::string	params = command.at("params");
 
-	std::vector<std::string>	channelTokens = tokenize(params, ','); // limit?
+	t_vecStr	channelTokens = tokenize(params, ','); // limit?
 
 	size_t	i = 0;
 	while (i < channelTokens.size())
@@ -450,10 +422,10 @@ Success Reply:
 	RPL_NOTOPIC (331)
 		Sent if there is no topic.	
 */
-bool Validator::_validateTopicCommand(const std::map<std::string, std::string>& command) const
+bool Validator::_validateTopicCommand(const t_mapStrStr& command) const
 {
-	std::map<std::string, std::string>::const_iterator	paramsIt = command.find("params");
-	std::map<std::string, std::string>::const_iterator	prefixIt = command.find("prefix");
+	t_mapStrStr::const_iterator	paramsIt = command.find("params");
+	t_mapStrStr::const_iterator	prefixIt = command.find("prefix");
 
 	const std::string	&prefix = (prefixIt != command.end()) ? prefixIt->second : "*";
 
@@ -523,15 +495,15 @@ Success Reply:
 		Sent to show the current mode of the channel.
 	Broadcast mode changes to the channel as appropriate.
 */
-bool Validator::_validateModeCommand(const std::map<std::string, std::string>& command) const
+bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), command.at("command")));
 
-	std::vector<std::string>	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramsTokens = tokenize(command.at("params"));
 
 	// ensure channel is specified
-	if (paramsTokens.size() < 2)
+	if (paramsTokens.size() < 1)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
 	const std::string	&channel = paramsTokens[0];
@@ -613,12 +585,12 @@ Success Reply:
 	No specific numeric reply;
 	success is implied by broadcasting the KICK message to the channel.
 */
-bool Validator::_validateKickCommand(const std::map<std::string, std::string> &command) const
+bool Validator::_validateKickCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
 
-	std::vector<std::string> paramsTokens = tokenize(command.at("params"));
+	t_vecStr paramsTokens = tokenize(command.at("params"));
 	
 	if (paramsTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
@@ -626,7 +598,7 @@ bool Validator::_validateKickCommand(const std::map<std::string, std::string> &c
 	std::string	channels = paramsTokens[0];
 	std::string	users = paramsTokens[1];
 
-	std::vector<std::string>	channelTokens = tokenize(channels, ',');
+	t_vecStr	channelTokens = tokenize(channels, ',');
 	size_t	i = 0;
 	while (i < channelTokens.size())
 	{
@@ -635,7 +607,7 @@ bool Validator::_validateKickCommand(const std::map<std::string, std::string> &c
 		++i;
 	}
 	
-	std::vector<std::string>	userTokens = tokenize(users, ',');
+	t_vecStr	userTokens = tokenize(users, ',');
 	size_t	j = 0;
 	while (j < userTokens.size())
 	{
@@ -666,12 +638,12 @@ Success Reply:
 
 Optionally notify the invitee with a server message.
 */
-bool Validator::_validateInviteCommand(const std::map<std::string, std::string>& command) const
+bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 
-	std::vector<std::string>	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramsTokens = tokenize(command.at("params"));
 
 	if (paramsTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
@@ -699,7 +671,7 @@ Success Reply:
 	No numeric reply;
 	success is implied by delivering the message.
 */
-bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string> &command) const
+bool Validator::_validatePrivmsgCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NORECIPIENT, command.at("prefix"), command.at("command")));
@@ -708,7 +680,7 @@ bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string>
 		return (_setRpl(ERR_NOTEXTTOSEND, command.at("prefix")));
 
 	std::string	params = command.at("params");
-	std::vector<std::string>	recipients = tokenize(params, ',');
+	t_vecStr	recipients = tokenize(params, ',');
 
 	size_t	i = 0;
 	while (i < recipients.size())
@@ -726,14 +698,15 @@ bool Validator::_validatePrivmsgCommand(const std::map<std::string, std::string>
 }
 
 /*
-similar to privmsg but does not return (errors to the sender
+Similar to _validatePrivmsg(),
+but does not return errors to the sender
 
 Success Reply:
 	No numeric reply;
 		success is implied by delivering the notice.
 		Avoid acknowledgment per IRC protocol rules.
 */
-bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>& command) const
+bool Validator::_validateNoticeCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NORECIPIENT,command.at("prefix"), "NOTICE"));
@@ -742,7 +715,7 @@ bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>&
 		return (_setRpl(ERR_NOTEXTTOSEND, command.at("prefix"), "NOTICE"));
 
 	std::string	params = command.at("params");
-	std::vector<std::string>	recipients = tokenize(params, ',');
+	t_vecStr	recipients = tokenize(params, ',');
 
 	size_t	i = 0;
 	while (i < recipients.size())
@@ -758,54 +731,16 @@ bool Validator::_validateNoticeCommand(const std::map<std::string, std::string>&
 	return (_noRpl()); // todo: find a higher level way of ignoring silently instead if cmd is invalid..
 }
 
-/* ************************************************************************** */ // ideas
+/*	**(WIP)
 
-// bool Validator::_validateNonEmpty(const std::string &valie, ReplyType error) const
-// {
-// 	if (value.empty())
-// 	{
-// 		return (_setRpl(error, "Value cannot be empty"));
-// 	}
-// 	return (true);
-// }
-
-// bool	Validator::_validateNickCommand(const std::map<std::string, std::string> &command) const
-// {
-// 	return (_validateNonEmpty(command["nickname"], ERR_NONICKNAMEGIVEN) && command["nickname"].size <= MAX_NICKNAME_LENGTH);
-// }
-
-/* ************************************************************************** */
-
-/*
-#include "Validator.hpp"
-#include <map>
-#include <string>
-#include <iostream>
-
-int main(void)
-{
-	Validator	validator;
-	std::map<std::string, std::string>	command;
-
-	// Test valid PASS command
-	command["command"] = "PASS";
-	command["argument"] = "password";
-	if (validator.validateCommand(command))
-		std::cout << "PASS command validated successfully!\n";
-	else
-		std::cout << "Error: " << validator.getError() << "\n";
-
-	// Test invalid NICK command
-	command["command"] = "NICK";
-	command["argument"] = "verylongnickname";
-	if (validator.validateCommand(command))
-		std::cout << "NICK command validated successfully!\n";
-	else
-		std::cout << "Error: " << validator.getError() << "\n";
-
-	return (0);
-}
 */
+bool Validator::_validatePingCommand(const t_mapStrStr &command) const
+{
+	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PING"));
+
+	return (_noRpl());
+}
 
 /* ************************************************************************** */ // **TOCHECK where do we put this?
 
@@ -814,7 +749,7 @@ int main(void)
 // Check if nickname is already in use (higher-level logic) 462
 
 */
-bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::string &nickToCheck)
+bool	isNickAvailable(const t_mapStrInt &nickMap, const std::string &nickToCheck)
 {
 	std::string	nickname = nickToCheck;
 	
@@ -825,7 +760,7 @@ bool	isNickAvailable(const std::map<std::string, int> &nickMap, const std::strin
 		++nickIt;
 	}
 
-	std::map<std::string, int>::const_iterator	it = nickMap.begin();
+	t_mapStrInt::const_iterator	it = nickMap.begin();
 	while (it != nickMap.end())
 	{
 		std::string	nickKey = it->first;
