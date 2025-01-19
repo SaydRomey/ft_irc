@@ -53,12 +53,13 @@ void	Message::_processInput(const std::string& input)
 
 		// Extract command and params
 		const std::string&	command = _parsedMessage["command"];
-		const std::string&	params = _parsedMessage["params"];
+		const std::string&	params = _parsedMessage.count("params") ? _parsedMessage["params"] : "";
+		const std::string&	trailing = _parsedMessage.count("trailing") ? _parsedMessage["trailing"] : "";
 
 		// Handle messages sent by [weechat/limechat] chosen client
 		if (command == "PING" || command == "PONG")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING :") + params + _parsedMessage["trailing"] + "\r\n";
+			_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
 		}
 		else if (command == "JOIN") // && countTokens(params) > 1)
 		// {
@@ -66,10 +67,10 @@ void	Message::_processInput(const std::string& input)
 				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
 		// }
 			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
-		else if (command == "MODE")
+		else if (command == "MODE" && countTokens(params) > 2)
 		{
 			t_vecStr	modeParams = _parser.parseModeParams(params);
-// 
+
 			_modeKey = modeParams[0];
 			_modeNick = modeParams[1];
 			_modeLimit = modeParams[2];
@@ -86,11 +87,10 @@ void	Message::_processInput(const std::string& input)
 		if (!params.empty())
 			oss << " " << params;
 		
-		if (!_parsedMessage["trailing"].empty())
-			oss << ": " << _parsedMessage["trailing"];
+		if (!trailing.empty())
+			oss << ": " << trailing;
 
 		_reply = crlf(oss.str());
-
 		_valid = true;
 	}
 	catch (const std::exception &e)
