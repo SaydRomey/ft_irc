@@ -118,7 +118,7 @@ void Server::run(void)
 			{
 				Message msg(msg_str, client.getNickname());
 				std::cout << msg << std::endl;
-				if (msg.getReply().empty())
+				if (msg.isValid())
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
