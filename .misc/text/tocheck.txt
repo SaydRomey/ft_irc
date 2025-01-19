@@ -1,0 +1,81 @@
+
+TODO:
+
+*!! the trailing should not be normalized ? (i think)
+
+/*
+Params
+
+JOIN: (already handled)
+either one channel, a channel and a key, multiple channels, multiple channels and one or more keys..
+#chan1,#chan2,#chan3,#chan4 key1,,*,key4
+* edge case of using "0" as param **?
+
+PART: 1 param, can be one or multiple channels
+#chan1,#chan2,#chan3
+
+TOPIC: 0 or 1 param (a #channel)
+** need to handle the case when the trailing is detected (":" is present), but the content is an empty string.. **
+
+MODE:	Change channel modes (i, t, k, o, l). (only these flags, and only MODE on channels)
+this one is really complex..? i know its multi params..:
+1 channel
+mode(s)
+modeparams..
+** but i dont know how the mode params are written/formatted..
+** or how to organize this for teammates access...
+
+KICK: must be 2 params: can be 1 #channel and can be one or multiple user1,user2,user3
+if a comment is given (trailing) it will be used instead of the default message, nickname of kicker?
+(do we have a limit of targets ?)
+we need to process multiparams as #channel being element 0, followed by one or multiusers ?
+
+INVITE: ** not sure yet how i will handle multi params, so for now just a vector of 2 params,
+nickname of the invited
+and #channel
+
+PRIVMSG: 1 or many params: target1,target2,#targetchan1
+
+NOTICE: 1 or many params: target1,target2,#targetchan1
+
+*/
+
+
+
+fix INVITE validator (valid nick, valid chan) -> more than one ?
+
+check if we remove /t from trim (rfc 1459 2.3.1)
+
+add NUL to forbidden char in params
+
+silently ignore numeric reply sent from client
+
+
+reduce files by:
+
+putting parsing_utils functions in class code (if doable)
+
+handle commands to ignore in validateCommand() ? before checking through the commandMap..
+
+add command syntax and example in each _validate* functions
+
+utility function to validate param number, and if trailing should or should not exist?
+
+utility function to apply a validation function on each multiparam of a string (ex, tokenize JOIN params, then call :
+bool validMultiParam = paramIter(paramTokens[0], _isValidChannelName);
+
+*****
+
+fix _validate* functions to handle multi params:
+
+**
+
+******
+QUIT
+
+**
+RPL_INVITELIST (336) 
+  "<client> <channel>"
+Sent to a client as a reply to the INVITE command when used with no parameter,
+to indicate a channel the client was invited to
+**

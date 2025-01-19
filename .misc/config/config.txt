@@ -1,0 +1,116 @@
+Recommended Extensions:
+
+.ini (Recommended for INI Format)
+
+if configuration follows the INI format
+with sections and key-value pairs
+
+[server]
+ip = 127.0.0.1
+port = 6667
+password = secret
+
+.conf (Recommended for General Configuration)
+general-purpose configuration files.
+It is widely recognized and used for server settings (e.g., Apache, NGINX).
+
+server {
+    ip = 127.0.0.1
+    port = 6667
+    password = secret
+}
+
+.yaml or .yml (For YAML)
+
+server:
+  ip: 127.0.0.1
+  port: 6667
+  password: secret
+
+.json (For JSON)
+
+{
+  "server": {
+    "ip": "127.0.0.1",
+    "port": 6667,
+    "password": "secret"
+  }
+}
+
+.cfg
+generic option for configuration files.
+It’s flexible and not tied to a specific format.
+
+//
+
+//config
+
+What Might the Configuration File Include?
+Server Settings:
+
+IP Address:
+Which IP the server should bind to
+(e.g., 127.0.0.1 for local connections or 0.0.0.0 for all interfaces).
+
+Port:
+The port number the server listens on (e.g., 6667, the default for IRC servers).
+
+Password:
+If your server requires clients to provide a password when connecting.
+
+Operational Limits:
+
+Max Connections:
+The maximum number of clients that can connect simultaneously.
+
+Timeouts:
+How long the server waits for a client to respond before disconnecting them.
+
+Rate Limiting:
+To prevent spamming (e.g., maximum messages per second per client).
+
+Default Behavior:
+
+Welcome Message:
+A custom message clients receive upon connecting.
+
+Default Channels:
+Channels automatically created when the server starts
+or channels clients can join without restrictions.
+
+Advanced Features:
+
+Admins or Operators:
+A list of users with special privileges
+(e.g., to kick/ban users or manage channels).
+
+Logging:
+Whether to log activity, and if so, where (e.g., logs/server.log).
+
+Parse the File:
+Use simple parsing (e.g., reading line by line) to extract key-value pairs.
+
+Apply Settings:
+Map the parsed values to your server's behavior. For example:
+
+std::string ip = getConfig("server", "ip");  // Read from config
+int port = std::stoi(getConfig("server", "port")); // Convert string to int
+
+# **************************************************************************** #
+
+example INI format
+
+[server]
+ip = 127.0.0.1
+port = 6667
+password = secretpass123
+
+[limits]
+max_connections = 100
+timeout = 120
+rate_limit = 5
+
+[defaults]
+welcome_message = "Welcome to the ft_irc server!"
+default_channels = #general,#random
+

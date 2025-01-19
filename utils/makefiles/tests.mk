@@ -89,4 +89,7 @@ test-clean: ## Clean up test artifacts and logs
 	@$(call CLEANUP,Testing,test artifacts,testfile.txt received_file.txt,"All test artifacts removed.","No artifacts to clean.")
 	@$(call CLEANUP,Testing,log files,tmp_logs,"Test logs removed.","No logs to remove.")
 
+$(TEST_LOG_DIR):
+	@$(MKDIR) $(TEST_LOG_DIR)
+
 .PHONY: test test_clean

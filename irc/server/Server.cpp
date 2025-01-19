@@ -23,6 +23,7 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("PRIVMSG", PRIVMSG),
 	std::make_pair("NOTICE", NOTICE),
 	std::make_pair("PING", PING),
+	std::make_pair("PONG", PONG)
 };
 t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 
@@ -115,9 +116,12 @@ void Server::run(void)
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
-				Message msg(msg_str);
+				// Message msg(msg_str);
+				Message msg(msg_str, client.getNickname()); // *!!
 				std::cout << msg << std::endl;
-				if (msg.getReply().empty())
+				// 
+				if (msg.isValid() == true)
+				// if (msg.getReply().empty())
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
@@ -219,6 +223,9 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PING:
 		client.pendingPush(msg.getReply());
 		break;
+	case PONG:
+		client.pendingPush(msg.getReply());
+		break;
 	default:
 		break;
 	}
@@ -291,16 +298,15 @@ void Server::nick_cmd(User &client, const Message& msg)
 void Server::privmsg_cmd(User &client, const Message &msg)
 {
 	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
-
 	for (size_t i=0; i < targets.size(); i++)
 	{
 		std::cout << "Target: " << targets[i] << std::endl;
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getInput());
+			_chanManager->privmsgManager(client, targets[i], msg.getReply()); // ***
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getInput());
+			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply()); // ***
 	}
 }
 
@@ -319,9 +325,4 @@ User*	Server::getUserByNickname(const std::string& nickname)
 		}
 	}
 	return NULL;
-}
-
-void	ping_cmd(User &client, const Message &msg)
-{
-	
 }

@@ -1,0 +1,61 @@
+What is the Role of Your IRC Server?
+Central Hub for Communication:
+The IRC server acts as a middleman. Clients (like Weechat or other IRC clients) connect to your server to send and receive messages.
+
+Manages Connections:
+The server accepts connections from multiple clients. Each connected client can:
+
+Join chatrooms (called "channels").
+Send direct messages to other users.
+Leave or rejoin channels.
+Implements the IRC Protocol:
+The server communicates using a standard set of rules (IRC protocol). These rules define how:
+
+A client connects and authenticates.
+Messages and commands are formatted and handled.
+Channels, users, and server events are managed.
+Maintains State:
+The server keeps track of:
+
+Users: Who is connected and their nicknames.
+Channels: Active chatrooms and their participants.
+Messages: Sent and received messages, logs, etc.
+How It Works with the Weechat Client
+Weechat is an IRC client—a program that allows users to connect to an IRC server (like the one you're building) to chat.
+
+Connection to Your Server:
+
+You run your server on a specific IP address and port (e.g., 127.0.0.1:6667).
+In Weechat, you configure a connection to your server by providing the address and port.
+Commands:
+
+Users in Weechat issue IRC commands (e.g., /nick, /join, /msg), which are sent to your server.
+Your server interprets these commands, updates its state, and responds as needed.
+Real-Time Messaging:
+
+When a user sends a message in Weechat, the client sends it to your server.
+Your server relays this message to the intended recipient(s) or channel(s).
+The other users connected to your server see the message in their Weechat client.
+Example Workflow
+Start the Server:
+You run your server application. It's now ready to accept connections on a specified port.
+
+Connect with Weechat:
+
+Open Weechat.
+Configure it to connect to 127.0.0.1 (your server's IP) on port 6667 (or whatever port your server uses).
+Authenticate using a nickname and optional password.
+Join Channels and Chat:
+
+Use /join #channel_name to create or join a channel.
+Send messages to other users or channels.
+Server Manages Everything:
+
+Your server handles all the traffic and ensures messages go to the right users or channels.
+Why Use Weechat?
+Testing Your Server:
+Weechat provides an easy way to test your server's functionality and adherence to the IRC protocol.
+
+Real Client Experience:
+You'll see how a real IRC client interacts with your server, helping you debug and improve the server's behavior.
+

@@ -201,7 +201,21 @@ std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, con
 /* ************************************************************************** */ // Pseudo replies
 
 /*
-Generates a message for when a client joins a channel
+Generates a message when a user sends a PRIVMSG
+
+:<senderNickname> PRIVMSG <targetNickname> :<trailingMsg>
+*/
+std::string	privmsgMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &trailingMsg)
+{
+	std::ostringstream oss;
+	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
+
+	return (crlf(oss.str()));
+}
+
+
+/*
+Generates a message for when a user joins a channel
 
 :<clientNickname> JOIN :<channelName>
 */
@@ -210,7 +224,7 @@ std::string	joinMsg(const std::string &clientNickname, const std::string &channe
 	std::ostringstream	oss;
 	oss << ":" << clientNickname << " JOIN :" << channelName;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -228,7 +242,7 @@ std::string	partMsg(const std::string &clientNickname, const std::string &channe
 	if (!partingMessage.empty())
 		oss << " :" << partingMessage;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -248,7 +262,7 @@ std::string kickMsg(const std::string &kickerNickname, const std::string &channe
 	else
 		oss << " :" << targetNickname << " was kicked by " << kickerNickname;
 
-	return (oss.str());
+	return (crlf(oss.str()));
 }
 
 /*
@@ -263,5 +277,29 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " INVITE " << targetNickname << " :" << channelName;
 
-	return (oss.str());
+	return (crlf(oss.str()));
+}
+
+/*
+Generates a SETMODE message
+
+*/
+std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+{
+	std::ostringstream	oss;
+	std::string			adjustedModeStr = modeStr;
+	size_t				plusPos = adjustedModeStr.find('+');
+	size_t				minusPos = adjustedModeStr.find('-');
+
+	if (plusPos != std::string::npos && minusPos != std::string::npos)
+	{
+		if (plusPos < minusPos)
+			adjustedModeStr.insert(minusPos, " ");
+		else
+			adjustedModeStr.insert(plusPos, " ");
+	}
+
+	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
+
+	return (crlf(oss.str()));
 }

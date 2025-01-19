@@ -1,64 +1,31 @@
 
 #include "Message.hpp"
-#include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
-#include <iomanip>				// std::setw()
+#include "parsing_utils.hpp"
+#include <iomanip>
 
-// ** should we move this to private ?
-Message::Message(void) : _valid(false), _nickname("*"), _input(""), _reply("") {}
-
-Message::Message(const std::string &input, const std::string &nickname)
+Message::Message(const std::string& input, const std::string& nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
 	_processInput(input);
-	// _processInput(normalizeInput(input));
-	// _processInput(trim(normalizeInput(input)));
-}
-
-Message::Message(const Message &other)
-	: _valid(other._valid),
-	  _nickname(other._nickname),
-	  _input(other._input),
-	  _parsedMessage(other._parsedMessage),
-	  _reply(other._reply),
-	  _channelsAndKeys(other._channelsAndKeys),
-	  _tokenizedParams(other._tokenizedParams)
-{
-	// might need to implement assignable for Parser and Validator .. ?
-	// _parser(other._parser),
-	// _validator(other._validator)
-	// *this = other;
-}
-
-Message&	Message::operator=(const Message &other)
-{
-	if (this != &other)
-	{
-		_valid = other._valid;
-		_nickname = other._nickname;
-		_input = other._input;
-		_parsedMessage = other._parsedMessage;
-		_reply = other._reply;
-		_channelsAndKeys = other._channelsAndKeys;
-		_tokenizedParams = other._tokenizedParams;
-		// _parser = other._parser;
-		// _validator = other._validator;
-	}
-	return (*this);
 }
 
 Message::~Message(void) {}
 
-/* ************************************************************************** */
+/* ************************************************************************** */ // Getters
 
 bool					Message::isValid(void) const { return (_valid); }
-const std::string		&Message::getInput(void) const { return (_input); }
-const std::string		&Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
-const std::string		&Message::getCommand(void) const { return (_parsedMessage.at("command")); }
-const std::string		&Message::getParams(void) const { return (_parsedMessage.at("params")); }
-const t_vecStr			&Message::getParamsVec(void) const { return (_tokenizedParams); }
-const std::string		&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
-const std::string		&Message::getReply(void) const { return (_reply); } // replies have a "\r\n" appended to them
-const t_vecPairStrStr	&Message::getChannelsAndKeys(void) const { return (_channelsAndKeys); }
+const std::string&		Message::getInput(void) const { return (_input); }
+const std::string&		Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
+const std::string&		Message::getCommand(void) const { return (_parsedMessage.at("command")); }
+const std::string&		Message::getParams(void) const { return (_parsedMessage.at("params")); }
+const t_vecStr&			Message::getParamsVec(void) const { return (_tokenizedParams); }
+const std::string&		Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
+const std::string&		Message::getReply(void) const { return (_reply); }
+const t_vecPairStrStr&	Message::getChannelsAndKeys(void) const { return (_channelsAndKeys); }
+
+const std::string&		Message::getModeKey(void) const { return (_modeKey); }
+const std::string&		Message::getModeNick(void) const { return (_modeNick); }
+const std::string&		Message::getModeLimit(void) const { return (_modeLimit); }
 
 /* ************************************************************************** */
 
@@ -66,17 +33,17 @@ const t_vecPairStrStr	&Message::getChannelsAndKeys(void) const { return (_channe
 Focuses on the high-level flow:
 parsing, validating and delegating to command-specific handlers
 */
-void	Message::_processInput(const std::string &input)
+void	Message::_processInput(const std::string& input)
 {
 	try
 	{
+		// Parse input into prefix, command, params, trailing
 		_parsedMessage = _parser.parseCommand(input);
 
-		// assign default prefix if not provided
-		if (_parsedMessage["prefix"].empty())
-			_parsedMessage["prefix"] = _nickname;
+		// Override parsed prefix with User's nickname ("*" by default)
+		_parsedMessage["prefix"] = _nickname;
 		
-		// validate the parsed command
+		// Validate the parsed command
 		if (!_validator.validateCommand(_parsedMessage))
 		{
 			_reply = reply(_validator.getRplType(), _validator.getRplArgs());
@@ -84,47 +51,55 @@ void	Message::_processInput(const std::string &input)
 			return ;
 		}
 
-		// extract command and params
-		const std::string &command = _parsedMessage["command"];
+		// Extract command and params
+		const std::string	&command = _parsedMessage["command"];
+		const std::string	&params = _parsedMessage["params"];
 
-		// t_mapStrStr::iterator	commandIt = _parsedMessage.find("command");
-		// if (commandIt == _parsedMessage.end())
+		// Handle messages sent by [weechat/limechat] chosen client
+		if (command == "PING" || command == "PONG")
+		{
+			_reply = (command == "PING" ? "PONG :" : "PING") + _parsedMessage["trailing"] + "\r\n";
+		}
+		else if (command == "JOIN") // && countTokens(params) > 1)
 		// {
-		// 	_reply = reply(ERR_UNKNOWNCOMMAND, "*", "*Missing command*");
-		// 	_valid = false;
-		// 	return ;
+			// if (hasValidNumberOfParams(params, AT_MOST, 2))
+				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
 		// }
-		// const std::string	&command = commandIt->second;
-
-		
-
-
-		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
-		const std::string	params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
-
-		// dispatch to command-specific handlers
-		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
+			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
+		else if (command == "MODE")
 		{
-			if (hasValidNumberOfParams(params, AT_MOST, 2))
-				_channelsAndKeys = _parser.parseChannelsAndKeys(params);
+			t_vecStr	modeParams = _parser.parseModeParams(params);
+// 
+			_modeKey = modeParams[0];
+			_modeNick = modeParams[1];
+			_modeLimit = modeParams[2];
 		}
-		else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
-			_tokenizedParams = _parser.parseKickParams(params);
+		// else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
+		// 	_tokenizedParams = _parser.parseKickParams(params);
 		else
-		{
 			_tokenizedParams = tokenize(params);
-		}
 		
+		// Construct confirmation reply (wip)
+		std::ostringstream	oss;
+		oss << ":" << "ircserv" << " " << command;
+
+		if (!params.empty())
+			oss << " " << params;
+		
+		if (!_parsedMessage["trailing"].empty())
+			oss << " " << _parsedMessage["trailing"];
+
+		_reply = crlf(oss.str());
+
 		_valid = true;
-		_reply.clear();
 	}
 	catch (const std::exception &e)
 	{
 		std::string	reason = e.what();
 		if (reason.empty())
-			reason = "EMPTY REASON";
+			reason = "An unexpected error occured";
 		
-		_reply = reply(ERR_UNKNOWNERROR, "*", "[command]", reason);
+		_reply = reply(ERR_UNKNOWNERROR, _nickname, "[command]", reason);
 		_valid = false;
 	}
 }
@@ -147,7 +122,7 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 		size_t	i = 0;
 		while (i < paramsTokens.size())
 		{
-			oss << GRAYTALIC << std::setw(labelWidth) << "Param (" << (i + 1) << "): " << RESET << paramsTokens[i] << "\n";
+			oss << GRAYTALIC << std::setw(labelWidth) << "Param (" << (i) << "): " << RESET << paramsTokens[i] << "\n";
 			++i;
 		}
 	}
@@ -184,6 +159,19 @@ static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int
 	}
 }
 
+static void	handleModeParams(std::ostream &oss, const Message &message, int labelWidth)
+{
+	if (message.getCommand() == "MODE")
+	{
+		oss << "\nMode Params:\n";
+
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Key: " << message.getModeKey() << RESET << "\n";
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Nick: " << message.getModeNick() << RESET << "\n";
+		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Limit: " << message.getModeLimit() << RESET << "\n";
+	}
+}
+
+
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
 	const int	labelWidth = 18;
@@ -204,6 +192,9 @@ std::ostream	&operator<<(std::ostream &oss, const Message &message)
 
 	// Handle channels and keys
 	handleChannelsAndKeys(oss, message, labelWidth);
+
+	// Handle mode params
+	handleModeParams(oss, message, labelWidth);
 
 	return (oss);
 }

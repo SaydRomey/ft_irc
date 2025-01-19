@@ -1,0 +1,212 @@
+
+- Help target to display available makefile options -
+
+help: ## ⁉️  Display Available 'make' Targets
+	@echo "\nAvailable targets:"
+	@awk 'BEGIN {FS = ":.*##";} \
+		/^[a-zA-Z_0-9-]+:.*?##/ { \
+			printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 \
+		} \
+		/^##@/ { \
+			printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5) \
+		}' $(MAKEFILE_LIST)
+
+#
+# Explanations:
+
+BEGIN {FS = ":.*##";}
+
+Sets the Field Separator (FS) to :.*##.
+
+This means:
+	Field $1 → Target name.
+	Field $2 → The comment after ##.
+
+# 
+
+/^[a-zA-Z_0-9-]+:.*?##/
+
+Matches lines that:
+	Start with a valid Makefile target name (a-zA-Z_0-9-).
+	Are followed by a colon (:).
+	Contain ## for inline comments.
+
+# 
+
+printf " $(CYAN)%-15s$(RESET) %s\n", $$1, $$2
+
+Prints:
+	Target name ($$1) in cyan, left-aligned (%-15s).
+	Comment ($$2) as the description.
+
+# 
+
+/^##@/
+
+Matches lines starting with ##@.
+Used for section headers.
+
+# 
+
+substr($$0, 5)
+
+Prints everything after the first 4 characters (##@).
+Used to display section headers in bold.
+
+#
+# Usage:
+
+Standard Inline Documentation (Using ##)
+We should use a short, concise description after ##.
+Example:
+
+---
+clean: ## 🧹 Clean Object Files
+fclean: ## 🧹 Full Clean, including executables
+re: ## 🔄 Recompile everything
+---
+
+Section Headers (Using ##@)
+Example:
+
+---
+##@ Compilation Targets
+
+all: ## 🛠️ Build all modules
+prompt_compile: ## 🚀 Prompt user to select module to compile
+
+##@ Cleanup Targets
+
+clean: ## 🧹 Clean object files
+fclean: ## 🧹 Full clean (includes executables)
+---
+
+In the help target, these headers will appear bold,
+separating different sections of your Makefile.
+
+#
+# Multiple-Line Descriptions
+
+While inline comments (##) are typically one-liners,
+we can add detailed descriptions using separate comment lines:
+
+---
+run: ## 🚀 Run a specific module
+	## Run will:
+	## - Prompt you to select a module
+	## - Compile the module if it hasn't been compiled
+	## - Execute the module
+	@echo "Running..."
+---
+
+However, the help target only displays the first ## comment after the colon.
+
+To make multi-line comments visible in the help target:
+
+We should combine multiple lines into one
+and use clear bullet points.
+ex:
+
+---
+run: ## 🚀 Run a module | Prompts for module selection, compiles if needed, and executes.
+---
+
+We can add a Default Section Header
+at the start of our Makefile:
+
+---
+##@ General Targets
+
+help: ## ⁉️ Display available Makefile targets
+---
+
+# Example help Output:
+
+***
+Available targets:
+
+🛠️ Compilation Targets
+  all             Build all modules
+  prompt_compile  Prompt user to select module to compile
+
+🚀 Execution Targets
+  run             Run a specific module | Prompts for module selection, compiles if needed, and executes.
+
+🧹 Cleanup Targets
+  clean           Clean object files
+  fclean          Full clean (includes executables)
+  re              Recompile everything
+
+⁉️ Utility Targets
+  help            Display available Makefile targets
+  subject         Show subject file for a module
+***
+
+# Recap:
+
+## is for single-line comments.
+##@ is for section headers.
+
+We should combine multi-line descriptions into single lines with clear formatting
+and structure our Makefile logically with section headers.
+
+
+// using a macro:
+
+# How It Works
+# awk Basics:
+
+# awk processes input line by line.
+# FS (Field Separator) is set to :.*## to split the target line:
+# Field $1: Target name (e.g., all, clean).
+# Field $2: Description after ##.
+# Conditional Handling (INCLUDE_HEADERS):
+
+# ENVIRON["INCLUDE_HEADERS"] reads the value of the shell environment variable INCLUDE_HEADERS within the awk script.
+# If INCLUDE_HEADERS=1, the macro includes section headers (##@) in the output.
+# If INCLUDE_HEADERS=0, only the targets and their descriptions (##) are displayed.
+# Reusability:
+
+# The macro dynamically adapts to help and info targets by changing INCLUDE_HEADERS.
+
+# What is ENVIRON[] in awk?
+# ENVIRON is a built-in associative array in awk that gives access to environment variables.
+
+# ex:
+# INCLUDE_HEADERS=1 awk 'BEGIN {print ENVIRON["INCLUDE_HEADERS"]}'
+
+# (this prints1)
+
+
+# Macro to display Makefile targets and descriptions
+# define DISPLAY_TARGETS
+# awk 'BEGIN { \
+# 		# Set field separator to split target and description \
+# 		FS = ":.*##"; \
+# 		# Read the INCLUDE_HEADERS environment variable \
+# 		INCLUDE_HEADERS = ENVIRON["INCLUDE_HEADERS"]; \
+# 	} \
+# 	# Print section headers if INCLUDE_HEADERS is enabled \
+# 	INCLUDE_HEADERS && /^##@/ { \
+# 		printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5); \
+# 	} \
+# 	# Print target names and descriptions \
+# 	/^[a-zA-Z_0-9-]+:.*?##/ { \
+# 		printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2; \
+# 	}' $(MAKEFILE_LIST)
+# endef
+define DISPLAY_TARGETS
+awk 'BEGIN { \
+		FS = ":.*##"; \
+		INCLUDE_HEADERS = ENVIRON["INCLUDE_HEADERS"];} \
+	INCLUDE_HEADERS && /^##@/ { \
+		printf "\n$(BOLD)%s$(RESET)\n", substr($$0, 5); \
+	} \
+	/^[a-zA-Z_0-9-]+:.*?##/ { \
+		printf "   $(CYAN)%-15s$(RESET) %s\n", $$1, $$2; \
+	}' $(MAKEFILE_LIST)
+endef
+
+help: ## Display available 'make' targets
+	@echo "\nAvailable targets:"
+	@INCLUDE_HEADERS=1 $(DISPLAY_TARGETS)

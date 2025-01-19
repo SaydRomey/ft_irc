@@ -3,6 +3,13 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
+/*
+/server add ircserv localhost/6667 -notls -password=your_password
+
+/set irc.server.ircserv.capabilities ""
+
+*/
+
 void	serverStatePrint(bool state)
 {
 	std::cout << BOLD << UNDERLINE << "ircserv" << RESET;
@@ -50,15 +57,14 @@ int	test_server(int ac, char **av)
 	return (0);
 }
 
-
 int	main(int argc, char *argv[])
 {
-	test_server(argc, argv);
+	// test_server(argc, argv);
 	
 	// test_channel();
 
 	// test_message();
-	// test_arg_message(argc, argv);
+	test_arg_message(argc, argv);
 
 	// test_reply();
 	// test_pseudo_replies();

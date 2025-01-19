@@ -26,7 +26,7 @@ class ChannelManager
 
 		void joinManager(User& sender, const Message& msg); //voir pour tokenize avec parsing utils, tokenize
 		void partManager(User& sender, const Message& msg);
-		void privmsgManager(User& sender, const Message& msg);
+		void privmsgManager(User& sender, const std::string &channelName, const Message& msg);
 		void inviteManager(User& sender, const Message& msg);
 		void kickManager(User& sender, const Message& msg);
 		void modeManager(User& sender, const Message& msg);

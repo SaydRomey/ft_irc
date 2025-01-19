@@ -1,0 +1,500 @@
+
+REPLIES
+
+Commands to Implement
+
+Authentication Commands:
+
+PASS:	Client provides the connection password.
+NICK:	Client sets their nickname.
+USER:	Client sets their username.
+
+Channel Management Commands:
+
+JOIN:	Join a specific channel.
+PART:	Leave a specific channel.
+TOPIC:	View or change the channel's topic.
+MODE:	Change channel modes (i, t, k, o, l).
+KICK:	Eject a client from a channel.
+INVITE:	Invite a client to a channel.
+
+Messaging Commands:
+
+PRIVMSG:	Send a private message to a user or channel.
+NOTICE:		Send a notice to a user or channel.
+
+
+/* ************************************************************************** */ 
+Connection Registration
+/* ************************************************************************** */ 
+
+a PASS command is not required for a client connection,
+but it must precede the NICK/USER combination (for a user connection)
+
+Recommended order for a client to register:
+
+1. Pass message
+2. Nick message
+3. User message
+
+Upon success, client will recieve an RPL_WELCOME
+
+REPLIES:
+
+    RPL_WELCOME
+
+**	- The server sends Replies 001 to 004 to a user upon successful registration.
+	
+	001	RPL_WELCOME
+    	"Welcome to the Internet Relay Network <nick>!<user>@<host>"
+	002    RPL_YOURHOST
+		"Your host is <servername>, running version <ver>"
+    003    RPL_CREATED
+		"This server was created <date>"
+    004    RPL_MYINFO
+		"<servername> <version> <available user modes> <available channel modes>"
+
+         
+/* ************************************************************************** */  PASS
+
+cmd: PASS
+params: <password>
+
+used to set a 'connection password'
+can and must be set before any attempt to register the connection is made
+
+REPLIES:
+    
+    ERR_NEEDMOREPARAMS
+
+    ERR_ALREADYREGISTERED
+
+ex:
+
+	PASS secretpasswordhere
+
+/* ************************************************************************** */  NICK
+
+cmd: NICK
+params: <nickname>
+
+used to give a user a nickname or change the existing one
+
+REPLIES:
+
+	ERR_NONICKNAMEGIVEN
+
+    ERR_NICKNAMEINUSE
+    
+	ERR_UNAVAILRESOURCE
+	
+	ERR_RESTRICTED
+	
+	ERR_ERRONEUSNICKNAME
+	
+	ERR_NICKCOLLISION
+
+ex:
+(introducing new nick "Wiz" if session is still unregistered, or user changing his nickname to "Wiz")
+
+	NICK Wiz
+
+REPLIES:?
+(server telling that "PreviousNickname" changed his nickname to "NewNickname")
+
+	:PreviousNickname NICK NewNickname
+
+**	The idea of the nickname on IRC is very convenient for users to use
+	when talking to each other outside of a channel,
+	but there is only a finite nickname space and being what they are,
+	it's not uncommon for several people to want to use the same nick.
+	If a nickname is chosen by two people using this protocol,
+	either one will not succeed or both will be removed by use of KILL
+	(See Section 3.7.1 of "IRC Client Protocol)"
+
+/* ************************************************************************** */  USER
+
+cmd: USER
+params: <user> <mode> <unused> <realname>
+
+used at the beginning of connection to specify the
+username, hostname and realname of a new user
+
+the <realname> may contain space chars
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS
+
+	ERR_ALREADYREGISTERED
+
+ex:
+(user registering themselves with a username of "guest" and real name "Mr Guest")
+
+	USER guest 0 * :Mr Guest
+
+(user registering themselves with a username of "guest" and real name "Mr Guest", and asking to be invisible)
+
+	USER guest 8 * :Mr Guest
+
+**	When a server successfully registers a new user connection,
+	it is REQUIRED to send to the user unambiguous messages stating:
+	the user identifiers upon which it was registered (RPL_WELCOME),
+	the server name and version (RPL_YOURHOST),
+	the server birth information (RPL_CREATED),
+	available user and channel modes (RPL_MYINFO),
+	and it MAY send any introductory messages which may be deemed appropriate.
+
+/* ************************************************************************** */ 
+
+Channel operations
+
+this group of messages is concerned with manipulating channels,
+their properties (channel modes), and content (typically users)
+
+all of these messages are requests which will or will not be granted by the server
+
+the server must send a reply informing the user whether the request was
+granted, denied or generated an error
+
+when the server grants the request, the message is typically sent back
+(eventually reformatted) to the user with the prefix set to the user itself
+
+/* ************************************************************************** */  JOIN
+
+cmd: JOIN
+params: ( <channel> *( "," <channel> ) [ <key> *( "," <key> ) ] ) / "0"
+
+used by client to start listening a specific channel.
+Whether or not a client is allowed to join a channel
+is checked only by the local server the client is connected to
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_BANNEDFROMCHAN
+    ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+    ERR_CHANNELISFULL               ERR_BADCHANMASK
+    ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+    ERR_TOOMANYTARGETS              ERR_UNAVAILRESOURCE
+    RPL_TOPIC
+
+ex:
+(JOIN message from SomeDude)
+
+	:SomeDude JOIN #Awesome_channel
+
+/* ************************************************************************** */  PART
+
+cmd: PART
+params: <channel> *( "," <channel> ) [ <Part Message> ]
+
+causes the user sending the message to be removed from the list of active members
+for all given channels listed in the parameter string.
+If a "Part Message" is given, this will be sent
+instead of the default message, the nickname.
+This request is always granted by the server.
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+    ERR_NOTONCHANNEL
+
+ex:
+(command to leave channel "#42chan")
+
+	PART #42chan
+
+(command to leave both channels "&group42" and "#42-ops")
+
+	PART #42-ops,&group42
+
+(user SomeDude leaving channel "#supersmashbros" with the message "I lost")
+
+	:SomeDude Part #supersmashbros :I lost
+
+/* ************************************************************************** */  TOPIC
+
+cmd: TOPIC
+params: <channel> [ <topic> ]
+
+used to change or view the topic of a channel.
+The topic for channel <channel> is returned if there is no <topic> given.
+If the <topic> parameter is present,
+the topic for that channel will be changed,
+if this action is allowed for the user requesting it.
+If the <topic> parameter is an empty string,
+the topic for that channel will be removed.
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+    RPL_NOTOPIC                     RPL_TOPIC
+    ERR_CHANOPRIVSNEEDED            ERR_NOCHANMODES
+
+ex:
+(user "SomeDude" setting the topic)
+
+	:SomeDude TOPIC #test :New topic
+
+(command to set the topic on #test to "another topic")
+
+	TOPIC #test :another topic
+
+(command to clear the topic on #test)
+
+	TOPIC #test :
+
+(command to check the topic for #test)
+
+	TOPIC #test
+
+/* ************************************************************************** */  MODE (channel)
+
+cmd: MODE
+params: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )
+modes: *( "i" / "t" / "k" / "o" / "l" )
+
+command is provided so that users may query and change
+the characteristics of a channel.
+For more details on available modes and their uses, see
+"Internet Relay Chat: Channel Management" [IRC-CHAN].
+Note that there is a maximum limit of three (3) changes per command
+for modes that take a parameter.
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_KEYSET
+	ERR_NOCHANMODES                 ERR_CHANOPRIVSNEEDED
+	ERR_USERNOTINCHANNEL            ERR_UNKNOWNMODE
+	RPL_CHANNELMODEIS
+	RPL_BANLIST                     RPL_ENDOFBANLIST
+	RPL_EXCEPTLIST                  RPL_ENDOFEXCEPTLIST
+	RPL_INVITELIST                  RPL_ENDOFINVITELIST
+	RPL_UNIQOPIS
+
+(following examples are given to help understand the syntax of the MODE command,
+but refer to modes defined in [IRC_CHAN])
+ex:
+(command to make set the channel "#42" key to "fortytwo")
+
+	MODE #42 +k fortytwo
+
+(command to make remove the channel key on channel "#42")
+
+	MODE #42 -k fortytwo
+
+(command to give channel operator privileges to SomeDude on channel "#42")
+
+	MODE #42 +o SomeDude
+
+(command to set the limit for the number of users on channel "#42" to 10)
+
+	MODE #42 +l 10
+
+(user "SomeDude" removing the limit for the number of users on channel "#42")
+
+	:SomeDude MODE #42 -l
+
+**TODO: (insert example for flags i t k o l)
+
+
+
+/* ************************************************************************** */  INVITE
+
+cmd: INVITE
+params: <nickname> <channel>
+
+used to invite a user to a channel. 
+The parameter <nickname> is the nickname of the person
+to be invited to the target hannel <channel>.
+There is no requirement that
+the channel the target user is being invited to must exist or be a valid channel.
+However, if the channel exists,
+only members of the channel are allowed to invite other users.
+When the channel has invite-only flag set,
+only channel operators may issue INVITE command.
+
+Only the user inviting and the user being invited
+will receive notification of the invitation.
+Other channel members are not notified.
+(This is unlike the MODE changes, and is occasionally the source of trouble for users.)
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_NOSUCHNICK
+    ERR_NOTONCHANNEL                ERR_USERONCHANNEL
+    ERR_CHANOPRIVSNEEDED
+    RPL_INVITING                    RPL_AWAY
+
+ex:
+(message to SomeDude when he has been invited by user SomeOtherDude
+to channel #Dudes_chan)
+
+	:SomeOtherDude INVITE SomeDude #Dudes_chan
+
+(command to invite SomeDude to #Dudes_chan)
+
+	INVITE SomeDude #Dudes_chan
+
+/* ************************************************************************** */  KICK
+
+cmd: KICK
+params: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>]
+
+can be used to request the forced removal of a user from a channel.
+It causes the <user> to PART from the <channel> by force.
+For the message to be syntactically correct,
+there MUST be either one channel parameter and multiple user parameter,
+or as many channel parameters as there are user parameters.
+If a "comment" is given,
+this will be sent instead of the default message,
+the nickname of the user issuing the KICK.
+
+The server MUST NOT send KICK messages with multiple channels or users to clients.
+This is necessarily to maintain backward compatibility with old client software.
+
+REPLIES:
+
+	ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+    ERR_BADCHANMASK                 ERR_CHANOPRIVSNEEDED
+    ERR_USERNOTINCHANNEL            ERR_NOTONCHANNEL
+
+ex:
+(command to kick SomeDude from &Elitist_chan)
+
+	KICK &Elitist_chan SomeDude
+
+(command to kick SomeDude from #Dudes_chan
+using "Not dude enough" as the reason (comment))
+
+	KICK #Dudes_chan SomeDude :Not dude enough
+
+(KICK message on channel #Dudes_chan from SomeOtherDude to remove SomeDude from channel)
+
+	:SomeOtherDude KICK #Dudes_chan SomeDude
+
+/* ************************************************************************** */ 
+
+Sending messages
+
+/* ************************************************************************** */  PRIVMSG
+
+cmd: PRIVMSG
+params: <msgtarget> <text to be sent>
+
+used to send private messages between users,
+as well as to send messages to channels.
+<msgtarget> is usually the nickname of the recipient of the message, or a channel name.
+
+The <msgtarget> parameter may also be a host mask (#<mask>) or server mask ($<mask>).  In both cases the server will only send the PRIVMSG to
+those who have a server or host matching the mask.
+The mask MUST have at least 1 (one) "." in it and no wildcards following the last ".".  This requirement exists to prevent people sending messages to "#*" or "$*",
+which would broadcast to all users.
+Wildcards are the '*' and '?'  characters.
+This extension to the PRIVMSG command is only available to operators.
+
+REPLIES:
+
+	ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
+    ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+    ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
+    ERR_NOSUCHNICK
+    RPL_AWAY
+
+ex:
+(message from Mr to Dude)
+
+	:Mr PRIVMSG Dude :Hello there !
+
+(command to send a message to Mr)
+
+	PRIVMSG Mr :Hi Mr !
+
+/* ************************************************************************** */  NOTICE
+
+cmd: NOTICE
+params: <msgtarget> <text>
+
+used similarly to PRIVMSG. 
+The difference between NOTICE and PRIVMSG is that automatic replies
+MUST NEVER be sent in response to a NOTICE message.
+This rule applies to servers too
+- they MUST NOT send any error reply back to the client on receipt of a notice.
+The object of this rule is to avoid loops between clients
+automatically sending something in response to something it received.
+
+This command is available to services as well as users.
+
+This is typically used by services, and automatons
+(clients with either an AI or other interactive program controlling their actions).
+
+See PRIVMSG for more details on replies and examples.
+
+/* ************************************************************************** */  
+
+*** MISC ***
+
+**	Terminating server-client connections
+
+When a client connection unexpectedly closes,
+a QUIT message is generated on behalf of the client
+by the server to which the client was connected.
+No other message is to be generated or used.
+
+**	Tracking nickname changes
+
+All IRC servers are REQUIRED to keep a history of recent nickname changes.
+This is important to allow the server to have a chance of keeping in touch of things when nick-change race conditions occur with commands manipulating them.
+Messages which MUST trace nick changes are:
+
+* KILL (the nick being disconnected)
+
+* MODE (+/- o,v on channels)
+
+* KICK (the nick being removed from channel)
+
+No other commands need to check nick changes.
+
+In the above cases, the server is required to first check for
+the existence of the nickname, then check its history
+to see who that nick now belongs to (if anyone!).
+This reduces the chances of race conditions but they can still
+occur with the server ending up affecting the wrong client.
+When performing a change trace for an above command it is RECOMMENDED
+that a time range be given and entries which are too old ignored.
+
+For a reasonable history, a server SHOULD be able to keep previous
+nickname for every client it knows about if they all decided to change.
+This size is limited by other factors (such as memory, etc).
+
+
+
+
+
+
+
+
+-Messaging commands
+
+PRIVMSG
+
+	401 ERR_NOSUCHNICK
+	:ircserv 401 [nickname] :No such nick/channel
+
+	404 ERR_CANNOTSENDTOCHAN
+	:ircserv 404 [channel] :Cannot send to channel
+
+	407 ERR_TOOMANYTARGETS
+	:ircserv 407 [target] :Duplicate recipients. No message delivered
+
+	411 ERR_NORECIPIENT
+	:ircserv 411 :No recipient given (PRIVMSG)
+
+	412 ERR_NOTEXTTOSEND
+	:ircserv 412 :No text to send
+
+NOTICE
+
+	N/A (No numeric replies; NOTICE errors are not returned by servers)
+
+---
