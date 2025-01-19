@@ -55,7 +55,8 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validateInviteCommand,
 	&Validator::_validatePrivmsgCommand,
 	&Validator::_validateNoticeCommand,
-	&Validator::_validatePingCommand
+	&Validator::_validatePingCommand,
+	&Validator::_validatePongCommand
 };
 
 /* ************************************************************************** */

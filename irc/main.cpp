@@ -3,9 +3,8 @@
 #include "Server.hpp"
 #include "Message.hpp"
 
-/*
+/*	Weechat settings:
 /server add ircserv localhost/6667 -notls -password=your_password
-
 /set irc.server.ircserv.capabilities ""
 
 */
