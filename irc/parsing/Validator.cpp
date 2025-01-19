@@ -1,6 +1,6 @@
 
 #include "Validator.hpp"
-#include "parsing_utils.hpp" // ?
+#include "parsing_utils.hpp"
 
 #include <algorithm>	// find
 #include <cctype>		// isalnum, isalpha
@@ -122,18 +122,6 @@ bool	Validator::validateCommand(const t_mapStrStr &command) const
 
 	CommandType	cmdType = it->second;
 	
-	return (_validateCommandByType(cmdType, command));
-	// return ((this->*(_validators[cmdType]))(command)); // to remove _validateCommandByType() ?
-}
-
-bool	Validator::_validateCommandByType(CommandType cmdType, const t_mapStrStr &command) const
-{
-	// if (cmdType == CMD_UNKNOWN && cmd == "CAP")
-		// return (_noRpl()); // CAP command is ignored without error ??
-
-	if (cmdType < PASS || cmdType > PONG) // will not get here -> in validateCommand(), we iterate through _commandMap...
-		return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("command")));
-
 	return ((this->*(_validators[cmdType]))(command));
 }
 

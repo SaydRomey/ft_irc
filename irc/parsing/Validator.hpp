@@ -68,8 +68,6 @@ class Validator
 		bool	_setRpl(ReplyType rplType, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "") const;
 		bool	_noRpl(void) const;
 
-		bool	_validateCommandByType(CommandType cmdType, const t_mapStrStr &command) const;
-
 		bool	_isValidNickname(const std::string &nickname) const;
 		bool	_isValidChannelName(const std::string& channel) const;
 		bool	_isValidModeParam(char modeFlag, const std::string &param) const;

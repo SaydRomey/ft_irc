@@ -12,7 +12,6 @@ ChannelManager::~ChannelManager()
 
 void ChannelManager::joinManager(User &sender, const Message &msg)
 {
-	sender.pendingPush("Essaie Join Manager\n");
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
 	{
@@ -20,12 +19,17 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 		const std::string &key = ChannelsAndKeys[i].second;
 		if (_channels.find(channelName) == _channels.end())
 		{
+			std::cout << "found channelname" << std::endl;
+
 			// Channel inexistant donc creation du channel
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
 		}
 		else
+		{
+			std::cout << "adding member!" << std::endl;
 			_channels[channelName].addMember(sender, key);
+		}
 	}
 }
 
@@ -134,7 +138,8 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	else if (newTopic.compare(":") == 0)
+	// else if (newTopic.compare(":") == 0)
+	else if (msg.getInput().back() == ':')
 		_channels[channelName].setTopic(sender, "");
 	else
 		_channels[channelName].setTopic(sender, newTopic);
