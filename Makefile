@@ -29,7 +29,6 @@ INCLUDES	:= $(addprefix -I, $(shell find $(INC_DIR) -type d))
 
 # Helper makefiles
 MAKE_DIR	:= ./utils/makefiles
-MAKE_DIR	:= ./utils/makefiles
 
 include $(MAKE_DIR)/utils.mk	# Utility Variables and Macros
 include $(MAKE_DIR)/docker.mk	# Docker Macros

@@ -58,7 +58,7 @@ void	Message::_processInput(const std::string& input)
 		// Handle messages sent by [weechat/limechat] chosen client
 		if (command == "PING" || command == "PONG")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING :") + _parsedMessage["trailing"] + "\r\n";
+			_reply = (command == "PING" ? "PONG :" : "PING :") + params + _parsedMessage["trailing"] + "\r\n";
 		}
 		else if (command == "JOIN" && countTokens(params) > 1)
 		// {

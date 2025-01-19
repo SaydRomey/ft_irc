@@ -1,10 +1,4 @@
 
-/*
-** add edge cases where a command should not return false even if not implemented ?
-		-> handle CAP (ignore, do not throw error)..
-
-*/
-
 #include "Validator.hpp"
 #include "parsing_utils.hpp" // ?
 
@@ -728,7 +722,7 @@ bool Validator::_validateNoticeCommand(const t_mapStrStr& command) const
 		++i;
 	}
 
-	return (_noRpl()); // todo: find a higher level way of ignoring silently instead if cmd is invalid..
+	return (_noRpl());
 }
 
 /*	**(WIP)
@@ -736,7 +730,7 @@ bool Validator::_validateNoticeCommand(const t_mapStrStr& command) const
 */
 bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 {
-	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PING"));
 
 	return (_noRpl());
@@ -747,7 +741,7 @@ bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 */
 bool Validator::_validatePongCommand(const t_mapStrStr &command) const
 {
-	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PONG"));
 
 	return (_noRpl());
