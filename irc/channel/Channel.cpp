@@ -146,7 +146,10 @@ void Channel::getTopic(User &user)
 	if (this->_topic.empty()) // RPL_NOTOPIC
 		user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 	else
+	{
+		std::cout << "TOPIC-> " << this->_topic << std::endl;
 		user.pendingPush(reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
+	}
 }
 
 void Channel::kick(User &user, User &op, std::string reason)

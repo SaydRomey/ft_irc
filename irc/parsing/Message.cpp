@@ -58,9 +58,9 @@ void	Message::_processInput(const std::string& input)
 		// Handle messages sent by [weechat/limechat] chosen client
 		if (command == "PING" || command == "PONG")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING :") + _parsedMessage["trailing"] + "\r\n";
+			_reply = (command == "PING" ? "PONG :" : "PING :") + params + _parsedMessage["trailing"] + "\r\n";
 		}
-		else if (command == "JOIN" && countTokens(params) > 1)
+		else if (command == "JOIN") // && countTokens(params) > 1)
 		// {
 			// if (hasValidNumberOfParams(params, AT_MOST, 2))
 				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
@@ -170,7 +170,6 @@ static void	handleModeParams(std::ostream &oss, const Message &message, int labe
 		oss << GRAYTALIC << std::setw(labelWidth) << "  Mode Limit: " << message.getModeLimit() << RESET << "\n";
 	}
 }
-
 
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {

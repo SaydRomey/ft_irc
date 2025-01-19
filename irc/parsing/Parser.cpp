@@ -32,7 +32,7 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	size_t	index = 0;
 	
 	// Extract prefix if present (deprecated?)
-	if (tokens[index][0] == ':')
+	if (!tokens.empty() && tokens[index][0] == ':')
 	{
 		command["prefix"] = tokens[index].substr(1);
 		index++;
@@ -67,8 +67,40 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	command["params"] = normalizeInput(params);
 	command["trailing"] = trim(trailing);
 
+	// command["trailing"] = _determineTrailing(command["command"], trailing, input);
+
+	// // Handle the 'TOPIC' command edge case
+	// if (command["command"] == "TOPIC")
+	// {
+	// 	if (trailing.empty())
+	// 	{
+	// 		if (input.back() == ':') // explicit ':' at the end
+	// 			command["trailing"] = ":";
+	// 		else
+	// 			command["trailing"] = ""; // no trailing content
+	// 	}
+	// 	else
+	// 		command["trailing"] = trim(trailing);
+	// }
+	// else
+	// 	command["trailing"] = trim(trailing);
+
 	return (command);
 }
+
+// std::string	Parser::_determineTrailing(const std::string &command, const std::string &trailing, const std::string &input) const
+// {
+// 	if (command == "TOPIC")
+// 	{
+// 		if (trailing.empty())
+// 		{
+// 			if (!input.empty() && input.back() == ':')
+// 				return (":"); // explicit ':' indicates erase topic
+// 			return (""); // no trailing content
+// 		}
+// 	}
+// 	return (trim(trailing)); // default trailing behavior
+// }
 
 /*	**need to decide if we skip or flag a missing channel in multiparams "#chan1,,#chan3,#chan4"
 
@@ -91,7 +123,9 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 {
 	std::vector<std::string>	paramTokens = tokenize(params);
 	std::vector<std::string>	channelTokens = tokenize(paramTokens[0], ',', true);
-	std::vector<std::string>	keyTokens = tokenize(paramTokens[1], ',', true);
+	std::vector<std::string>	keyTokens;
+	if (paramTokens.size() > 1)
+		keyTokens = tokenize(paramTokens[1], ',', true);
 
 	t_vecPairStrStr	result;
 	result.reserve(channelTokens.size());
