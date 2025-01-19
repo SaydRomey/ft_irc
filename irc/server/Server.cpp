@@ -116,12 +116,10 @@ void Server::run(void)
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
-				// Message msg(msg_str);
-				Message msg(msg_str, client.getNickname()); // *!!
+				Message msg(msg_str, client.getNickname());
 				std::cout << msg << std::endl;
 				// 
 				if (msg.isValid() == true)
-				// if (msg.getReply().empty())
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
@@ -302,7 +300,7 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	{
 		std::cout << "Target: " << targets[i] << std::endl;
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getReply()); // ***
+			_chanManager->privmsgManager(client, targets[i], msg.getTrailing()); // ***
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())

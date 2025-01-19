@@ -52,15 +52,15 @@ void	Message::_processInput(const std::string& input)
 		}
 
 		// Extract command and params
-		const std::string	&command = _parsedMessage["command"];
-		const std::string	&params = _parsedMessage["params"];
+		const std::string&	command = _parsedMessage["command"];
+		const std::string&	params = _parsedMessage["params"];
 
 		// Handle messages sent by [weechat/limechat] chosen client
 		if (command == "PING" || command == "PONG")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING") + _parsedMessage["trailing"] + "\r\n";
+			_reply = (command == "PING" ? "PONG :" : "PING :") + params + _parsedMessage["trailing"] + "\r\n";
 		}
-		else if (command == "JOIN") // && countTokens(params) > 1)
+		else if (command == "JOIN" && countTokens(params) > 1)
 		// {
 			// if (hasValidNumberOfParams(params, AT_MOST, 2))
 				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
@@ -81,13 +81,13 @@ void	Message::_processInput(const std::string& input)
 		
 		// Construct confirmation reply (wip)
 		std::ostringstream	oss;
-		oss << ":" << "ircserv" << " " << command;
+		oss << ":" << _nickname << " " << command;
 
 		if (!params.empty())
 			oss << " " << params;
 		
 		if (!_parsedMessage["trailing"].empty())
-			oss << " " << _parsedMessage["trailing"];
+			oss << ": " << _parsedMessage["trailing"];
 
 		_reply = crlf(oss.str());
 
@@ -104,7 +104,7 @@ void	Message::_processInput(const std::string& input)
 	}
 }
 
-/* ************************************************************************** */ // Operator overload
+/* ************************************************************************** */ // << Operator overload
 
 // Helper function to print labeled fields
 static void	printLabeledField(std::ostream &oss, const std::string &label, const std::string &value, int labelWidth)
