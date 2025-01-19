@@ -102,7 +102,7 @@ void Channel::removeMember(User &user, const std::string &reason)
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		this->broadcast(user, partMsg(user.getNickname(), this->_name, reason), false);
+		this->broadcast(user, partMsg(user.getNickname(), this->_name, reason), true);
 }
 
 void Channel::setTopic(User &user, const std::string &topic)
