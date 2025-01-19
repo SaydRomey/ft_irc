@@ -14,6 +14,17 @@ Channel::Channel(const std::string &name, User &op) : _name(name), _topic(""),
 	_modes['o'] = false;
 	_modes['l'] = false;
 	_members[&op] = true;
+	if (_members.find(&op) != _members.end())
+	{
+		this->broadcast(op, joinMsg(op.getNickname(), this->_name), true);
+		if (this->_topic.empty())
+			op.pendingPush(reply(RPL_NOTOPIC, op.getNickname(), this->_name));
+		else
+			op.pendingPush(reply(RPL_TOPIC, op.getNickname(), this->_name, this->_topic));
+		op.pendingPush(reply(RPL_NAMEREPLY, op.getNickname(), this->_name, membersList()));
+		op.pendingPush(reply(RPL_ENDOFNAMES, op.getNickname(), this->_name));
+		std::cout << "Je crash ici" << std::endl;
+	}
 }
 
 Channel &Channel::operator=(const Channel &other)
@@ -70,9 +81,9 @@ void Channel::addMember(User &user, std::string pswIfNeeded)
 		}
 	}
 	_members[&user] = false;
-	if (_members.find(&user) != _members.end()) // RPL_JOIN
+	if (_members.find(&user) != _members.end())
 	{
-		this->broadcast(user, joinMsg(user.getNickname(), this->_name));
+		this->broadcast(user, joinMsg(user.getNickname(), this->_name), true);
 		if (this->_topic.empty())
 			user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 		else
@@ -91,7 +102,7 @@ void Channel::removeMember(User &user, const std::string &reason)
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		this->broadcast(user, partMsg(user.getNickname(), this->_name, reason));
+		this->broadcast(user, partMsg(user.getNickname(), this->_name, reason), false);
 }
 
 void Channel::setTopic(User &user, const std::string &topic)
@@ -171,7 +182,7 @@ void Channel::kick(User &user, User &op, std::string reason)
 	}
 	_members.erase(&user);
 	if (_members.find(&user) == _members.end())
-		this->broadcast(op, kickMsg(op.getNickname(), this->_name, user.getNickname(), reason));
+		this->broadcast(op, kickMsg(op.getNickname(), this->_name, user.getNickname(), reason), false);
 }
 
 void Channel::invite(User &user, User &op)
@@ -198,7 +209,7 @@ void Channel::invite(User &user, User &op)
 		return ;
 	}
 	_invitedList.insert(user.getNickname());
-	this->broadcast(op, inviteMsg(op.getNickname(), user.getNickname(), this->_name));
+	this->broadcast(op, inviteMsg(op.getNickname(), user.getNickname(), this->_name), false);
 }
 
 static bool	isValidNb(const std::string &str)
@@ -272,7 +283,7 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 		else // ERR_UNKNOWNMODE
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
-	this->broadcast(op, setmodeMsg(op.getNickname(), this->_name, mode));
+	this->broadcast(op, setmodeMsg(op.getNickname(), this->_name, mode), false);
 }
 
 void Channel::addOperator(User *user, const char addOrRemove)
@@ -288,13 +299,10 @@ std::string Channel::membersList()
 	std::string list;
 	for (ItMembers it = this->_members.begin(); it != this->_members.end(); it++)
 	{
-		if (list.empty())
-		{
-			list = it->first->getNickname();
-			continue ;
-		}
-		else
+		if (!list.empty())
 			list += " ";
+		if (it->second == true)
+				list += "@";
 		list += it->first->getNickname();
 	}
 	return (list);
@@ -321,17 +329,22 @@ const std::map<User *, bool> &Channel::getMembers(void) const
 }
 
 // a revoir car apparement il y a plusieurs reply a ne pas enlevé le sender
-void Channel::broadcast(User &sender, const std::string &message)
+void Channel::broadcast(User &sender, const std::string &message, bool include_sender)
 {
 	User	*member;
 
 	for (ItMembers it = _members.begin(); it != _members.end(); ++it)
 	{
 		member = it->first;
-		if (member != &sender)
-		{
-			// Skip the sender
+		if (include_sender == true)
 			member->pendingPush(message);
+		else
+		{
+			if (member != &sender)
+			{
+				// Skip the sender
+				member->pendingPush(message);
+			}
 		}
 	}
 }

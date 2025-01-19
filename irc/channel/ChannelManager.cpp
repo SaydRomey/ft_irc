@@ -24,6 +24,7 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 			// Channel inexistant donc creation du channel
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
+			std::cout << "apres ajout channel" << std::endl;
 		}
 		else
 		{
@@ -175,7 +176,7 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	_channels[channelName].broadcast(sender, message); //changer car il faut appeler reply
+	_channels[channelName].broadcast(sender, message, false); //changer car il faut appeler reply
 }
 
 // // for direct channel replies

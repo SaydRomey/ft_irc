@@ -43,7 +43,7 @@ class Channel
 		void						printMode();
 		const MapUser&				getMembers(void) const;
 
-		void						broadcast(User& sender, const std::string& message);
+		void						broadcast(User& sender, const std::string& message, bool include_sender);
 
 };
 
