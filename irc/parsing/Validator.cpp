@@ -332,14 +332,14 @@ bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
 
 	// extract and tokenize "params"
 	std::string	params = paramsIt->second;
-	t_vecStr	paramsTokens = tokenize(params, ' ');
+	t_vecStr	paramTokens = tokenize(params, ' ');
 	
 	// validate number of tokens in "params"
-	if (paramsTokens.size() > 2)
+	if (paramTokens.size() > 2)
 		return (_setRpl(ERR_UNKNOWNCOMMAND, prefix, "JOIN"));
 
 	// validate channels (first parameter)
-	t_vecStr	channelTokens = tokenize(paramsTokens[0], ',');
+	t_vecStr	channelTokens = tokenize(paramTokens[0], ',');
 
 	size_t	i = 0;
 	while (i < channelTokens.size())
@@ -482,14 +482,14 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), command.at("command")));
 
-	t_vecStr	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramTokens = tokenize(command.at("params"));
 
 	// ensure channel is specified
-	if (paramsTokens.size() < 1)
+	if (paramTokens.size() < 1)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
-	const std::string	&channel = paramsTokens[0];
-	const std::string	&modes = paramsTokens[1];
+	const std::string&	channel = paramTokens[0];
+	std::string			modes = paramTokens.size() > 1 ? paramTokens[1] : "";
 	size_t	paramIndex = 2; // start checking for additional params after 'modes'
 
 	// validate target (channel)
@@ -516,10 +516,10 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
 			{
 				// make sure a parameter exists for the mode
-				if (paramIndex >= paramsTokens.size())
+				if (paramIndex >= paramTokens.size())
 					return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
-				const std::string &param = paramsTokens[paramIndex];
+				const std::string &param = paramTokens[paramIndex];
 				if (!_isValidModeParam(modeFlag, param))
 					// return (_setRpl(ERR_INVALIDMODEPARAM, makeArgs(channel, std::string(1, modeFlag), param)));
 					return (_setRpl(ERR_INVALIDMODEPARAM, command.at("prefix"), channel, std::string(1, modeFlag), param));
@@ -572,13 +572,13 @@ bool Validator::_validateKickCommand(const t_mapStrStr &command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
 
-	t_vecStr paramsTokens = tokenize(command.at("params"));
+	t_vecStr paramTokens = tokenize(command.at("params"));
 	
-	if (paramsTokens.size() < 2)
+	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
 
-	std::string	channels = paramsTokens[0];
-	std::string	users = paramsTokens[1];
+	std::string	channels = paramTokens[0];
+	std::string	users = paramTokens[1];
 
 	t_vecStr	channelTokens = tokenize(channels, ',');
 	size_t	i = 0;
@@ -625,9 +625,9 @@ bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 
-	t_vecStr	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramTokens = tokenize(command.at("params"));
 
-	if (paramsTokens.size() < 2)
+	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 	
 

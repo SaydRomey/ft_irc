@@ -134,7 +134,8 @@ run-wee: all ## Start the IRC server and connect Weechat to it (WIP)
 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
 	@$(MAKE) weechat $(NPD)
 
-# run-lime: all ## Start the IRC server and connect Limechat to it
+run-lime: run ## Start the IRC server and connect Limechat to it
+	@open -a LimeChat
 
 .PHONY: run nc run-nc run-wee #run-lime
 
