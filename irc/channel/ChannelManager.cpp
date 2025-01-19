@@ -12,6 +12,7 @@ ChannelManager::~ChannelManager()
 
 void ChannelManager::joinManager(User &sender, const Message &msg)
 {
+	sender.pendingPush("Essaie Join Manager\n");
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
 	{
