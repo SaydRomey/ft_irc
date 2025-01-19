@@ -303,16 +303,3 @@ std::string setmodeMsg(const std::string &userNickname, const std::string &chann
 
 	return (crlf(oss.str()));
 }
-
-
-/*
-Generates PONG message for PING
-
-*/
-std::string	pongMsg(const std::string &token)
-{
-	std::ostringstream	oss;
-	oss << "PONG :" << token;
-
-	return (crlf(oss.str())); 
-}
