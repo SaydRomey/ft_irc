@@ -22,6 +22,10 @@ class Parser
 		t_vecStr		parseModeParams(const std::string &params) const;
 	
 	private:
+		Parser(const Parser&);
+		Parser& operator=(const Parser&);
+
+		// std::string		_determineTrailing(const std::string &command, const std::string &trailing, const std::string &input) const;
 };
 
 #endif // PARSER_HPP
