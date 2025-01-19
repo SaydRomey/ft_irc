@@ -29,6 +29,7 @@ enum CommandType
 	PRIVMSG,
 	NOTICE,
 	PING,
+	PONG,
 	CMD_UNKNOWN
 };
 
@@ -85,6 +86,7 @@ class Validator
 		bool	_validatePrivmsgCommand(const t_mapStrStr &command) const;
 		bool	_validateNoticeCommand(const t_mapStrStr &command) const;
 		bool	_validatePingCommand(const t_mapStrStr &command) const;
+		bool	_validatePongCommand(const t_mapStrStr &command) const;
 
 		static const size_t			MAX_NICKNAME_LENGTH;		// 9
 		static const size_t			MAX_CHANNEL_NAME_LENGTH;	// 42

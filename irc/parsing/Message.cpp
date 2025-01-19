@@ -1,9 +1,9 @@
 
 #include "Message.hpp"
-#include "parsing_utils.hpp"	// normalizeInput(), maybe trim(), tokenize()
-#include <iomanip>				// std::setw()
+#include "parsing_utils.hpp"
+#include <iomanip>
 
-Message::Message(const std::string &input, const std::string &nickname)
+Message::Message(const std::string& input, const std::string& nickname)
 	: _valid(false), _nickname(nickname), _input(input), _reply("")
 {
 	_processInput(input);
@@ -11,21 +11,21 @@ Message::Message(const std::string &input, const std::string &nickname)
 
 Message::~Message(void) {}
 
-/* ************************************************************************** */
+/* ************************************************************************** */ // Getters
 
 bool					Message::isValid(void) const { return (_valid); }
-const std::string		&Message::getInput(void) const { return (_input); }
-const std::string		&Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
-const std::string		&Message::getCommand(void) const { return (_parsedMessage.at("command")); }
-const std::string		&Message::getParams(void) const { return (_parsedMessage.at("params")); }
-const t_vecStr			&Message::getParamsVec(void) const { return (_tokenizedParams); }
-const std::string		&Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
-const std::string		&Message::getReply(void) const { return (_reply); } // replies have a "\r\n" appended to them
-const t_vecPairStrStr	&Message::getChannelsAndKeys(void) const { return (_channelsAndKeys); }
+const std::string&		Message::getInput(void) const { return (_input); }
+const std::string&		Message::getPrefix(void) const { return (_parsedMessage.at("prefix")); }
+const std::string&		Message::getCommand(void) const { return (_parsedMessage.at("command")); }
+const std::string&		Message::getParams(void) const { return (_parsedMessage.at("params")); }
+const t_vecStr&			Message::getParamsVec(void) const { return (_tokenizedParams); }
+const std::string&		Message::getTrailing(void) const { return (_parsedMessage.at("trailing")); }
+const std::string&		Message::getReply(void) const { return (_reply); }
+const t_vecPairStrStr&	Message::getChannelsAndKeys(void) const { return (_channelsAndKeys); }
 
-const std::string		&Message::getModeKey(void) const { return (_modeKey); }
-const std::string		&Message::getModeNick(void) const { return (_modeNick); }
-const std::string		&Message::getModeLimit(void) const { return (_modeLimit); }
+const std::string&		Message::getModeKey(void) const { return (_modeKey); }
+const std::string&		Message::getModeNick(void) const { return (_modeNick); }
+const std::string&		Message::getModeLimit(void) const { return (_modeLimit); }
 
 /* ************************************************************************** */
 
@@ -33,16 +33,17 @@ const std::string		&Message::getModeLimit(void) const { return (_modeLimit); }
 Focuses on the high-level flow:
 parsing, validating and delegating to command-specific handlers
 */
-void	Message::_processInput(const std::string &input)
+void	Message::_processInput(const std::string& input)
 {
 	try
 	{
+		// Parse input into prefix, command, params, trailing
 		_parsedMessage = _parser.parseCommand(input);
 
-		// override parsed prefix with User's nickname ("*" by default)
+		// Override parsed prefix with User's nickname ("*" by default)
 		_parsedMessage["prefix"] = _nickname;
 		
-		// validate the parsed command
+		// Validate the parsed command
 		if (!_validator.validateCommand(_parsedMessage))
 		{
 			_reply = reply(_validator.getRplType(), _validator.getRplArgs());
@@ -50,55 +51,55 @@ void	Message::_processInput(const std::string &input)
 			return ;
 		}
 
-		// extract command
+		// Extract command and params
 		const std::string	&command = _parsedMessage["command"];
+		const std::string	&params = _parsedMessage["params"];
 
-		// extract params
-		t_mapStrStr::iterator	paramsIt = _parsedMessage.find("params");
-		const std::string		params = (paramsIt != _parsedMessage.end()) ? paramsIt->second : "";
-
-		// handle ping-pong
-		if (command == "PING")
+		// Handle messages sent by [weechat/limechat] chosen client
+		if (command == "PING" || command == "PONG")
 		{
-			_reply = pongMsg(_parsedMessage["trailing"]);
-			_valid = true;
-			return ;
+			_reply = (command == "PING" ? "PONG :" : "PING") + _parsedMessage["trailing"] + "\r\n";
 		}
-
-		// ** place this in _parser
-		// dispatch to command-specific parsing handlers (multi params)
-		if (command == "JOIN" && countTokens(paramsIt->second) > 1)
-		{
-			if (hasValidNumberOfParams(params, AT_MOST, 2))
-				_channelsAndKeys = _parser.parseChannelsAndKeys(params);
-		}
+		else if (command == "JOIN") // && countTokens(params) > 1)
+		// {
+			// if (hasValidNumberOfParams(params, AT_MOST, 2))
+				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
+		// }
+			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
 		else if (command == "MODE")
 		{
-			t_vecStr			paramTokens = tokenize(params);
-			const std::string	&modes = paramTokens[1];
-			t_vecStr			modeParams = _parser.parseModeParams(modes, t_vecStr(paramTokens.begin() + 2, paramTokens.end()));
-
+			t_vecStr	modeParams = _parser.parseModeParams(params);
+// 
 			_modeKey = modeParams[0];
 			_modeNick = modeParams[1];
 			_modeLimit = modeParams[2];
 		}
-		else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
-			_tokenizedParams = _parser.parseKickParams(params);
+		// else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
+		// 	_tokenizedParams = _parser.parseKickParams(params);
 		else
-		{
 			_tokenizedParams = tokenize(params);
-		}
 		
+		// Construct confirmation reply (wip)
+		std::ostringstream	oss;
+		oss << ":" << "ircserv" << " " << command;
+
+		if (!params.empty())
+			oss << " " << params;
+		
+		if (!_parsedMessage["trailing"].empty())
+			oss << " " << _parsedMessage["trailing"];
+
+		_reply = crlf(oss.str());
+
 		_valid = true;
-		_reply.clear();
 	}
 	catch (const std::exception &e)
 	{
 		std::string	reason = e.what();
 		if (reason.empty())
-			reason = "EMPTY REASON";
+			reason = "An unexpected error occured";
 		
-		_reply = reply(ERR_UNKNOWNERROR, "*", "[command]", reason);
+		_reply = reply(ERR_UNKNOWNERROR, _nickname, "[command]", reason);
 		_valid = false;
 	}
 }

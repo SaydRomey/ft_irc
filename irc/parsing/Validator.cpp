@@ -34,6 +34,7 @@ static t_mapStrCmdType	initCommandMap(void)
 	cmdMap["PRIVMSG"] = PRIVMSG;
 	cmdMap["NOTICE"] = NOTICE;
 	cmdMap["PING"] = PING;
+	cmdMap["PONG"] = PONG;
 
 	return (cmdMap);
 }
@@ -135,7 +136,7 @@ bool	Validator::_validateCommandByType(CommandType cmdType, const t_mapStrStr &c
 	// if (cmdType == CMD_UNKNOWN && cmd == "CAP")
 		// return (_noRpl()); // CAP command is ignored without error ??
 
-	if (cmdType < PASS || cmdType > NOTICE) // will not get here -> in validateCommand(), we iterate through _commandMap...
+	if (cmdType < PASS || cmdType > PONG) // will not get here -> in validateCommand(), we iterate through _commandMap...
 		return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("command")));
 
 	return ((this->*(_validators[cmdType]))(command));
@@ -278,8 +279,6 @@ bool	Validator::_validateNickCommand(const t_mapStrStr &command) const
 	if (!_isValidNickname(command.at("params")))
 		return (_setRpl(ERR_ERRONEUSNICKNAME, command.at("prefix"), command.at("params")));
 
-	// Check if nickname is already in use (higher-level logic) 462
-	// return (_setRpl(RPL_WELCOME, command.at("params"))); // TOCHANGE
 	return (_noRpl());
 }
 
@@ -741,6 +740,18 @@ bool Validator::_validatePingCommand(const t_mapStrStr &command) const
 
 	return (_noRpl());
 }
+
+/*	**(WIP)
+
+*/
+bool Validator::_validatePongCommand(const t_mapStrStr &command) const
+{
+	if (command.find("trailing") == command.end() || command.at("trailing").empty())
+		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PONG"));
+
+	return (_noRpl());
+}
+
 
 /* ************************************************************************** */ // **TOCHECK where do we put this?
 

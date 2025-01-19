@@ -17,30 +17,30 @@ class Message
 {
 	public:
 		// Constructors/Destructors
-		Message(const std::string &input, const std::string &nickname = "*");
+		Message(const std::string& input, const std::string& nickname = "*");
 		~Message(void);
 		
 		// Getters
 		bool					isValid(void) const;
-		const std::string		&getInput(void) const;
-		const std::string		&getPrefix(void) const;
-		const std::string		&getCommand(void) const;
-		const std::string		&getParams(void) const;
-		const t_vecStr			&getParamsVec(void) const;
-		const std::string		&getTrailing(void) const;
-		const std::string		&getReply(void) const;
-		const t_vecPairStrStr	&getChannelsAndKeys(void) const;
+		const std::string&		getInput(void) const;
+		const std::string&		getPrefix(void) const;
+		const std::string&		getCommand(void) const;
+		const std::string&		getParams(void) const;
+		const t_vecStr&			getParamsVec(void) const;
+		const std::string&		getTrailing(void) const;
+		const std::string&		getReply(void) const;
+		const t_vecPairStrStr&	getChannelsAndKeys(void) const;
 
-		const std::string		&getModeKey(void) const;
-		const std::string		&getModeNick(void) const;
-		const std::string		&getModeLimit(void) const;
+		const std::string&		getModeKey(void) const;
+		const std::string&		getModeNick(void) const;
+		const std::string&		getModeLimit(void) const;
 		
 	private:
 		Message(void);
 		Message(const Message&);
 		Message& operator=(const Message&);
 
-		void	_processInput(const std::string &input);
+		void	_processInput(const std::string& input);
 		
 		bool			_valid;
 		std::string		_nickname;
@@ -58,6 +58,6 @@ class Message
 		Validator		_validator;
 };
 
-std::ostream	&operator<<(std::ostream &out, const Message &message);
+std::ostream	&operator<<(std::ostream& out, const Message& message);
 
 #endif // MESSAGE_HPP
