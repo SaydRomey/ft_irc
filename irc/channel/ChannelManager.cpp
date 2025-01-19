@@ -119,7 +119,6 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	}
 	else
 		_channels[channelName].getModes();
-	
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
@@ -173,8 +172,7 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 	_channels[channelName].broadcast(sender, message);
 }
 
-
-// for direct channel replies
+// // for direct channel replies
 // void ChannelManager::privmsgManager(User &sender, const std::string &chan, const std::string &reply)
 // {
 // 	// if (_channels.count(chan) == 0)
