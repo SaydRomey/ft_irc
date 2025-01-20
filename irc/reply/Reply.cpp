@@ -301,7 +301,7 @@ std::string setmodeMsg(const std::string &userNickname, const std::string &chann
 			adjustedModeStr.insert(plusPos, " ");
 	}
 
-	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
+	oss << ":" << userNickname << " MODE " << channelName << " :" << adjustedModeStr;
 
 	return (crlf(oss.str()));
 }

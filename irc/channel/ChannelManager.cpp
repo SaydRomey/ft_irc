@@ -108,11 +108,16 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	const std::string&	nickname = msg.getModeNick();
 	User* target = _server.getUserByNickname(nickname);
 
+	std::cout << channelName << std::endl;
+	std::cout << pswd << std::endl;
+	std::cout << limit << std::endl;
+	std::cout << nickname << std::endl;
 	if (_channels.find(channelName) == _channels.end())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
+	std::cout << "Je crash ici" << std::endl;
 	if (target == NULL && !nickname.empty()) //ERR_NOSUCHNICK
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));
@@ -139,7 +144,6 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	// else if (newTopic.compare(":") == 0)
 	else if (msg.getInput().back() == ':')
 		_channels[channelName].setTopic(sender, "");
 	else

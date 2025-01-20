@@ -88,7 +88,7 @@ void	Message::_processInput(const std::string& input)
 			oss << " " << params;
 		
 		if (!trailing.empty())
-			oss << ": " << trailing;
+			oss << " :" << trailing;
 
 		_reply = crlf(oss.str());
 		_valid = true;

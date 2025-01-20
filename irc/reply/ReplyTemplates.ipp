@@ -30,7 +30,7 @@ _replyTemplates[RPL_INVITE] = ":%s INVITE %s :%s"; // <sender_nickname> <target_
 _replyTemplates[RPL_CHANNELMODEIS] = ":" + SERVER_NAME + " 324 %s %s %s"; // <client_nickname> <channel> <channel_modes [<mode_parameters>]>
 _replyTemplates[RPL_NOTOPIC] = ":" + SERVER_NAME + " 331 %s %s :No topic is set"; // <client_nickname> <channel>
 _replyTemplates[RPL_TOPIC] = ":" + SERVER_NAME + " 332 %s %s :%s"; // <client_nickname> <channel> :<topic>
-_replyTemplates[RPL_INVITING] = ":" + SERVER_NAME + " 341 %s %s"; // <client_nickname> <target_nickname> <channel>
+_replyTemplates[RPL_INVITING] = ":" + SERVER_NAME + " 341 %s %s %s"; // <client_nickname> <target_nickname> <channel>
 _replyTemplates[RPL_NAMEREPLY] = ":" + SERVER_NAME + " 353 %s = %s :%s"; // <client_nickname> <channel> <user_list>
 _replyTemplates[RPL_ENDOFNAMES] = ":" + SERVER_NAME + " 366 %s %s :End of /NAMES list"; // <client_nickname> <channel>
 

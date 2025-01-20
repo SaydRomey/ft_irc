@@ -108,6 +108,7 @@ void Server::run(void)
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
+					std::cout << "Sent to " << client.getNickname() << " : " << reply << std::flush;
 					send(it->fd, reply.c_str(), reply.size(), 0);
 				}
 				it->events ^= POLLOUT;
