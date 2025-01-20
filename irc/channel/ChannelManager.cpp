@@ -12,9 +12,6 @@ ChannelManager::~ChannelManager()
 
 void ChannelManager::joinManager(User &sender, const Message &msg)
 {
-	std::cout << "HERE!!" << std::endl;
-
-
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
 	{
@@ -27,6 +24,7 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 			// Channel inexistant donc creation du channel
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
+			std::cout << "apres ajout channel" << std::endl;
 		}
 		else
 		{
@@ -110,11 +108,16 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	const std::string&	nickname = msg.getModeNick();
 	User* target = _server.getUserByNickname(nickname);
 
+	std::cout << channelName << std::endl;
+	std::cout << pswd << std::endl;
+	std::cout << limit << std::endl;
+	std::cout << nickname << std::endl;
 	if (_channels.find(channelName) == _channels.end())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
+	std::cout << "Je crash ici" << std::endl;
 	if (target == NULL && !nickname.empty()) //ERR_NOSUCHNICK
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));
@@ -127,7 +130,6 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	}
 	else
 		_channels[channelName].getModes();
-	
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
@@ -142,7 +144,6 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	// else if (newTopic.compare(":") == 0)
 	else if (msg.getInput().back() == ':')
 		_channels[channelName].setTopic(sender, "");
 	else
@@ -179,7 +180,7 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	_channels[channelName].broadcast(sender, message);
+	_channels[channelName].broadcast(sender, message, false); //changer car il faut appeler reply
 }
 
 // // for direct channel replies
