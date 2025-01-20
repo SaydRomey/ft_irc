@@ -21,6 +21,21 @@ t_vecStr	makeArgs(const std::string &arg1, const std::string &arg2, const std::s
 	return (args);
 }
 
+std::string	join(t_vecStr::const_iterator begin, t_vecStr::const_iterator end, const std::string& delim)
+{
+	std::ostringstream			result;
+	t_vecStr::const_iterator	it = begin;
+
+	while (it != end)
+	{
+		if (it != begin)
+			result << delim;
+		result << *it;
+		++it;
+	}
+	return (result.str());
+}
+
 /* ************************************************************************** */ // Tokens
 
 /*

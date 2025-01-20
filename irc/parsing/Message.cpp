@@ -53,20 +53,33 @@ void	Message::_processInput(const std::string& input)
 
 		// Extract command and params
 		const std::string&	command = _parsedMessage["command"];
-		const std::string&	params = _parsedMessage.count("params") ? _parsedMessage["params"] : "";
-		const std::string&	trailing = _parsedMessage.count("trailing") ? _parsedMessage["trailing"] : "";
+		std::string			params = _parsedMessage["params"];
+		std::string			trailing = _parsedMessage["trailing"];
+
+		// Special handling for LimeChat messages: populate trailing
+		// if (trailing.empty() && (command == "PRIVMSG" || command == "NOTICE" || command == "PART" || command == "TOPIC" || command == "KICK"))
+		// {
+		// 	size_t	requiredParamCount = 1;
+		// 	if (command == "KICK")
+		// 		requiredParamCount = 2;
+
+		// 	t_vecStr		tokenizedParams = tokenize(params);
+		// 	if (tokenizedParams.size() > requiredParamCount)
+		// 	{
+		// 		trailing = join(tokenizedParams.begin() + requiredParamCount, tokenizedParams.end(), " ");
+		// 		params = join(tokenizedParams.begin(), tokenizedParams() + requiredParamCount, " ");
+		// 	}
+		// }
 
 		// Handle messages sent by [weechat/limechat] chosen client
 		if (command == "PING" || command == "PONG")
 		{
 			_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
 		}
-		else if (command == "JOIN") // && countTokens(params) > 1)
-		// {
-			// if (hasValidNumberOfParams(params, AT_MOST, 2))
-				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
-		// }
+		else if (command == "JOIN")
+		{
 			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
+		}
 		else if (command == "MODE" && countTokens(params) > 2)
 		{
 			t_vecStr	modeParams = _parser.parseModeParams(params);
@@ -75,10 +88,17 @@ void	Message::_processInput(const std::string& input)
 			_modeNick = modeParams[1];
 			_modeLimit = modeParams[2];
 		}
-		// else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
-		// 	_tokenizedParams = _parser.parseKickParams(params);
+		else if (command == "KICK" && hasValidNumberOfParams(params, EXACTLY, 2))
+		{
+			_tokenizedParams = _parser.parseKickParams(params);
+		}
 		else
 			_tokenizedParams = tokenize(params);
+
+		// 
+		// _parsedMessage["params"] = params;
+		// _parsedMessage["trailing"] = trailing;
+		// // 
 		
 		// Construct confirmation reply (wip)
 		std::ostringstream	oss;
@@ -88,7 +108,7 @@ void	Message::_processInput(const std::string& input)
 			oss << " " << params;
 		
 		if (!trailing.empty())
-			oss << ": " << trailing;
+			oss << " :" << trailing;
 
 		_reply = crlf(oss.str());
 		_valid = true;
