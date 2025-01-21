@@ -466,6 +466,9 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 					return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
 				const std::string &param = paramTokens[paramIndex];
+				// 
+				// if (addMode) .. {the rest}
+				// 
 				if (!_isValidModeParam(modeFlag, param))
 					// return (_setRpl(ERR_INVALIDMODEPARAM, makeArgs(channel, std::string(1, modeFlag), param)));
 					return (_setRpl(ERR_INVALIDMODEPARAM, command.at("prefix"), channel, std::string(1, modeFlag), param));
