@@ -223,11 +223,13 @@ static bool	isValidNb(const std::string &str)
 }
 
 void Channel::setMode(std::string mode, User &op, const std::string &pswd,
-	const std::string &limit, User *user)
+	const std::string &limit, User *user, const std::string& params)
 {
 	bool	enable;
-
 	const std::string validMod = "itkol";
+
+	std::cout << "Rentré dans setMode" << std::endl;
+
 	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
 	{
 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
@@ -282,10 +284,11 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 		else // ERR_UNKNOWNMODE
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
-	this->broadcast(op, setmodeMsg(op.getNickname(), this->_name, mode), true);
+	// this->broadcast(op, setmodeMsg(op.getNickname(), this->_name, mode), true);
+	this->broadcast(op, setmodeMsg(op.getNickname(), params), true);
 }
 
-void Channel::addOperator(User *user, const char addOrRemove)
+void Channel::addOperator(User *user, const char addOrRemove) //TODO ajouté le fait que ca renvoie la liste des operator a tous pour que ca se mettent a jour
 {
 	if (addOrRemove == '+')
 		this->_members[user] = true;
@@ -307,8 +310,28 @@ std::string Channel::membersList()
 	return (list);
 }
 
-void Channel::getModes()
+void Channel::getModes(User &user)
 {
+	std::ostringstream strModes;
+	std::string strEmpty = "";
+
+	strModes << "+";
+	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
+		if (it->second == true)
+			strModes << it->first;
+	if (!_password.empty() && _members.find(&user) == _members.end())
+	{
+		strModes << " ";
+		strModes << _password;
+	}
+	if (_memberLimit > 0 && _members.find(&user) == _members.end())
+	{
+		strModes << " ";
+		strModes << _memberLimit;
+	}
+	if (strModes.str().size() > 1)
+		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strModes.str()));
+	user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strEmpty));
 	//fonctionne meme si la personne n'Est pas dans le channel.
 	// pour tous: creer string avec la liste des modes actifs (+tik).
 	// pour les membres seulement: apres la liste des modes actif, creer string avec les 

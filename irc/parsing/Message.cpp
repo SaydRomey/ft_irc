@@ -77,8 +77,8 @@ void	Message::_processInput(const std::string& input)
 		}
 		// else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
 		// 	_tokenizedParams = _parser.parseKickParams(params);
-		else
-			_tokenizedParams = tokenize(params);
+		// else
+		_tokenizedParams = tokenize(params);
 		
 		// Construct confirmation reply (wip)
 		std::ostringstream	oss;

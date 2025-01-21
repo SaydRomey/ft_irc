@@ -118,7 +118,7 @@ void Server::run(void)
 			while (!msg_str.empty())
 			{
 				Message msg(msg_str, client.getNickname());
-				std::cout << msg << std::endl;
+				// std::cout << msg << std::endl;
 				// 
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
