@@ -18,6 +18,7 @@ class User
 		std::string	_username;
 		std::string	_nickname;
 		short		_perms;
+		bool		_closeFlag;
 
 		std::string				_msgBuffer;
 		std::queue<std::string>	_pending;
@@ -48,6 +49,10 @@ class User
 		bool	addChannel(const std::string& chan);
 		bool	removeChannel(const std::string& chan);
 		bool	inChannel(const std::string& chan);
+
+		void setCloseFlag(const std::string& reason);
+		bool getCloseFlag() const;
+		std::string formatPrefix() const;
 };
 
 #endif

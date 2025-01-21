@@ -1,4 +1,5 @@
 #include "User.hpp"
+#include "parsing_utils.hpp"
 
 User::User(void): _fd(-1), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
 {}
@@ -35,6 +36,24 @@ void User::setUsername(const std::string& username)
 void User::setFd(int fd)
 {
 	this->_fd = fd;
+}
+
+void User::setCloseFlag(const std::string& reason)
+{
+	if (_closeFlag)
+		return;
+	_closeFlag = true;
+	pendingPush(":@localhost ERROR :" + reason + "\r\n");
+}
+
+bool User::getCloseFlag() const
+{
+	return _closeFlag;
+}
+
+std::string User::formatPrefix() const
+{
+	return ":" + _nickname + "!" + _username + "@localhost";
 }
 
 const std::string& User::getNickname() const
@@ -93,7 +112,8 @@ size_t User::pendingSize(void) const
 
 void User::pendingPush(const std::string& msg)
 {
-	_pending.push(msg);
+	if (!_closeFlag)
+		_pending.push(msg);
 }
 
 const std::string User::pendingPop(void)
