@@ -29,7 +29,6 @@ static t_mapStrCmdType	initCommandMap(void)
 	cmdMap["NOTICE"] = NOTICE;
 	cmdMap["PING"] = PING;
 	cmdMap["PONG"] = PONG;
-	cmdMap["QUIT"] = QUIT;
 
 	return (cmdMap);
 }
@@ -51,8 +50,7 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validatePrivmsgCommand,
 	&Validator::_validateNoticeCommand,
 	&Validator::_validatePingCommand,
-	&Validator::_validatePongCommand,
-	&Validator::_validateQuitCommand
+	&Validator::_validatePongCommand
 };
 
 /* ************************************************************************** */
@@ -685,17 +683,6 @@ bool Validator::_validatePongCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PONG"));
-
-	return (_noRpl());
-}
-
-/*	** ?? any validation needed ?
-*/
-bool Validator::_validateQuitCommand(const t_mapStrStr &command) const
-{
-	(void)command;
-	// if (command.find("params") == command.end() || command.at("params").empty())
-		// return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "QUIT"));
 
 	return (_noRpl());
 }
