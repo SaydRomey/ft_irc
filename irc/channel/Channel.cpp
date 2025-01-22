@@ -54,7 +54,7 @@ Channel::~Channel()
 // 2.The channel’s topic (with RPL_TOPIC (332) and optionally RPL_TOPICWHOTIME (333)),
 	// and no message if the channel does not have a topic.
 // 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
-void Channel::addMember(User &user, std::string pswIfNeeded)
+void Channel::addMember(User &user, std::string pswIfNeeded) // TODO: ajouté verif si user est deja dans le channel
 {
 	if (_modes['l'] == true && _members.size() >= _memberLimit)
 		// ERR_CHANNELISFULL
@@ -314,7 +314,7 @@ void Channel::getModes(User &user)
 {
 	std::ostringstream strModes;
 	std::ostringstream strParams; // separate stream for parameters
-	std::string strEmpty = "";
+	std::string strEmpty = " ";
 
 	// Add active modes to 'strModes'
 	strModes << "+";

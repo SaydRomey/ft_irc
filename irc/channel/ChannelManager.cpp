@@ -102,22 +102,11 @@ void ChannelManager::kickManager(User &sender, const Message &msg)
 
 void ChannelManager::modeManager(User &sender, const Message &msg)
 {
-	std::cout << "Je crash ici" << std::endl;
 	const std::string& channelName = msg.getParamsVec()[0];
 	const std::string&	pswd = msg.getModeKey();
 	const std::string&	limit = msg.getModeLimit();
 	const std::string&	nickname = msg.getModeNick();
 	User* target = _server.getUserByNickname(nickname);
-
-	if (msg.getParamsVec().empty())
-		std::cout << "getparamsvec vide" << std::endl;
-	std::cout << channelName << std::endl;
-	std::cout << pswd << std::endl;
-	std::cout << limit << std::endl;
-	if (!nickname.empty())
-		std::cout << nickname << std::endl;
-	else
-		std::cout << "nickname is empty" << std::endl;
 
 	if (_channels.find(channelName) == _channels.end())
 	{
@@ -135,7 +124,10 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 		_channels[channelName].setMode(modes, sender, pswd, limit, target, msg.getParams());
 	}
 	else
+	{
+		std::cout << "entrée dans else getMode" << std::endl;
 		_channels[channelName].getModes(sender);
+	}
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)

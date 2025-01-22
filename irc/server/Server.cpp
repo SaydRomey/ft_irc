@@ -243,7 +243,7 @@ void Server::broadcast(const std::string &msg, int senderFd)
 
 void Server::pass_cmd(User &client, const Message& msg)
 {
-	std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
+	// std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
 		client.pendingPush(reply(462, client.getNickname()));
