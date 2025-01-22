@@ -91,6 +91,7 @@ void Server::run(void)
 			User& client = _clientMap[it->fd];
 			if (it->revents & POLLHUP)
 			{
+				_chanManager->quitManager(client);
 				it = _closeConnection(it) - 1;
 				continue;
 			}
