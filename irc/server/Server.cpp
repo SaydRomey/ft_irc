@@ -107,7 +107,7 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
-				std::cout << client.pendingSize() << std::endl;
+				// std::cout << client.pendingSize() << std::endl;
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
@@ -201,6 +201,10 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
+    case QUIT:
+        _chanManager->quitManager(client);
+        client.setCloseFlag();
+        break;
 	default:
 		if (client.getPerms() != PERM_ALL)
 		{
@@ -231,10 +235,6 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 		break;
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
-		break;
-	case QUIT:
-		_chanManager->quitManager(client);
-		client.setCloseFlag();
 		break;
 	case NOTICE:
 		break;
@@ -273,7 +273,7 @@ void Server::user_cmd(User &client, const Message& msg)
 	else if (perms == PERM_NICK)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 	}
 	else
@@ -292,7 +292,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 	if (perms == PERM_USER)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 		return;
 	}
