@@ -299,10 +299,9 @@ void Server::nick_cmd(User &client, const Message& msg)
 
 	const std::string& nick = msg.getParams();
 	std::string oldNick = client.getNickname();
-	if (_nickMap.count(nick) == 1)
+	if (!isNickAvailable(_nickMap, nick))
 		client.pendingPush(reply(433, oldNick, nick));
-	else if (leadCharBan.find(nick[0]) != std::string::npos
-			|| nick.find(' ') != std::string::npos)
+	if (!isValidNickname(nick))
 		client.pendingPush(reply(432, oldNick, nick));
 	else
 	{
