@@ -19,7 +19,7 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 		const std::string &key = ChannelsAndKeys[i].second;
 		if (_channels.find(channelName) == _channels.end())
 		{
-			std::cout << "found channelname" << std::endl;
+			std::cout << "not found channelname" << std::endl;
 
 			// Channel inexistant donc creation du channel
 			Channel newChannel(channelName, sender);

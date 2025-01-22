@@ -106,6 +106,7 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
+				std::cout << client.pendingSize() << std::endl;
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
@@ -121,7 +122,7 @@ void Server::run(void)
 			while (!msg_str.empty())
 			{
 				Message msg(msg_str, client.getNickname());
-				// std::cout << msg << std::endl;
+				std::cout << msg << std::endl;
 				// 
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
@@ -199,6 +200,16 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
+	default:
+		if (client.getPerms() != PERM_ALL)
+		{
+			client.pendingPush(":@localhost 451 :You are not registered yet\r\n");
+			return;
+		}
+		break;
+	}
+	switch (Server::commandMap[msg.getCommand()])
+	{
 	case JOIN:
 		_chanManager->joinManager(client, msg);
 		break;
@@ -227,8 +238,6 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 		break;
 	case PONG:
 		client.pendingPush(msg.getReply());
-		break;
-	default:
 		break;
 	}
 }
@@ -306,9 +315,9 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
 	for (size_t i=0; i < targets.size(); i++)
 	{
-		std::cout << "Target: " << targets[i] << std::endl;
+		// std::cout << "Target: " << targets[i] << std::endl;
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getTrailing()); // ***
+			_chanManager->privmsgManager(client, targets[i], msg.getReply()); // ***
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())

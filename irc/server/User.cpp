@@ -42,8 +42,8 @@ void User::setCloseFlag(const std::string& reason)
 {
 	if (_closeFlag)
 		return;
-	_closeFlag = true;
 	pendingPush(":@localhost ERROR :" + reason + "\r\n");
+	_closeFlag = true;
 }
 
 bool User::getCloseFlag() const

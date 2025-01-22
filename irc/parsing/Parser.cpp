@@ -67,16 +67,16 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 		++index;
 	}
 
-	// Handle edge case: No colon, but trailing exists (to test ***)
-	if (trailing.empty() && !params.empty())
-	{
-		size_t	lastSpace = params.find_last_of(' ');
-		if (lastSpace != std::string::npos)
-		{
-			trailing = params.substr(lastSpace + 1);
-			params = params.substr(0, lastSpace);
-		}
-	}
+	// // Handle edge case: No colon, but trailing exists (to test ***)
+	// if (trailing.empty() && !params.empty())
+	// {
+	// 	size_t	lastSpace = params.find_last_of(' ');
+	// 	if (lastSpace != std::string::npos)
+	// 	{
+	// 		trailing = params.substr(lastSpace + 1);
+	// 		params = params.substr(0, lastSpace);
+	// 	}
+	// }
 
 	// Assign normalized values
 	command["params"] = normalizeInput(params);
