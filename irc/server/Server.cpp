@@ -273,7 +273,7 @@ void Server::user_cmd(User &client, const Message& msg)
 	else if (perms == PERM_NICK)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 	}
 	else
@@ -292,7 +292,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 	if (perms == PERM_USER)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 		return;
 	}
