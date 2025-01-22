@@ -50,7 +50,7 @@ class User
 		bool	removeChannel(const std::string& chan);
 		bool	inChannel(const std::string& chan);
 
-		void setCloseFlag(const std::string& reason);
+		void setCloseFlag();
 		bool getCloseFlag() const;
 		std::string formatPrefix() const;
 };

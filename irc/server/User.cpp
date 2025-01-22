@@ -39,11 +39,10 @@ void User::setFd(int fd)
 	this->_fd = fd;
 }
 
-void User::setCloseFlag(const std::string& reason)
+void User::setCloseFlag()
 {
 	if (_closeFlag)
 		return;
-	pendingPush(":@localhost ERROR :" + reason + "\r\n");
 	_closeFlag = true;
 }
 
