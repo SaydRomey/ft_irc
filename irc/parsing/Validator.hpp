@@ -70,7 +70,7 @@ class Validator
 
 		bool	_isValidNickname(const std::string &nickname) const;
 		bool	_isValidChannelName(const std::string& channel) const;
-		bool	_isValidModeParam(char modeFlag, const std::string &param) const;
+		bool	_isValidModeParam(char modeFlag, const std::string &param, bool isAdding) const;
 		
 		bool	_validatePassCommand(const t_mapStrStr &command) const;
 		bool	_validateNickCommand(const t_mapStrStr &command) const;

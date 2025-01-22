@@ -376,18 +376,21 @@ Checks the validity of mode parameters, considering:
 +o: Requires a nickname.
 +l: Requires a numeric limit.
 */
-bool	Validator::_isValidModeParam(char modeFlag, const std::string &param) const
+bool	Validator::_isValidModeParam(char modeFlag, const std::string &param, bool isAdding) const
 {
 	switch (modeFlag)
 	{
-		case 'k': // key mode requires a non-empty key
-			return (!param.empty());
+		case 'k': // key mode requires a non-empty key (when adding)
+			return (isAdding ? !param.empty() : true); // only validate if adding (+k)
 
 		case 'o': // operator mode requires a valid nickname
 			return (Validator()._isValidNickname(param));
 
-		case 'l': // limit mode requires a positive numeric value
+		case 'l': // limit mode requires a positive numeric value (when)
 		{
+			if (!isAdding)
+				return (true);
+
 			if (param.find_first_not_of("0123456789") != std::string::npos)
 				return (false);
 			
@@ -442,42 +445,45 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	if (!_isValidChannelName(channel))
 		return (_setRpl(ERR_BADCHANMASK, command.at("prefix"), channel));
 	
-	// bool	addMode = true;
+	bool	isAdding = true;
 	size_t	i = 0;
+
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];
 		
 		// toggle add/remove mode
-		// if (modeFlag == '+')
-		// 	addMode = true;
-		// else if (modeFlag == '-')
-		// 	addMode = false;
-		// else
-		// {
+		if (modeFlag == '+')
+			isAdding = true;
+		else if (modeFlag == '-')
+			isAdding = false;
+		else
+		{
 			if (VALID_MODE_FLAGS.find(modeFlag) == std::string::npos)
 				return (_setRpl(ERR_UNKNOWNMODE, command.at("prefix"), std::string(1, modeFlag)));
 			
 			// check if the mode requires a parameter
-			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
+			if ((modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l') &&
+				(isAdding || modeFlag == 'o'))
 			{
 				// make sure a parameter exists for the mode
 				if (paramIndex >= paramTokens.size())
 					return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
 				const std::string &param = paramTokens[paramIndex];
-				if (!_isValidModeParam(modeFlag, param))
-					// return (_setRpl(ERR_INVALIDMODEPARAM, makeArgs(channel, std::string(1, modeFlag), param)));
+
+				if (!_isValidModeParam(modeFlag, param, isAdding))
 					return (_setRpl(ERR_INVALIDMODEPARAM, command.at("prefix"), channel, std::string(1, modeFlag), param));
+
 				++paramIndex;
 			}
-		// }
+		}
 		++i;
 	}
 	
 	// Check for the 3 param limit for modes with parameters
 	if (paramIndex - 2 > 3)
-		return (_setRpl(ERR_UNKNOWNERROR, command.at("prefix"), "Too many parameterized modes"));
+		return (_setRpl(ERR_UNKNOWNERROR, command.at("prefix"), "MODE", "Too many parameterized modes"));
 	
 	return (_noRpl());
 

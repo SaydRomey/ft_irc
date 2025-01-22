@@ -47,6 +47,10 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 		throw std::runtime_error("Server::socket_creation_failed");
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
+	int	opt = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		throw std::runtime_error("Server::setsockopt_failed");
+
 	sockaddr_in serverAddr;
 	bzero(&serverAddr, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
@@ -57,10 +61,6 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 
 	if (listen(sockfd, SOMAXCONN) < 0)
 		throw std::runtime_error("Server::socket_listen_failed");
-
-	int	opt = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		throw std::runtime_error("Server::setsockopt_failed");
 
 	pollfd pfd = {sockfd, POLLIN, 0};
 	_pollFds.push_back(pfd);
@@ -112,13 +112,15 @@ void Server::run(void)
 					send(it->fd, reply.c_str(), reply.size(), 0);
 				}
 				it->events ^= POLLOUT;
+				if (client.getCloseFlag())
+					it = _closeConnection(it);
 			}
 
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
 			{
 				Message msg(msg_str, client.getNickname());
-				std::cout << msg << std::endl;
+				// std::cout << msg << std::endl;
 				// 
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
@@ -234,7 +236,7 @@ void Server::broadcast(const std::string &msg, int senderFd)
 {
 	for (t_clientMap::iterator it=_clientMap.begin(); it != _clientMap.end(); it++)
 	{
-		if (it->first == senderFd)
+		if (it->first != senderFd)
 			it->second.pendingPush(msg);
 	}
 }
@@ -255,7 +257,10 @@ void Server::user_cmd(User &client, const Message& msg)
 	if (perms == PERM_ALL)
 		client.pendingPush(reply(462, client.getNickname()));
 	else if (perms == PERM_NICK)
+	{
 		client.pendingPush(reply(464, client.getNickname()));
+		client.setCloseFlag("Registration failed");
+	}
 	else
 	{
 		client.setUsername(msg.getParams());
@@ -272,6 +277,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 	if (perms == PERM_USER)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
+		client.setCloseFlag("Registration failed");
 		return;
 	}
 
@@ -287,7 +293,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 		_nickMap.erase(oldNick);
 		_nickMap[nick] = client.getFd();
 		client.setNickname(nick);
-		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@ft-irc NICK " + nick;
+		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@localhost NICK :" + nick + "\r\n";
 		broadcast(msg);
 		if (perms == ~PERM_NICK)
 			client.pendingPush(reply(1, nick, nick));

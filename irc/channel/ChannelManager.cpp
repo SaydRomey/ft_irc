@@ -1,6 +1,6 @@
 #include "ChannelManager.hpp"
 #include <iostream>
-#include <vector> //
+#include <vector>
 
 ChannelManager::ChannelManager(Server& server) :_server(server)
 {
@@ -102,22 +102,28 @@ void ChannelManager::kickManager(User &sender, const Message &msg)
 
 void ChannelManager::modeManager(User &sender, const Message &msg)
 {
+	std::cout << "Je crash ici" << std::endl;
 	const std::string& channelName = msg.getParamsVec()[0];
 	const std::string&	pswd = msg.getModeKey();
 	const std::string&	limit = msg.getModeLimit();
 	const std::string&	nickname = msg.getModeNick();
 	User* target = _server.getUserByNickname(nickname);
 
+	if (msg.getParamsVec().empty())
+		std::cout << "getparamsvec vide" << std::endl;
 	std::cout << channelName << std::endl;
 	std::cout << pswd << std::endl;
 	std::cout << limit << std::endl;
-	std::cout << nickname << std::endl;
+	if (!nickname.empty())
+		std::cout << nickname << std::endl;
+	else
+		std::cout << "nickname is empty" << std::endl;
+
 	if (_channels.find(channelName) == _channels.end())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	std::cout << "Je crash ici" << std::endl;
 	if (target == NULL && !nickname.empty()) //ERR_NOSUCHNICK
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));
@@ -126,10 +132,10 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	if (msg.getParamsVec().size() > 1)
 	{
 		const std::string&	modes = msg.getParamsVec()[1];
-		_channels[channelName].setMode(modes, sender, pswd, limit, target);
+		_channels[channelName].setMode(modes, sender, pswd, limit, target, msg.getParams());
 	}
 	else
-		_channels[channelName].getModes();
+		_channels[channelName].getModes(sender);
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
@@ -144,7 +150,7 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	else if (msg.getInput().back() == ':')
+	else if (!msg.getInput().empty() && msg.getInput()[msg.getInput().size() - 1] == ':') // ** back() not cpp98..
 		_channels[channelName].setTopic(sender, "");
 	else
 		_channels[channelName].setTopic(sender, newTopic);
