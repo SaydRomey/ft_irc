@@ -43,14 +43,6 @@ void	Message::_processInput(const std::string& input)
 		// Override parsed prefix with User's nickname ("*" by default)
 		_parsedMessage["prefix"] = _nickname;
 		
-		// Validate the parsed command
-		if (!_validator.validateCommand(_parsedMessage))
-		{
-			_reply = reply(_validator.getRplType(), _validator.getRplArgs());
-			_valid = false;
-			return ;
-		}
-
 		// Extract fields
 		const std::string&	command = _parsedMessage["command"];
 		std::string			params = _parsedMessage["params"];
@@ -94,10 +86,17 @@ void	Message::_processInput(const std::string& input)
 			// _tokenizedParams = tokenize(params);
 		_tokenizedParams = tokenize(params);
 
-		
-		// _parsedMessage["params"] = params;
-		// _parsedMessage["trailing"] = trailing;
-		// 
+		// Adjust params and trailing fields after edge cases
+		_parsedMessage["params"] = params;
+		_parsedMessage["trailing"] = trailing;
+
+		// Validate the parsed command
+		if (!_validator.validateCommand(_parsedMessage))
+		{
+			_reply = reply(_validator.getRplType(), _validator.getRplArgs());
+			_valid = false;
+			return ;
+		}
 		
 		// Construct confirmation reply (wip)
 		std::ostringstream	oss;
@@ -147,10 +146,6 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 			++i;
 		}
 	}
-	// else
-	// {
-	// 	printLabeledField(oss, "Params: ", params, labelWidth + 4);
-	// }
 }
 
 // Handle channels and keys output
