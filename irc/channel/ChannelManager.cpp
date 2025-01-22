@@ -124,10 +124,7 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 		_channels[channelName].setMode(modes, sender, pswd, limit, target, msg.getParams());
 	}
 	else
-	{
-		std::cout << "entrée dans else getMode" << std::endl;
 		_channels[channelName].getModes(sender);
-	}
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
@@ -177,23 +174,3 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 	_channels[channelName].broadcast(sender, message, false);
 }
 
-// // for direct channel replies
-// void ChannelManager::privmsgManager(User &sender, const std::string &chan, const std::string &reply)
-// {
-// 	// if (_channels.count(chan) == 0)
-// 	// 	return sender.pendingPush("INSERT REPLY 403 HERE");
-
-// 	if (_channels.find(chan) == _channels.end())
-// 	{
-// 		sender.pendingPush(::reply(ERR_NOSUCHCHANNEL, sender.getNickname(), chan)); // "::" used to avoid conflict with function param "&reply"
-// 		return ;
-// 	}
-
-// 	// const std::map<User*,bool> members(_channels[chan].getMembers());
-// 	const std::map<User*, bool>& members = _channels[chan].getMembers();
-// 	for (std::map<User*, bool>::const_iterator it = members.begin(); it != members.end(); ++it)
-// 	{
-// 		if (it->first != &sender)
-// 			it->first->pendingPush(reply);
-// 	}
-// }

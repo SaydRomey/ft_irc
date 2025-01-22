@@ -55,6 +55,11 @@ Channel::~Channel()
 // 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
 void Channel::addMember(User &user, std::string pswIfNeeded) // TODO: ajouté verif si user est deja dans le channel
 {
+	if (_members.find(&user) != _members.end()) // ERR_USERONCHANNEL
+	{
+		user.pendingPush(reply(ERR_USERONCHANNEL, user.getNickname(), user.getNickname(), this->_name)); // a voir car pas sur si bon template
+		return ;
+	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit)
 		// ERR_CHANNELISFULL
 	{
@@ -313,7 +318,7 @@ void Channel::getModes(User &user)
 	// Add active modes to 'strModes'
 	strModes << "+";
 	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
-		if (it->second == true)
+		if (it->second == true && it->first != 'o')
 			strModes << it->first;
 	
 	// Check if the user is a member of the channel
