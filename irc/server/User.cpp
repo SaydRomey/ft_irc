@@ -31,6 +31,7 @@ void User::setUsername(const std::string& username)
 {
 	this->_username = username;
 	_perms |= PERM_USER;
+	std::cout << _username << std::endl;
 }
 
 void User::setFd(int fd)

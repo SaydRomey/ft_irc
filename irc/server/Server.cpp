@@ -316,7 +316,7 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	for (size_t i=0; i < targets.size(); i++)
 	{
 		// std::cout << "Target: " << targets[i] << std::endl;
-        std::string reply_msg = ":" client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
+        std::string reply_msg = ":" + client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
 		if (targets[i][0] == '#')
 			_chanManager->privmsgManager(client, targets[i], reply_msg); // ***
 		else if (_nickMap.count(targets[i]) == 0)
