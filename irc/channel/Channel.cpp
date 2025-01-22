@@ -226,9 +226,6 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 {
 	bool	enable;
 	const std::string validMod = "itkol";
-
-	std::cout << "Rentré dans setMode" << std::endl;
-
 	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
 	{
 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
@@ -240,7 +237,6 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 		return ;
 	}
 	char currentSign = '\0'; // Pour garder la trace de + ou -
-	std::cout << "Je crash ici" << std::endl;
 	for (size_t i = 0; i < mode.size(); ++i)
 	{
 		if (mode[i] == '+' || mode[i] == '-')
@@ -283,7 +279,6 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 		else // ERR_UNKNOWNMODE
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
-	// this->broadcast(op, setmodeMsg(op.getNickname(), this->_name, mode), true);
 	this->broadcast(op, setmodeMsg(op.getNickname(), params), true);
 }
 
