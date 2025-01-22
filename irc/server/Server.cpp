@@ -262,7 +262,7 @@ void Server::user_cmd(User &client, const Message& msg)
 	}
 	else
 	{
-		client.setUsername(msg.getParams());
+		client.setUsername(msg.getParamsVec()[0]);
 		if (client.getPerms() == PERM_ALL)
 			client.pendingPush(reply(1, client.getNickname(), client.getNickname()));
 	}
