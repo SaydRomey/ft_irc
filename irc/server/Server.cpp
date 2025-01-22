@@ -286,8 +286,6 @@ void Server::user_cmd(User &client, const Message& msg)
 
 void Server::nick_cmd(User &client, const Message& msg)
 {
-	static const std::string leadCharBan = "#&:0123456789";
-
 	short perms = client.getPerms();
 	if (perms == PERM_USER)
 	{
