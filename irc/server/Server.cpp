@@ -23,7 +23,8 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("PRIVMSG", PRIVMSG),
 	std::make_pair("NOTICE", NOTICE),
 	std::make_pair("PING", PING),
-	std::make_pair("PONG", PONG)
+	std::make_pair("PONG", PONG),
+    std::make_pair("QUIT", QUIT)
 };
 t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 
