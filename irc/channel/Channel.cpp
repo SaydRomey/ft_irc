@@ -313,25 +313,37 @@ std::string Channel::membersList()
 void Channel::getModes(User &user)
 {
 	std::ostringstream strModes;
+	std::ostringstream strParams; // separate stream for parameters
 	std::string strEmpty = "";
 
+	// Add active modes to 'strModes'
 	strModes << "+";
 	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
 		if (it->second == true)
 			strModes << it->first;
-	if (!_password.empty() && _members.find(&user) == _members.end())
+	
+	// Check if the user is a member of the channel
+	bool isMember = (_members.find(&user) != _members.end());
+
+	// Add password and member limit parameters only for members 
+	if (!_password.empty() && isMember)
 	{
-		strModes << " ";
-		strModes << _password;
+		strParams << " ";
+		strParams << _password;
 	}
-	if (_memberLimit > 0 && _members.find(&user) == _members.end())
+	if (_memberLimit > 0 && isMember)
 	{
-		strModes << " ";
-		strModes << _memberLimit;
+		strParams << " ";
+		strParams << _memberLimit;
 	}
-	if (strModes.str().size() > 1)
-		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strModes.str()));
-	user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strEmpty));
+
+	// Send the reply to the user
+	std::string modesWithParams = strModes.str() + strParams.str();
+	if (modesWithParams.size() > 1) // Check if there are any active modes
+		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, modesWithParams));
+	else
+		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strEmpty));
+	
 	//fonctionne meme si la personne n'Est pas dans le channel.
 	// pour tous: creer string avec la liste des modes actifs (+tik).
 	// pour les membres seulement: apres la liste des modes actif, creer string avec les 
