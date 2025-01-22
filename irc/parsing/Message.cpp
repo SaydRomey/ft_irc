@@ -51,7 +51,7 @@ void	Message::_processInput(const std::string& input)
 			return ;
 		}
 
-		// Extract command and params
+		// Extract fields
 		const std::string&	command = _parsedMessage["command"];
 		std::string			params = _parsedMessage["params"];
 		std::string			trailing = _parsedMessage["trailing"];
@@ -59,9 +59,7 @@ void	Message::_processInput(const std::string& input)
 		// Special handling for LimeChat messages: populate trailing
 		if (trailing.empty() && (command == "PRIVMSG" || command == "NOTICE" || command == "PART" || command == "TOPIC" || command == "KICK"))
 		{
-			size_t	requiredParamCount = 1;
-			if (command == "KICK")
-				requiredParamCount = 2;
+			size_t	requiredParamCount = (command == "KICK") ? 2 : 1;
 
 			t_vecStr		tokenizedParams = tokenize(params);
 			if (tokenizedParams.size() > requiredParamCount)
@@ -71,7 +69,7 @@ void	Message::_processInput(const std::string& input)
 			}
 		}
 
-		// Handle messages sent by [weechat/limechat] chosen client
+		// Handle client-specific commands and edge cases
 		if (command == "PING" || command == "PONG")
 		{
 			_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
@@ -97,8 +95,8 @@ void	Message::_processInput(const std::string& input)
 		_tokenizedParams = tokenize(params);
 
 		
-		_parsedMessage["params"] = params;
-		_parsedMessage["trailing"] = trailing;
+		// _parsedMessage["params"] = params;
+		// _parsedMessage["trailing"] = trailing;
 		// 
 		
 		// Construct confirmation reply (wip)

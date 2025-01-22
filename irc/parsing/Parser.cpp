@@ -49,9 +49,9 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	std::string	params, trailing;
 	while (index < tokens.size())
 	{
+		// If a colon is found, the rest is trailing
 		if (tokens[index][0] == ':')
 		{
-			// everything after ':' is the trailing message
 			trailing = tokens[index].substr(1);
 			while (++index < tokens.size())
 			{
@@ -59,11 +59,26 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 			}
 			break ;
 		}
+
+		// Append to params
 		if (!params.empty())
 			params += " ";
 		params += tokens[index];
 		++index;
 	}
+
+	// Handle edge case: No colon, but trailing exists (to test ***)
+	if (trailing.empty() && !params.empty())
+	{
+		size_t	lastSpace = params.find_last_of(' ');
+		if (lastSpace != std::string::npos)
+		{
+			trailing = params.substr(lastSpace + 1);
+			params = params.substr(0, lastSpace);
+		}
+	}
+
+	// Assign normalized values
 	command["params"] = normalizeInput(params);
 	command["trailing"] = trim(trailing);
 
