@@ -23,7 +23,6 @@ Channel::Channel(const std::string &name, User &op) : _name(name), _topic(""),
 			op.pendingPush(reply(RPL_TOPIC, op.getNickname(), this->_name, this->_topic));
 		op.pendingPush(reply(RPL_NAMEREPLY, op.getNickname(), this->_name, membersList()));
 		op.pendingPush(reply(RPL_ENDOFNAMES, op.getNickname(), this->_name));
-		std::cout << "Je crash ici" << std::endl;
 	}
 }
 
