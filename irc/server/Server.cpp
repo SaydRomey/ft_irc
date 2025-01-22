@@ -231,13 +231,16 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
+    case QUIT:
+        _chanManager->quitManager(client);
+        client.setCloseFlag(msg.getTrailing());
+        break;
 	case NOTICE:
 		break;
 	case PING:
 		client.pendingPush(msg.getReply());
 		break;
 	case PONG:
-		client.pendingPush(msg.getReply());
 		break;
 	}
 }
