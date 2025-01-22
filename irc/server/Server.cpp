@@ -316,12 +316,13 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	for (size_t i=0; i < targets.size(); i++)
 	{
 		// std::cout << "Target: " << targets[i] << std::endl;
+        std::string reply_msg = client.formatPrefix() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getReply()); // ***
+			_chanManager->privmsgManager(client, targets[i], reply_msg); // ***
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply()); // ***
+			_clientMap[_nickMap[targets[i]]].pendingPush(reply_msg); // ***
 	}
 }
 
