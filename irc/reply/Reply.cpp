@@ -222,7 +222,8 @@ Generates a message for when a user joins a channel
 std::string	joinMsg(const std::string &clientNickname, const std::string &channelName)
 {
 	std::ostringstream	oss;
-	oss << ":" << clientNickname << " JOIN :" << channelName;
+	// oss << ":" << clientNickname << " JOIN " << channelName;
+	oss << ":" << clientNickname << "!" << clientNickname << "@localhost JOIN " << channelName;
 
 	return (crlf(oss.str()));
 }
@@ -237,7 +238,8 @@ Generates a PART message
 std::string	partMsg(const std::string &clientNickname, const std::string &channelName, const std::string &partingMessage)
 {
 	std::ostringstream	oss;
-	oss << ":" << clientNickname << " PART " << channelName;
+	// oss << ":" << clientNickname << " PART " << channelName;
+	oss << ":" << clientNickname << "!" << clientNickname << "@localhost PART " << channelName;
 
 	if (!partingMessage.empty())
 		oss << " :" << partingMessage;
@@ -284,22 +286,30 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 Generates a SETMODE message
 
 */
-std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+// std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
+// {
+// 	std::ostringstream	oss;
+// 	std::string			adjustedModeStr = modeStr;
+// 	size_t				plusPos = adjustedModeStr.find('+');
+// 	size_t				minusPos = adjustedModeStr.find('-');
+
+// 	if (plusPos != std::string::npos && minusPos != std::string::npos)
+// 	{
+// 		if (plusPos < minusPos)
+// 			adjustedModeStr.insert(minusPos, " ");
+// 		else
+// 			adjustedModeStr.insert(plusPos, " ");
+// 	}
+
+// 	oss << ":" << userNickname << " MODE " << channelName << " :" << adjustedModeStr;
+
+// 	return (crlf(oss.str()));
+// }
+
+std::string setmodeMsg(const std::string &userNickname, const std::string &params)
 {
 	std::ostringstream	oss;
-	std::string			adjustedModeStr = modeStr;
-	size_t				plusPos = adjustedModeStr.find('+');
-	size_t				minusPos = adjustedModeStr.find('-');
-
-	if (plusPos != std::string::npos && minusPos != std::string::npos)
-	{
-		if (plusPos < minusPos)
-			adjustedModeStr.insert(minusPos, " ");
-		else
-			adjustedModeStr.insert(plusPos, " ");
-	}
-
-	oss << ":" << userNickname << " SETMODE " << channelName << " :" << adjustedModeStr;
+	oss << ":" << userNickname << " MODE " << params;
 
 	return (crlf(oss.str()));
 }

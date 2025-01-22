@@ -31,6 +31,7 @@ void User::setUsername(const std::string& username)
 {
 	this->_username = username;
 	_perms |= PERM_USER;
+	std::cout << _username << std::endl;
 }
 
 void User::setFd(int fd)
@@ -42,8 +43,8 @@ void User::setCloseFlag(const std::string& reason)
 {
 	if (_closeFlag)
 		return;
-	_closeFlag = true;
 	pendingPush(":@localhost ERROR :" + reason + "\r\n");
+	_closeFlag = true;
 }
 
 bool User::getCloseFlag() const

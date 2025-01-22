@@ -38,6 +38,7 @@ enum VerificationType
 };
 
 t_vecStr	makeArgs(const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "");
+std::string	join(t_vecStr::const_iterator begin, t_vecStr::const_iterator end, const std::string& delim);
 
 // Tokens
 t_vecStr	tokenize(const std::string &input, char delimiter = ' ', bool includeEmptyTokens = false);

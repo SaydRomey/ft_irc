@@ -51,33 +51,53 @@ void	Message::_processInput(const std::string& input)
 			return ;
 		}
 
-		// Extract command and params
+		// Extract fields
 		const std::string&	command = _parsedMessage["command"];
-		const std::string&	params = _parsedMessage["params"];
+		std::string			params = _parsedMessage["params"];
+		std::string			trailing = _parsedMessage["trailing"];
 
-		// Handle messages sent by [weechat/limechat] chosen client
+		// Special handling for LimeChat messages: populate trailing
+		if (trailing.empty() && (command == "PRIVMSG" || command == "NOTICE" || command == "PART" || command == "TOPIC" || command == "KICK"))
+		{
+			size_t	requiredParamCount = (command == "KICK") ? 2 : 1;
+
+			t_vecStr		tokenizedParams = tokenize(params);
+			if (tokenizedParams.size() > requiredParamCount)
+			{
+				trailing = join(tokenizedParams.begin() + requiredParamCount, tokenizedParams.end(), " ");
+				params = join(tokenizedParams.begin(), tokenizedParams.begin() + requiredParamCount, " ");
+			}
+		}
+
+		// Handle client-specific commands and edge cases
 		if (command == "PING" || command == "PONG")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING :") + params + _parsedMessage["trailing"] + "\r\n";
+			_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
 		}
-		else if (command == "JOIN") // && countTokens(params) > 1)
-		// {
-			// if (hasValidNumberOfParams(params, AT_MOST, 2))
-				// _channelsAndKeys = _parser.parseChannelsAndKeys(params);
-		// }
+		else if (command == "JOIN")
+		{
 			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
-		else if (command == "MODE")
+		}
+		else if (command == "MODE" && countTokens(params) > 2)
 		{
 			t_vecStr	modeParams = _parser.parseModeParams(params);
-// 
+
 			_modeKey = modeParams[0];
 			_modeNick = modeParams[1];
 			_modeLimit = modeParams[2];
 		}
-		// else if (command == "KICK" && hasValidNumberOfParams(paramsIt->second, EXACTLY, 2))
+		// else if (command == "KICK" && hasValidNumberOfParams(params, EXACTLY, 2))
+		// {
 		// 	_tokenizedParams = _parser.parseKickParams(params);
-		else
-			_tokenizedParams = tokenize(params);
+		// }
+		// else
+			// _tokenizedParams = tokenize(params);
+		_tokenizedParams = tokenize(params);
+
+		
+		// _parsedMessage["params"] = params;
+		// _parsedMessage["trailing"] = trailing;
+		// 
 		
 		// Construct confirmation reply (wip)
 		std::ostringstream	oss;
@@ -86,11 +106,10 @@ void	Message::_processInput(const std::string& input)
 		if (!params.empty())
 			oss << " " << params;
 		
-		if (!_parsedMessage["trailing"].empty())
-			oss << ": " << _parsedMessage["trailing"];
+		if (!trailing.empty())
+			oss << " :" << trailing;
 
 		_reply = crlf(oss.str());
-
 		_valid = true;
 	}
 	catch (const std::exception &e)
@@ -115,6 +134,8 @@ static void	printLabeledField(std::ostream &oss, const std::string &label, const
 // Handle single parameter or multi-parameter output
 static void	handleMultiParams(std::ostream &oss, const std::string &params, int labelWidth)
 {
+	printLabeledField(oss, "Params: ", params, labelWidth + 4);
+	
 	std::vector<std::string>	paramsTokens = tokenize(params, ' ');
 
 	if (paramsTokens.size() > 1)
@@ -126,10 +147,10 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 			++i;
 		}
 	}
-	else
-	{
-		printLabeledField(oss, "Params: ", params, labelWidth + 4);
-	}
+	// else
+	// {
+	// 	printLabeledField(oss, "Params: ", params, labelWidth + 4);
+	// }
 }
 
 // Handle channels and keys output

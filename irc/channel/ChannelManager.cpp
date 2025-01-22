@@ -1,6 +1,6 @@
 #include "ChannelManager.hpp"
 #include <iostream>
-#include <vector> //
+#include <vector>
 
 ChannelManager::ChannelManager(Server& server) :_server(server)
 {
@@ -12,9 +12,6 @@ ChannelManager::~ChannelManager()
 
 void ChannelManager::joinManager(User &sender, const Message &msg)
 {
-	std::cout << "HERE!!" << std::endl;
-
-
 	std::vector<std::pair<std::string, std::string> > ChannelsAndKeys = msg.getChannelsAndKeys();
 	for (size_t i = 0; i < ChannelsAndKeys.size(); ++i)
 	{
@@ -22,11 +19,12 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 		const std::string &key = ChannelsAndKeys[i].second;
 		if (_channels.find(channelName) == _channels.end())
 		{
-			std::cout << "found channelname" << std::endl;
+			std::cout << "not found channelname" << std::endl;
 
 			// Channel inexistant donc creation du channel
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
+			std::cout << "apres ajout channel" << std::endl;
 		}
 		else
 		{
@@ -123,11 +121,13 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 	if (msg.getParamsVec().size() > 1)
 	{
 		const std::string&	modes = msg.getParamsVec()[1];
-		_channels[channelName].setMode(modes, sender, pswd, limit, target);
+		_channels[channelName].setMode(modes, sender, pswd, limit, target, msg.getParams());
 	}
 	else
-		_channels[channelName].getModes();
-	
+	{
+		std::cout << "entrée dans else getMode" << std::endl;
+		_channels[channelName].getModes(sender);
+	}
 }
 
 void ChannelManager::topicManager(User &sender, const Message &msg)
@@ -142,8 +142,7 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	// else if (newTopic.compare(":") == 0)
-	else if (msg.getInput().back() == ':')
+	else if (!msg.getInput().empty() && msg.getInput()[msg.getInput().size() - 1] == ':')
 		_channels[channelName].setTopic(sender, "");
 	else
 		_channels[channelName].setTopic(sender, newTopic);
@@ -151,10 +150,6 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 
 void ChannelManager::quitManager(User &sender)
 {
-	//boucle dans tout les channels pour chercher si le sender est dedans car deconnexion = part des channels.
-	//voir pour mettre un message PART different genre "disconnected", avec RPL_QUIT ou autre ou ajouté parametre à removeMembers
-	//voir pour creer dans channel fonction quit sinon et faire un message different
-
 	for (std::map<std::string, Channel>::iterator it = _channels.begin(); it != _channels.end();)
 	{
 		if (it->second.getMembers().find(&sender) != it->second.getMembers().end())
@@ -179,7 +174,7 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	_channels[channelName].broadcast(sender, message);
+	_channels[channelName].broadcast(sender, message, false);
 }
 
 // // for direct channel replies

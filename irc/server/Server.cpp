@@ -47,6 +47,10 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 		throw std::runtime_error("Server::socket_creation_failed");
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
+	int	opt = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		throw std::runtime_error("Server::setsockopt_failed");
+
 	sockaddr_in serverAddr;
 	bzero(&serverAddr, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
@@ -57,10 +61,6 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 
 	if (listen(sockfd, SOMAXCONN) < 0)
 		throw std::runtime_error("Server::socket_listen_failed");
-
-	int	opt = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		throw std::runtime_error("Server::setsockopt_failed");
 
 	pollfd pfd = {sockfd, POLLIN, 0};
 	_pollFds.push_back(pfd);
@@ -106,9 +106,11 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
+				std::cout << client.pendingSize() << std::endl;
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
+					std::cout << "Sent to " << client.getNickname() << " : " << reply << std::flush;
 					send(it->fd, reply.c_str(), reply.size(), 0);
 				}
 				it->events ^= POLLOUT;
@@ -121,7 +123,8 @@ void Server::run(void)
 			{
 				Message msg(msg_str, client.getNickname());
 				std::cout << msg << std::endl;
-				if (msg.isValid())
+				// 
+				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
 					client.pendingPush(msg.getReply());
@@ -197,6 +200,16 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
+	default:
+		if (client.getPerms() != PERM_ALL)
+		{
+			client.pendingPush(":@localhost 451 :You are not registered yet\r\n");
+			return;
+		}
+		break;
+	}
+	switch (Server::commandMap[msg.getCommand()])
+	{
 	case JOIN:
 		_chanManager->joinManager(client, msg);
 		break;
@@ -229,8 +242,6 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 		break;
 	case PONG:
 		break;
-	default:
-		break;
 	}
 }
 
@@ -245,7 +256,7 @@ void Server::broadcast(const std::string &msg, int senderFd)
 
 void Server::pass_cmd(User &client, const Message& msg)
 {
-	std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
+	// std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
 		client.pendingPush(reply(462, client.getNickname()));
@@ -307,13 +318,14 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
 	for (size_t i=0; i < targets.size(); i++)
 	{
-		std::cout << "Target: " << targets[i] << std::endl;
+		// std::cout << "Target: " << targets[i] << std::endl;
+        std::string reply_msg = ":" + client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], msg.getTrailing()); // ***
+			_chanManager->privmsgManager(client, targets[i], reply_msg); // ***
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(msg.getReply()); // ***
+			_clientMap[_nickMap[targets[i]]].pendingPush(reply_msg); // ***
 	}
 }
 

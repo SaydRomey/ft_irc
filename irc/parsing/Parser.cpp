@@ -49,9 +49,9 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	std::string	params, trailing;
 	while (index < tokens.size())
 	{
+		// If a colon is found, the rest is trailing
 		if (tokens[index][0] == ':')
 		{
-			// everything after ':' is the trailing message
 			trailing = tokens[index].substr(1);
 			while (++index < tokens.size())
 			{
@@ -59,48 +59,31 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 			}
 			break ;
 		}
+
+		// Append to params
 		if (!params.empty())
 			params += " ";
 		params += tokens[index];
 		++index;
 	}
+
+	// // Handle edge case: No colon, but trailing exists (to test ***)
+	// // if (trailing.empty() && !params.empty())
+	// // {
+	// // 	size_t	lastSpace = params.find_last_of(' ');
+	// // 	if (lastSpace != std::string::npos)
+	// // 	{
+	// // 		trailing = params.substr(lastSpace + 1);
+	// // 		params = params.substr(0, lastSpace);
+	// // 	}
+	// // }
+
+	// Assign normalized values
 	command["params"] = normalizeInput(params);
 	command["trailing"] = trim(trailing);
 
-	// command["trailing"] = _determineTrailing(command["command"], trailing, input);
-
-	// // Handle the 'TOPIC' command edge case
-	// if (command["command"] == "TOPIC")
-	// {
-	// 	if (trailing.empty())
-	// 	{
-	// 		if (input.back() == ':') // explicit ':' at the end
-	// 			command["trailing"] = ":";
-	// 		else
-	// 			command["trailing"] = ""; // no trailing content
-	// 	}
-	// 	else
-	// 		command["trailing"] = trim(trailing);
-	// }
-	// else
-	// 	command["trailing"] = trim(trailing);
-
 	return (command);
 }
-
-// std::string	Parser::_determineTrailing(const std::string &command, const std::string &trailing, const std::string &input) const
-// {
-// 	if (command == "TOPIC")
-// 	{
-// 		if (trailing.empty())
-// 		{
-// 			if (!input.empty() && input.back() == ':')
-// 				return (":"); // explicit ':' indicates erase topic
-// 			return (""); // no trailing content
-// 		}
-// 	}
-// 	return (trim(trailing)); // default trailing behavior
-// }
 
 /*	**need to decide if we skip or flag a missing channel in multiparams "#chan1,,#chan3,#chan4"
 
@@ -171,10 +154,16 @@ Extracts a vector containing the optionnal params for the MODE command
 t_vecStr	Parser::parseModeParams(const std::string &params) const
 {
 	t_vecStr	paramTokens = tokenize(params);
-	std::string	modes = paramTokens[1];
+
+	if (paramTokens.empty())
+		throw (std::invalid_argument("Invalide MODE command: Missing channel name"));
+
+	// Extract mode flags if present
+	std::string	modes = paramTokens.size() > 1 ? paramTokens[1] : "";
 	t_vecStr	modeParamTokens(paramTokens.begin() + 2, paramTokens.end());
 
-	t_vecStr	result(3, ""); // [key, nickname, limit]
+	// Initialize the result: [key, nickname, limit]
+	t_vecStr	result(3, ""); // Default empty values for modes requiring params
 	size_t		paramIndex = 0;
 
 	size_t	i = 0;
@@ -185,6 +174,9 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 		// only process modes that require parameters
 		if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
 		{
+			if (paramIndex >= modeParamTokens.size())
+				continue ; // skip if no parameter is available for the flag
+
 			const std::string &param = modeParamTokens[paramIndex];
 
 			// assign parameter to the appropriate index

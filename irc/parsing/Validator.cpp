@@ -29,6 +29,7 @@ static t_mapStrCmdType	initCommandMap(void)
 	cmdMap["NOTICE"] = NOTICE;
 	cmdMap["PING"] = PING;
 	cmdMap["PONG"] = PONG;
+	cmdMap["QUIT"] = QUIT;
 
 	return (cmdMap);
 }
@@ -50,7 +51,8 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validatePrivmsgCommand,
 	&Validator::_validateNoticeCommand,
 	&Validator::_validatePingCommand,
-	&Validator::_validatePongCommand
+	&Validator::_validatePongCommand,
+	&Validator::_validateQuitCommand
 };
 
 /* ************************************************************************** */
@@ -69,7 +71,7 @@ const t_mapStrCmdType&	Validator::getCommandMap(void) { return (_commandMap); }
 /*
 Sets the error state and builds the reply
 */
-bool	Validator::_setRpl(ReplyType rplType, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4) const
+bool	Validator::_setRpl(ReplyType rplType, const std::string& arg1, const std::string& arg2, const std::string& arg3, const std::string& arg4) const
 {
 	_rplType = rplType;
 	_rplArgs.clear();
@@ -94,27 +96,15 @@ bool	Validator::_noRpl(void) const
 /*
 Validates the syntax (structure and validity) of a command,
 tokenized in a map of string key and values
-
-Checks:
-	"command" must exist and be a non-empty string,
-	
-	optional "prefix" must be a valid nickname
-	validates the command syntax
-	... ?
-
-Errors:
-	421 ERR_UNKNOWNCOMMAND: Unknown command
 */
 bool	Validator::validateCommand(const t_mapStrStr &command) const
 {
-	// check if "command" key exists and is non-empty
-	if (command.find("command") == command.end() || command.at("command").empty())
-	// if (_parsedMessage["command"].empty())
-		return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("prefix"), "*"));
+	const std::string&	cmd = command.at("command");
 	
-	const std::string	&cmd = command.at("command");
+	if (cmd.empty())
+		return (_setRpl(ERR_UNKNOWNCOMMAND, command.at("prefix"), "*"));
 
-	// lookup the command type in the command map
+	// Lookup the command type in the command map
 	t_mapStrCmdType::const_iterator	it = _commandMap.find(cmd);
 
 	if (it == _commandMap.end())
@@ -127,15 +117,14 @@ bool	Validator::validateCommand(const t_mapStrStr &command) const
 
 /* ************************************************************************** */ // Syntax Validation
 
-/*	** https://dd.ircdocs.horse/refs/commands/nick
-
-Validate IRC nickname
+/*
+Validates an IRC nickname
 
 	Must start with a letter,
 	Must contain only alphanumeric characters, underscores, or dashes,
 	Must not exceed specified limit
 */
-bool	Validator::_isValidNickname(const std::string &nickname) const
+bool	Validator::_isValidNickname(const std::string& nickname) const
 {
 	if (nickname.empty() || nickname.length() > MAX_NICKNAME_LENGTH)
 		return (false);
@@ -153,7 +142,7 @@ bool	Validator::_isValidNickname(const std::string &nickname) const
 	return (true);
 }
 
-bool	isValidNickname(const std::string &nickname)
+bool	isValidNickname(const std::string& nickname)
 {
 	if (nickname.empty() || nickname.length() > 9)
 		return (false);
@@ -172,13 +161,13 @@ bool	isValidNickname(const std::string &nickname)
 }
 
 /*
-Validate IRC channel names
+Validates IRC channel names
 
 	Must start with '#'
 	Must not contain invalid characters:
 	(' ', ','. '\r', '\n') 
 */
-bool	Validator::_isValidChannelName(const std::string &channel) const
+bool	Validator::_isValidChannelName(const std::string& channel) const
 {
 	if (channel.empty() || channel.length() > MAX_CHANNEL_NAME_LENGTH)
 		return (false);
@@ -192,70 +181,29 @@ bool	Validator::_isValidChannelName(const std::string &channel) const
 	return (true);
 }
 
-// bool	Validator::isValidPassword(const std::string &password) const
-// {
-// 	// 
-// 	return (_setRpl(ERR_PASSWDMISMATCH));
-// }
-
 /* ************************************************************************** */
 
 /*
-Validate "PASS" command
-
-	"params" must exist and contain a non-empty password
-
-Errors:
-	461 ERR_NEEDMOREPARAMS: Not enough parameters
-	462 ERR_ALREADYREGISTERED: You may not reregister
-
-** should we implement a password strength validator or rules?
-ex:
-[Please try again with a more obscure password. 
-Passwords should be at least five characters long,
-should not be something easily guessed
-(e.g. your real name or your nick),
-and cannot contain the space or tab characters]
-**
-
-Success Reply:
-No specific reply is defined in IRC for a successful PASS command,
-but it’s implied as part of the connection process.
-Ensure errors like ERR_NEEDMOREPARAMS or ERR_ALREADYREGISTERED are handled.
+Validates "PASS" command
 */
 bool	Validator::_validatePassCommand(const t_mapStrStr &command) const
 {
+	// if (command.at("prams").empty())
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "PASS"));
 
 	return (_noRpl());
 }
 
-/*
-Nicknames are non-empty strings with the following restrictions:
 
-They MUST NOT contain any of the following characters: space (' ', 0x20), comma (',', 0x2C), asterisk ('*', 0x2A), question mark ('?', 0x3F), exclamation mark ('!', 0x21), at sign ('@', 0x40).
-They MUST NOT start with any of the following characters: dollar ('$', 0x24), colon (':', 0x3A).
-They MUST NOT start with a character listed as a channel type, channel membership prefix, or prefix listed in the IRCv3 multi-prefix Extension.
-They SHOULD NOT contain any dot character ('.', 0x2E).
-Servers MAY have additional implementation-specific nickname restrictions and SHOULD avoid the use of nicknames which are ambiguous with commands or command parameters where this could lead to confusion or error.
-*/
 /*
 Validate "NICK" command
-
-	"params" must exist and contain a valid nickname
-
-Errors:
-	431 ERR_NONICKNAMEGIVEN: No nickname given
-	432 ERR_ERRONEUSNICKNAME: Erroneous nickname
-	433 ERR_NICKNAMEINUSE: Nickname is already in use
-
-Success Reply:
-	None specified,
-	but errors like ERR_ALREADYREGISTERED should be handled.
 */
 bool	Validator::_validateNickCommand(const t_mapStrStr &command) const
 {
+	// const std::string&	params = command.at("params");
+
+	// if (prams.empty())
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NONICKNAMEGIVEN));
 
@@ -332,14 +280,14 @@ bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
 
 	// extract and tokenize "params"
 	std::string	params = paramsIt->second;
-	t_vecStr	paramsTokens = tokenize(params, ' ');
+	t_vecStr	paramTokens = tokenize(params, ' ');
 	
 	// validate number of tokens in "params"
-	if (paramsTokens.size() > 2)
+	if (paramTokens.size() > 2)
 		return (_setRpl(ERR_UNKNOWNCOMMAND, prefix, "JOIN"));
 
 	// validate channels (first parameter)
-	t_vecStr	channelTokens = tokenize(paramsTokens[0], ',');
+	t_vecStr	channelTokens = tokenize(paramTokens[0], ',');
 
 	size_t	i = 0;
 	while (i < channelTokens.size())
@@ -430,18 +378,21 @@ Checks the validity of mode parameters, considering:
 +o: Requires a nickname.
 +l: Requires a numeric limit.
 */
-bool	Validator::_isValidModeParam(char modeFlag, const std::string &param) const
+bool	Validator::_isValidModeParam(char modeFlag, const std::string &param, bool isAdding) const
 {
 	switch (modeFlag)
 	{
-		case 'k': // key mode requires a non-empty key
-			return (!param.empty());
+		case 'k': // key mode requires a non-empty key (when adding)
+			return (isAdding ? !param.empty() : true); // only validate if adding (+k)
 
 		case 'o': // operator mode requires a valid nickname
 			return (Validator()._isValidNickname(param));
 
-		case 'l': // limit mode requires a positive numeric value
+		case 'l': // limit mode requires a positive numeric value (when)
 		{
+			if (!isAdding)
+				return (true);
+
 			if (param.find_first_not_of("0123456789") != std::string::npos)
 				return (false);
 			
@@ -482,56 +433,59 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), command.at("command")));
 
-	t_vecStr	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramTokens = tokenize(command.at("params"));
 
 	// ensure channel is specified
-	if (paramsTokens.size() < 1)
+	if (paramTokens.size() < 1)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
-	const std::string	&channel = paramsTokens[0];
-	const std::string	&modes = paramsTokens[1];
+	const std::string&	channel = paramTokens[0];
+	std::string			modes = paramTokens.size() > 1 ? paramTokens[1] : "";
 	size_t	paramIndex = 2; // start checking for additional params after 'modes'
 
 	// validate target (channel)
 	if (!_isValidChannelName(channel))
 		return (_setRpl(ERR_BADCHANMASK, command.at("prefix"), channel));
 	
-	// bool	addMode = true;
+	bool	isAdding = true;
 	size_t	i = 0;
+
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];
 		
 		// toggle add/remove mode
-		// if (modeFlag == '+')
-		// 	addMode = true;
-		// else if (modeFlag == '-')
-		// 	addMode = false;
-		// else
-		// {
+		if (modeFlag == '+')
+			isAdding = true;
+		else if (modeFlag == '-')
+			isAdding = false;
+		else
+		{
 			if (VALID_MODE_FLAGS.find(modeFlag) == std::string::npos)
 				return (_setRpl(ERR_UNKNOWNMODE, command.at("prefix"), std::string(1, modeFlag)));
 			
 			// check if the mode requires a parameter
-			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
+			if ((modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l') &&
+				(isAdding || modeFlag == 'o'))
 			{
 				// make sure a parameter exists for the mode
-				if (paramIndex >= paramsTokens.size())
+				if (paramIndex >= paramTokens.size())
 					return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
-				const std::string &param = paramsTokens[paramIndex];
-				if (!_isValidModeParam(modeFlag, param))
-					// return (_setRpl(ERR_INVALIDMODEPARAM, makeArgs(channel, std::string(1, modeFlag), param)));
+				const std::string &param = paramTokens[paramIndex];
+
+				if (!_isValidModeParam(modeFlag, param, isAdding))
 					return (_setRpl(ERR_INVALIDMODEPARAM, command.at("prefix"), channel, std::string(1, modeFlag), param));
+
 				++paramIndex;
 			}
-		// }
+		}
 		++i;
 	}
 	
 	// Check for the 3 param limit for modes with parameters
 	if (paramIndex - 2 > 3)
-		return (_setRpl(ERR_UNKNOWNERROR, command.at("prefix"), "Too many parameterized modes"));
+		return (_setRpl(ERR_UNKNOWNERROR, command.at("prefix"), "MODE", "Too many parameterized modes"));
 	
 	return (_noRpl());
 
@@ -572,13 +526,13 @@ bool Validator::_validateKickCommand(const t_mapStrStr &command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
 
-	t_vecStr paramsTokens = tokenize(command.at("params"));
+	t_vecStr paramTokens = tokenize(command.at("params"));
 	
-	if (paramsTokens.size() < 2)
+	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
 
-	std::string	channels = paramsTokens[0];
-	std::string	users = paramsTokens[1];
+	std::string	channels = paramTokens[0];
+	std::string	users = paramTokens[1];
 
 	t_vecStr	channelTokens = tokenize(channels, ',');
 	size_t	i = 0;
@@ -625,9 +579,9 @@ bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 
-	t_vecStr	paramsTokens = tokenize(command.at("params"));
+	t_vecStr	paramTokens = tokenize(command.at("params"));
 
-	if (paramsTokens.size() < 2)
+	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 	
 
@@ -731,6 +685,17 @@ bool Validator::_validatePongCommand(const t_mapStrStr &command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PONG"));
+
+	return (_noRpl());
+}
+
+/*	** ?? any validation needed ?
+*/
+bool Validator::_validateQuitCommand(const t_mapStrStr &command) const
+{
+	(void)command;
+	// if (command.find("params") == command.end() || command.at("params").empty())
+		// return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "QUIT"));
 
 	return (_noRpl());
 }
