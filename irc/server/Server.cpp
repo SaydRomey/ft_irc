@@ -106,7 +106,7 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
-				std::cout << client.pendingSize() << std::endl;
+				// std::cout << client.pendingSize() << std::endl;
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
@@ -200,6 +200,10 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case NICK:
 		nick_cmd(client, msg);
 		break;
+    case QUIT:
+        _chanManager->quitManager(client);
+        client.setCloseFlag(msg.getTrailing());
+        break;
 	default:
 		if (client.getPerms() != PERM_ALL)
 		{
@@ -231,10 +235,6 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
-    case QUIT:
-        _chanManager->quitManager(client);
-        client.setCloseFlag(msg.getTrailing());
-        break;
 	case NOTICE:
 		break;
 	case PING:
