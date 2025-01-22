@@ -115,9 +115,9 @@ void Server::run(void)
 					send(it->fd, reply.c_str(), reply.size(), 0);
 				}
 				it->events ^= POLLOUT;
-				if (client.getCloseFlag())
-					it = _closeConnection(it) - 1;
 			}
+			if (client.getCloseFlag())
+				it = _closeConnection(it) - 1;
 
 			std::string msg_str = client.extractFromBuffer();
 			while (!msg_str.empty())
