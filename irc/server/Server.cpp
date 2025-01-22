@@ -91,6 +91,7 @@ void Server::run(void)
 			User& client = _clientMap[it->fd];
 			if (it->revents & POLLHUP)
 			{
+				_chanManager->quitManager(client);
 				it = _closeConnection(it) - 1;
 				continue;
 			}
@@ -113,7 +114,7 @@ void Server::run(void)
 				}
 				it->events ^= POLLOUT;
 				if (client.getCloseFlag())
-					it = _closeConnection(it);
+					it = _closeConnection(it) - 1;
 			}
 
 			std::string msg_str = client.extractFromBuffer();
