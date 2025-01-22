@@ -24,7 +24,7 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("NOTICE", NOTICE),
 	std::make_pair("PING", PING),
 	std::make_pair("PONG", PONG),
-    std::make_pair("QUIT", QUIT)
+	std::make_pair("QUIT", QUIT)
 };
 t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 
@@ -232,10 +232,10 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
-    case QUIT:
-        _chanManager->quitManager(client);
-        client.setCloseFlag(msg.getTrailing());
-        break;
+	case QUIT:
+		_chanManager->quitManager(client);
+		client.setCloseFlag();
+		break;
 	case NOTICE:
 		break;
 	case PING:
@@ -273,7 +273,8 @@ void Server::user_cmd(User &client, const Message& msg)
 	else if (perms == PERM_NICK)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		client.setCloseFlag("Registration failed");
+		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.setCloseFlag();
 	}
 	else
 	{
@@ -291,7 +292,8 @@ void Server::nick_cmd(User &client, const Message& msg)
 	if (perms == PERM_USER)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		client.setCloseFlag("Registration failed");
+		pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.setCloseFlag();
 		return;
 	}
 
@@ -320,7 +322,7 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	for (size_t i=0; i < targets.size(); i++)
 	{
 		// std::cout << "Target: " << targets[i] << std::endl;
-        std::string reply_msg = ":" + client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
+		std::string reply_msg = ":" + client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
 		if (targets[i][0] == '#')
 			_chanManager->privmsgManager(client, targets[i], reply_msg); // ***
 		else if (_nickMap.count(targets[i]) == 0)
