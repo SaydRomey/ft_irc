@@ -142,7 +142,7 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	else if (!msg.getInput().empty() && msg.getInput()[msg.getInput().size() - 1] == ':') // ** back() not cpp98..
+	else if (!msg.getInput().empty() && msg.getInput()[msg.getInput().size() - 1] == ':')
 		_channels[channelName].setTopic(sender, "");
 	else
 		_channels[channelName].setTopic(sender, newTopic);
@@ -150,10 +150,6 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 
 void ChannelManager::quitManager(User &sender)
 {
-	//boucle dans tout les channels pour chercher si le sender est dedans car deconnexion = part des channels.
-	//voir pour mettre un message PART different genre "disconnected", avec RPL_QUIT ou autre ou ajouté parametre à removeMembers
-	//voir pour creer dans channel fonction quit sinon et faire un message different
-
 	for (std::map<std::string, Channel>::iterator it = _channels.begin(); it != _channels.end();)
 	{
 		if (it->second.getMembers().find(&sender) != it->second.getMembers().end())
@@ -178,7 +174,7 @@ void ChannelManager::privmsgManager(User &sender, const std::string &channelName
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	_channels[channelName].broadcast(sender, message, false); //changer car il faut appeler reply
+	_channels[channelName].broadcast(sender, message, false);
 }
 
 // // for direct channel replies
