@@ -47,6 +47,10 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 		throw std::runtime_error("Server::socket_creation_failed");
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
+	int	opt = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		throw std::runtime_error("Server::setsockopt_failed");
+
 	sockaddr_in serverAddr;
 	bzero(&serverAddr, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
@@ -57,10 +61,6 @@ Server::Server(const std::string &port, const std::string &password): _time(time
 
 	if (listen(sockfd, SOMAXCONN) < 0)
 		throw std::runtime_error("Server::socket_listen_failed");
-
-	int	opt = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		throw std::runtime_error("Server::setsockopt_failed");
 
 	pollfd pfd = {sockfd, POLLIN, 0};
 	_pollFds.push_back(pfd);

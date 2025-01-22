@@ -150,7 +150,7 @@ void ChannelManager::topicManager(User &sender, const Message &msg)
 	}
 	if (newTopic.empty())
 		_channels[channelName].getTopic(sender);
-	else if (msg.getInput().back() == ':')
+	else if (!msg.getInput().empty() && msg.getInput()[msg.getInput().size() - 1] == ':') // ** back() not cpp98..
 		_channels[channelName].setTopic(sender, "");
 	else
 		_channels[channelName].setTopic(sender, newTopic);
