@@ -6,6 +6,7 @@
 # include <vector>
 # include <map>
 # include "Reply.hpp"
+# include <sstream>
 
 typedef std::map<User*, bool> MapUser;
 typedef std::map<char, bool> MapMode;
@@ -35,11 +36,11 @@ class Channel
 		void						getTopic(User& user);
 		void						kick(User &user, User& op, std::string reason = "");
 		void						invite(User &user, User& op);
-		void						setMode(std::string mode, User& op, const std::string& pswd, const std::string& limit, User* user);
+		void						setMode(std::string mode, User& op, const std::string& pswd, const std::string& limit, User* user, const std::string& params);
 		void						addOperator(User *user, const char addOrRemove);
 
 		std::string 				membersList();
-		void						getModes();
+		void						getModes(User &user);
 		void						printMode();
 		const MapUser&				getMembers(void) const;
 
