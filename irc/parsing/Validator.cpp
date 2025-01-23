@@ -417,6 +417,7 @@ bool	Validator::_validateModeCommand(const t_mapStrStr& command) const
 		return (_setRpl(ERR_BADCHANMASK, command.at("prefix"), channel));
 	
 	bool	isAdding = true;
+	bool	hasModifier = false;
 	size_t	i = 0;
 
 	while (i < modes.size())
@@ -426,24 +427,23 @@ bool	Validator::_validateModeCommand(const t_mapStrStr& command) const
 		// Toggle add/remove mode
 		if (modeFlag == '+')
 		{
-			if (isAdding)
-			{
-				++i;
-				continue ;
-			}
 			isAdding = true;
+			hasModifier = true;
+			++i;
+			continue ;
 		}
 		else if (modeFlag == '-')
 		{
-			if (!isAdding)
-			{
-				++i;
-				continue ;
-			}
 			isAdding = false;
+			hasModifier = true;
+			++i;
+			continue ;
 		}
 		else
 		{
+			if (modeFlag == 'o' && !hasModifier)
+				return (_setRpl(ERR_INVALIDMODEPARAM, command.at("prefix"), channel, std::string(1, modeFlag), ":Missing '+' or '-' modifier"));
+
 			if (VALID_MODE_FLAGS.find(modeFlag) == std::string::npos)
 				return (_setRpl(ERR_UNKNOWNMODE, command.at("prefix"), std::string(1, modeFlag)));
 			
