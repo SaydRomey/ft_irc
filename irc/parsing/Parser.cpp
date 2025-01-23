@@ -168,7 +168,10 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
 			{
 				if (paramIndex >= modeParamTokens.size())
+				{
+					++i;
 					continue ; // skip if no parameter is available for the flag
+				}
 
 				const std::string &param = modeParamTokens[paramIndex];
 
