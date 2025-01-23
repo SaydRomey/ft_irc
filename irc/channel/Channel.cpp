@@ -229,6 +229,7 @@ static bool	isValidNb(const std::string &str)
 void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 	const std::string &limit, User *user, const std::string& params)
 {
+	std::cout << "arrivé dans setMode" << std::endl;
 	bool	enable;
 	const std::string validMod = "itkol";
 	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
@@ -256,6 +257,7 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 			}
 			enable = (currentSign == '+');
 			_modes[mode[i]] = enable;
+			std::cout << "avant entrée dans o" << std::endl;
 			if (mode[i] == 'k')
 			{
 				if (enable && !pswd.empty())
@@ -265,6 +267,12 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 			}
 			else if (mode[i] == 'o')
 			{
+				std::cout << "apres entrée dans o" << std::endl;
+				// if (user == NULL)
+				// {
+				// 	op.pendingPush(reply(ERR_NOSUCHNICK, op.getNickname(), "nickname"));
+				// 	return ;
+				// }
 				if (_members.find(user) == _members.end())
 				{
 					op.pendingPush(reply(ERR_NOTONCHANNEL, user->getNickname(), this->_name));

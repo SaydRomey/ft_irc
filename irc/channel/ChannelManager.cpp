@@ -113,6 +113,11 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
+	std::cout << nickname << "et ";
+	if (target)
+		std::cout << "target not null" << std::endl;
+	else
+		std::cout << "target is null" << std::endl;
 	if (target == NULL && !nickname.empty()) //ERR_NOSUCHNICK
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));

@@ -132,32 +132,34 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	t_vecStr	result(3, ""); // Default empty values for modes requiring params
 	size_t		paramIndex = 0;
 	size_t		i = 0;
-	bool		isAdding = true;
+	// bool		isAdding = true;
 
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];
-
-		if (modeFlag == '+')
-		{
-			if (isAdding)
-			{
-				++i;
-				continue ;
-			}
-			isAdding = true;
-		}
-		else if (modeFlag == '-')
-		{
-			if (!isAdding)
-			{
-				++i;
-				continue ;
-			}
-			isAdding = false;
-		}
-		else
-		{
+		// if (modeFlag == '-' || modeFlag == '+' || modeFlag != '\0')
+		// 	i++;
+		
+		// if (modeFlag == '+')
+		// {
+		// 	// if (isAdding)
+		// 	// {
+		// 	// 	++i;
+		// 	// 	continue ;
+		// 	// }
+		// 	isAdding = true;
+		// }
+		// else if (modeFlag == '-')
+		// {
+		// 	// if (!isAdding)
+		// 	// {
+		// 	// 	++i;
+		// 	// 	continue ;
+		// 	// }
+		// 	isAdding = false;
+		// }
+		// else
+		// {
 			// only process modes that require parameters
 			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
 			{
@@ -180,7 +182,7 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 						break ;
 				}
 				++paramIndex;
-			}
+			// }
 		}
 		++i;
 	}
