@@ -286,26 +286,6 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 Generates a SETMODE message
 
 */
-// std::string setmodeMsg(const std::string &userNickname, const std::string &channelName, const std::string &modeStr)
-// {
-// 	std::ostringstream	oss;
-// 	std::string			adjustedModeStr = modeStr;
-// 	size_t				plusPos = adjustedModeStr.find('+');
-// 	size_t				minusPos = adjustedModeStr.find('-');
-
-// 	if (plusPos != std::string::npos && minusPos != std::string::npos)
-// 	{
-// 		if (plusPos < minusPos)
-// 			adjustedModeStr.insert(minusPos, " ");
-// 		else
-// 			adjustedModeStr.insert(plusPos, " ");
-// 	}
-
-// 	oss << ":" << userNickname << " MODE " << channelName << " :" << adjustedModeStr;
-
-// 	return (crlf(oss.str()));
-// }
-
 std::string setmodeMsg(const std::string &userNickname, const std::string &params)
 {
 	std::ostringstream	oss;

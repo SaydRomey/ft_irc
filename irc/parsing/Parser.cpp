@@ -67,17 +67,6 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 		++index;
 	}
 
-	// // Handle edge case: No colon, but trailing exists (to test ***)
-	// // if (trailing.empty() && !params.empty())
-	// // {
-	// // 	size_t	lastSpace = params.find_last_of(' ');
-	// // 	if (lastSpace != std::string::npos)
-	// // 	{
-	// // 		trailing = params.substr(lastSpace + 1);
-	// // 		params = params.substr(0, lastSpace);
-	// // 	}
-	// // }
-
 	// Assign normalized values
 	command["params"] = normalizeInput(params);
 	command["trailing"] = trim(trailing);
@@ -85,11 +74,7 @@ t_mapStrStr	Parser::parseCommand(const std::string &input) const
 	return (command);
 }
 
-/*	**need to decide if we skip or flag a missing channel in multiparams "#chan1,,#chan3,#chan4"
-
-** assumes params has multiple entries and has at most 2 params
-** (checked in Message::_processJoinCommand())
-	
+/*	
 Creates a vector of pairs of strings, unsing ',' as a delimiter,
 Pairs tokens from first param with tokens from second param
 
@@ -100,13 +85,14 @@ or
 	"#channel1,#channel2,#channel3 pass1,,pass3"
 
 * Key inputs can be empty ('*' is considered as meaning empty)
-* If more keys than channels, the remaining unpaired keys are ignored
+* If there are more keys than channels, the remaining unpaired keys are ignored
 */
 t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 {
 	std::vector<std::string>	paramTokens = tokenize(params);
 	std::vector<std::string>	channelTokens = tokenize(paramTokens[0], ',', true);
 	std::vector<std::string>	keyTokens;
+
 	if (paramTokens.size() > 1)
 		keyTokens = tokenize(paramTokens[1], ',', true);
 
@@ -129,24 +115,24 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 	return (result);
 }
 
-t_vecStr	Parser::parseKickParams(const std::string &params) const
-{
-	t_vecStr	paramTokens = tokenize(params);
-	std::string	channel = paramTokens[0];
+// t_vecStr	Parser::parseKickParams(const std::string &params) const
+// {
+// 	t_vecStr	paramTokens = tokenize(params);
+// 	std::string	channel = paramTokens[0];
 		
-	t_vecStr	kickParams;
-	kickParams.push_back(channel);
+// 	t_vecStr	kickParams;
+// 	kickParams.push_back(channel);
 		
-	if (hasMultipleEntries(paramTokens[1]))
-	{
-		t_vecStr	userTokens = tokenize(paramTokens[1], ',', true);
-		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
-	}
-	else
-		kickParams.push_back(paramTokens[1]);
+// 	if (hasMultipleEntries(paramTokens[1]))
+// 	{
+// 		t_vecStr	userTokens = tokenize(paramTokens[1], ',', true);
+// 		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
+// 	}
+// 	else
+// 		kickParams.push_back(paramTokens[1]);
 
-	return (kickParams);
-}
+// 	return (kickParams);
+// }
 
 /*
 Extracts a vector containing the optionnal params for the MODE command
@@ -156,7 +142,7 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	t_vecStr	paramTokens = tokenize(params);
 
 	if (paramTokens.empty())
-		throw (std::invalid_argument("Invalide MODE command: Missing channel name"));
+		throw (std::invalid_argument("Invalid MODE command: Missing channel name"));
 
 	// Extract mode flags if present
 	std::string	modes = paramTokens.size() > 1 ? paramTokens[1] : "";
@@ -165,8 +151,8 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	// Initialize the result: [key, nickname, limit]
 	t_vecStr	result(3, ""); // Default empty values for modes requiring params
 	size_t		paramIndex = 0;
+	size_t		i = 0;
 
-	size_t	i = 0;
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];

@@ -21,7 +21,7 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("KICK", KICK),
 	std::make_pair("INVITE", INVITE),
 	std::make_pair("PRIVMSG", PRIVMSG),
-	std::make_pair("NOTICE", NOTICE),
+	// std::make_pair("NOTICE", NOTICE),
 	std::make_pair("PING", PING),
 	std::make_pair("PONG", PONG),
 	std::make_pair("QUIT", QUIT)
@@ -128,7 +128,7 @@ void Server::run(void)
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
-					client.pendingPush(msg.getReply());
+					client.pendingPush(msg.getReply()); // ***
 				msg_str = client.extractFromBuffer();
 			}
 		}
@@ -208,7 +208,8 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	default:
 		if (client.getPerms() != PERM_ALL)
 		{
-			client.pendingPush(":@localhost 451 :You are not registered yet\r\n");
+			client.pendingPush(reply(451));
+			// client.pendingPush(":@localhost 451 :You are not registered yet\r\n");
 			return;
 		}
 		break;
@@ -236,8 +237,8 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
-	case NOTICE:
-		break;
+	// case NOTICE:
+	// 	break;
 	case PING:
 		client.pendingPush(msg.getReply());
 		break;
@@ -280,7 +281,13 @@ void Server::user_cmd(User &client, const Message& msg)
 	{
 		client.setUsername(msg.getParamsVec()[0]);
 		if (client.getPerms() == PERM_ALL)
+		{
+			std::string	creationDate = formatTime(_time);
 			client.pendingPush(reply(1, client.getNickname(), client.getNickname()));
+			client.pendingPush(reply(2, client.getNickname(), "ircserv", "1.0"));
+			client.pendingPush(reply(3, client.getNickname(), creationDate));
+			client.pendingPush(reply(4, client.getNickname(), "ircserv", "1.0", "i t k o l"));
+		}
 	}
 }
 

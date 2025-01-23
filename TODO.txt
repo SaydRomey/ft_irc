@@ -1,0 +1,26 @@
+
+reply not registered : ok
+
+replies 2-3-4-5? : ok (time ?)
+
+Server name, localhost or ircserv ? (fix in templates)
+
+
+remove NOTICE related code : ok
+
+Fixed QUIT to not need validation : ok
+included QUIT to the single word no comma trailing edge case
+
+Fix USER for only one param : ok (still allows 4 params, need to check getter takes proper value...)
+
+cleanup!!
+
+
+in Server::run()
+
+[...]
+else
+	..."QUIT :Obsolete message?...
+
+
+in validate Kick, should we flag more than one channel ?

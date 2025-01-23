@@ -17,6 +17,7 @@
 # define GRAYTALIC	"\033[3;90m"
 
 # include <algorithm>
+# include <ctime>
 # include <iostream>
 # include <map>
 # include <sstream>
@@ -56,5 +57,8 @@ void		printVec(const t_vecStr &vec, const std::string &msg = "", bool printIndex
 void		printMap(const t_mapStrStr &parsedCommand, const std::string &msg = "");
 void		printChannelKeyPairs(const t_vecPairStrStr &pairs, const std::string &msg = "");
 void		debug_param_tokens(const std::string &params, VerificationType type, int expectedNum, int paramNum);
+
+// Time and Date
+std::string	formatTime(const time_t& time);
 
 #endif // PARSING_UTILS_HPP

@@ -18,7 +18,7 @@ class Parser
 		
 		t_mapStrStr		parseCommand(const std::string &input) const;
 		t_vecPairStrStr	parseChannelsAndKeys(const std::string &params) const;
-		t_vecStr		parseKickParams(const std::string &params) const;
+		// t_vecStr		parseKickParams(const std::string &params) const;
 		t_vecStr		parseModeParams(const std::string &params) const;
 	
 	private:

@@ -2,8 +2,8 @@
 #include "Validator.hpp"
 #include "parsing_utils.hpp"
 
-#include <algorithm>	// find
-#include <cctype>		// isalnum, isalpha
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <stdexcept>
 
@@ -26,7 +26,6 @@ static t_mapStrCmdType	initCommandMap(void)
 	cmdMap["KICK"] = KICK;
 	cmdMap["INVITE"] = INVITE;
 	cmdMap["PRIVMSG"] = PRIVMSG;
-	cmdMap["NOTICE"] = NOTICE;
 	cmdMap["PING"] = PING;
 	cmdMap["PONG"] = PONG;
 	cmdMap["QUIT"] = QUIT;
@@ -48,11 +47,7 @@ const Validator::ValidatorFunc	Validator::_validators[] = {
 	&Validator::_validateModeCommand,
 	&Validator::_validateKickCommand,
 	&Validator::_validateInviteCommand,
-	&Validator::_validatePrivmsgCommand,
-	&Validator::_validateNoticeCommand,
-	&Validator::_validatePingCommand,
-	&Validator::_validatePongCommand,
-	&Validator::_validateQuitCommand
+	&Validator::_validatePrivmsgCommand
 };
 
 /* ************************************************************************** */
@@ -238,7 +233,7 @@ bool Validator::_validateUserCommand(const t_mapStrStr &command) const
 	if (command.find("trailing") != command.end())
 		params.push_back(command.at("trailing"));
 	
-	if (params.size() < 4)
+	if (params.size() < 1)
 		return(_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), command.at("command")));
 
 	// Check if the client is already registered (higher-level logic)
@@ -443,7 +438,6 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	std::string			modes = paramTokens.size() > 1 ? paramTokens[1] : "";
 	size_t	paramIndex = 2; // start checking for additional params after 'modes'
 
-	// validate target (channel)
 	if (!_isValidChannelName(channel))
 		return (_setRpl(ERR_BADCHANMASK, command.at("prefix"), channel));
 	
@@ -584,7 +578,6 @@ bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
 	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 	
-
 	// Validate that the user and channel exist (additional logic needed)
 	return (_noRpl());
 }
@@ -632,74 +625,6 @@ bool Validator::_validatePrivmsgCommand(const t_mapStrStr &command) const
 	
 	return (_noRpl());
 }
-
-/*
-Similar to _validatePrivmsg(),
-but does not return errors to the sender
-
-Success Reply:
-	No numeric reply;
-		success is implied by delivering the notice.
-		Avoid acknowledgment per IRC protocol rules.
-*/
-bool Validator::_validateNoticeCommand(const t_mapStrStr& command) const
-{
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setRpl(ERR_NORECIPIENT,command.at("prefix"), "NOTICE"));
-
-	if (command.find("trailing") == command.end() || command.at("trailing").empty())
-		return (_setRpl(ERR_NOTEXTTOSEND, command.at("prefix"), "NOTICE"));
-
-	std::string	params = command.at("params");
-	t_vecStr	recipients = tokenize(params, ',');
-
-	size_t	i = 0;
-	while (i < recipients.size())
-	{
-		const std::string	&recipient = recipients[i];
-		if (!_isValidNickname(recipient) && !_isValidChannelName(recipient))
-		{
-			return (_setRpl(ERR_NOSUCHNICK, command.at("prefix"), recipient));
-		}
-		++i;
-	}
-
-	return (_noRpl());
-}
-
-/*	**(WIP)
-
-*/
-bool Validator::_validatePingCommand(const t_mapStrStr &command) const
-{
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PING"));
-
-	return (_noRpl());
-}
-
-/*	**(WIP)
-
-*/
-bool Validator::_validatePongCommand(const t_mapStrStr &command) const
-{
-	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PONG"));
-
-	return (_noRpl());
-}
-
-/*	** ?? any validation needed ?
-*/
-bool Validator::_validateQuitCommand(const t_mapStrStr &command) const
-{
-	(void)command;
-	// if (command.find("params") == command.end() || command.at("params").empty())
-		// return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "QUIT"));
-
-	return (_noRpl());
-}
-
 
 /* ************************************************************************** */ // **TOCHECK where do we put this?
 

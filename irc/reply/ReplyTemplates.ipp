@@ -15,6 +15,7 @@ _replyTemplates[RPL_MYINFO] = ":" + SERVER_NAME + " 004 %s %s %s - %s"; // <clie
 _replyTemplates[ERR_NONICKNAMEGIVEN] = ":" + SERVER_NAME + " 431 :No nickname given";
 _replyTemplates[ERR_ERRONEUSNICKNAME] = ":" + SERVER_NAME + " 432 %s %s :Erroneous nickname"; // <client_nickname> <invalid_nickname>
 _replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 %s %s :Nickname is already in use"; // <client_nickname> <nickname_in_use>
+_replyTemplates[ERR_NOTREGISTERED] = ":" + SERVER_NAME + " 451 :You have not registered";
 _replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s %s :Not enough parameters"; // <client_nickname> <command>
 _replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 %s :You may not reregister"; // <client_nickname>
 _replyTemplates[ERR_PASSWDMISMATCH] = ":" + SERVER_NAME + " 464 %s :Password incorect"; // <client_nickname>
@@ -22,10 +23,10 @@ _replyTemplates[ERR_PASSWDMISMATCH] = ":" + SERVER_NAME + " 464 %s :Password inc
 // ===================
 // CHANNEL MANAGEMENT
 // ===================
-_replyTemplates[RPL_JOIN] = ":%s JOIN :%s"; // <client_nickname> <channel>
-_replyTemplates[RPL_PART] = ":%s PART %s"; // <client_nickname> <channel[ :parting message]>
-_replyTemplates[RPL_KICK] = ":%s KICK %s %s"; // <kicker_nickname> <channel> <target_nickname[ :reason]>
-_replyTemplates[RPL_INVITE] = ":%s INVITE %s :%s"; // <sender_nickname> <target_nickname> <channel>
+// _replyTemplates[RPL_JOIN] = ":%s JOIN :%s"; // <client_nickname> <channel>
+// _replyTemplates[RPL_PART] = ":%s PART %s"; // <client_nickname> <channel[ :parting message]>
+// _replyTemplates[RPL_KICK] = ":%s KICK %s %s"; // <kicker_nickname> <channel> <target_nickname[ :reason]>
+// _replyTemplates[RPL_INVITE] = ":%s INVITE %s :%s"; // <sender_nickname> <target_nickname> <channel>
 
 _replyTemplates[RPL_CHANNELMODEIS] = ":" + SERVER_NAME + " 324 %s %s %s"; // <client_nickname> <channel> <channel_modes [<mode_parameters>]>
 _replyTemplates[RPL_NOTOPIC] = ":" + SERVER_NAME + " 331 %s %s :No topic is set"; // <client_nickname> <channel>

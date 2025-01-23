@@ -219,7 +219,6 @@ void	printVec(const t_vecStr &vec, const std::string &msg, bool printIndex)
 	std::cout << std::endl;
 }
 
-
 /*
 Debug output
 Prints the content of a  std::map<std::string, std::string>
@@ -293,3 +292,16 @@ void	debug_param_tokens(const std::string &params, VerificationType type, int ex
 	std::cout << "  Expected:    " << typeStr << " " << expectedNum << " params" << std::endl;
 }
 
+/* ************************************************************************** */ // Time and Date
+
+/*
+Formats a time_t variable into a human-readable time and date
+*/
+std::string	formatTime(const time_t& time)
+{
+	char	buffer[80];
+	std::tm*	timeinfo = std::localtime(&time);
+	std::strftime(buffer, sizeof(buffer), "%c", timeinfo); // format as "Day Mon DD HH:MM:SS YYYY"
+
+	return (std::string(buffer));
+}

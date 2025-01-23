@@ -1,6 +1,7 @@
 
 #include "Message.hpp"
 #include "parsing_utils.hpp"
+#include "ReplyTypes.hpp"
 #include <iomanip>
 
 Message::Message(const std::string& input, const std::string& nickname)
@@ -49,9 +50,11 @@ void	Message::_processInput(const std::string& input)
 		std::string			trailing = _parsedMessage["trailing"];
 
 		// Special handling for LimeChat messages: populate trailing
-		if (trailing.empty() && (command == "PRIVMSG" || command == "NOTICE" || command == "PART" || command == "TOPIC" || command == "KICK"))
+		if (trailing.empty() && (command == "PART" || command == "TOPIC" || command == "KICK" || command == "PRIVMSG" || command == "QUIT"))
 		{
 			size_t	requiredParamCount = (command == "KICK") ? 2 : 1;
+			if (command == "QUIT")
+				requiredParamCount = 0;
 
 			t_vecStr		tokenizedParams = tokenize(params);
 			if (tokenizedParams.size() > requiredParamCount)
@@ -62,11 +65,33 @@ void	Message::_processInput(const std::string& input)
 		}
 
 		// Handle client-specific commands and edge cases
-		if (command == "PING" || command == "PONG")
+		if (command == "PING" || command == "PONG" || command == "QUIT")
 		{
-			_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
+			if (command == "QUIT")
+			{
+				_reply = ":" + _nickname + " QUIT";
+				if (!trailing.empty())
+					_reply += " :" + trailing;
+				_reply += "\r\n";
+			}
+			else
+			{
+				if (!params.empty())
+				{
+					_reply = (command == "PING" ? "PONG :" : "PING :") + params + trailing + "\r\n";
+				}
+				else
+				{
+					_reply = reply(ERR_NEEDMOREPARAMS, _nickname, command);
+					_valid = false;
+				}
+			}
+			_valid = true;
+			return ;
 		}
-		else if (command == "JOIN")
+		
+		// Handle special parameter tokenization
+		if (command == "JOIN")
 		{
 			_channelsAndKeys = _parser.parseChannelsAndKeys(params);
 		}
@@ -78,12 +103,7 @@ void	Message::_processInput(const std::string& input)
 			_modeNick = modeParams[1];
 			_modeLimit = modeParams[2];
 		}
-		// else if (command == "KICK" && hasValidNumberOfParams(params, EXACTLY, 2))
-		// {
-		// 	_tokenizedParams = _parser.parseKickParams(params);
-		// }
-		// else
-			// _tokenizedParams = tokenize(params);
+		
 		_tokenizedParams = tokenize(params);
 
 		// Adjust params and trailing fields after edge cases
@@ -117,7 +137,7 @@ void	Message::_processInput(const std::string& input)
 		if (reason.empty())
 			reason = "An unexpected error occured";
 		
-		_reply = reply(ERR_UNKNOWNERROR, _nickname, "[command]", reason);
+		_reply = reply(ERR_UNKNOWNERROR, _nickname, "Input processing", reason);
 		_valid = false;
 	}
 }
