@@ -1,5 +1,4 @@
 #include "Channel.hpp"
-#include <cstdlib> // atoi
 
 Channel::Channel() : _name(""), _topic(""), _password(""), _memberLimit(0)
 {
@@ -46,38 +45,27 @@ Channel::~Channel()
 {
 }
 
-// If a client’s JOIN command to the server is successful, the server MUST send,
-	// in this order:
-
-// 1.A JOIN message with the client as the message <source> and the channel they have joined as the first parameter of the message.
-// 2.The channel’s topic (with RPL_TOPIC (332) and optionally RPL_TOPICWHOTIME (333)),
-	// and no message if the channel does not have a topic.
-// 3.A list of users currently joined to the channel (with one or more RPL_NAMREPLY (353) numerics followed by a single RPL_ENDOFNAMES (366) numeric). These RPL_NAMREPLY messages sent by the server MUST include the requesting client that has just joined the channel.
 void Channel::addMember(User &user, std::string pswIfNeeded)
 {
-	if (_members.find(&user) != _members.end()) // ERR_USERONCHANNEL
+	if (_members.find(&user) != _members.end())
 	{
 		user.pendingPush(reply(ERR_USERONCHANNEL, user.getNickname(), user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit)
-		// ERR_CHANNELISFULL
 	{
 		user.pendingPush(reply(ERR_CHANNELISFULL, user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['k'] == true && _password.compare(pswIfNeeded) != 0)
-		// ERR_BADCHANNELKEY
 	{
 		user.pendingPush(reply(ERR_BADCHANNELKEY, user.getNickname(), this->_name));
 		return ;
 	}
-	if (_modes['i'] == true) // ERR_INVITEONLYCHAN
+	if (_modes['i'] == true)
 	{
 		if (_invitedList.count(user.getNickname()) == 1)
-			// user est dans la list des invités
 			_invitedList.erase(user.getNickname());
-				// supp car l'invitation aura servi
 		else
 		{
 			user.pendingPush(reply(ERR_INVITEONLYCHAN, user.getNickname(), this->_name));
@@ -99,7 +87,7 @@ void Channel::addMember(User &user, std::string pswIfNeeded)
 
 void Channel::removeMember(User &user, const std::string &reason)
 {
-	if (_members.find(&user) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&user) == _members.end())
 	{
 		user.pendingPush(reply(ERR_NOTONCHANNEL, user.getNickname(), this->_name));
 		return ;
@@ -110,17 +98,14 @@ void Channel::removeMember(User &user, const std::string &reason)
 
 void Channel::setTopic(User &user, const std::string &topic)
 {
-	// par defaut sur false tout le monde peut modifier le topic.
-	// si mode +t donc true est activé,
-		// c'est seulement les op qui peuvent le changer
-	if (_members.find(&user) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&user) == _members.end())
 	{
 		user.pendingPush(reply(ERR_NOTONCHANNEL, user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['t'] == true)
 	{
-		if (_members[&user] != true) // ERR_CHANOPRIVSNEEDED
+		if (_members[&user] != true)
 		{
 			user.pendingPush(reply(ERR_CHANOPRIVSNEEDED, user.getNickname(), this->_name));
 			return ;
@@ -150,13 +135,13 @@ void Channel::setTopic(User &user, const std::string &topic)
 
 void Channel::getTopic(User &user)
 {
-	if (_members.find(&user) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&user) == _members.end())
 	{
 		user.pendingPush(reply(ERR_NOTONCHANNEL, user.getNickname(),
 				this->_name));
 		return ;
 	}
-	if (this->_topic.empty()) // RPL_NOTOPIC
+	if (this->_topic.empty())
 		user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 	else
 	{
@@ -167,17 +152,17 @@ void Channel::getTopic(User &user)
 
 void Channel::kick(User &user, User &op, std::string reason)
 {
-	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&op) == _members.end())
 	{
 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
 		return ;
 	}
-	if (_members[&op] != true) // ERR_CHANOPRIVSNEEDED
+	if (_members[&op] != true)
 	{
 		op.pendingPush(reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
 		return ;
 	}
-	if (_members.find(&user) == _members.end()) // ERR_USERNOTINCHANNEL
+	if (_members.find(&user) == _members.end())
 	{
 		op.pendingPush(reply(ERR_USERNOTINCHANNEL, op.getNickname(), user.getNickname(), this->_name));
 		return ;
@@ -188,23 +173,22 @@ void Channel::kick(User &user, User &op, std::string reason)
 
 void Channel::invite(User &user, User &op)
 {
-	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&op) == _members.end())
 	{
 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
 		return ;
 	}
-	if (_modes['i'] == true && _members[&op] != true) // ERR_CHANOPRIVSNEEDED
+	if (_modes['i'] == true && _members[&op] != true)
 	{
 		op.pendingPush(reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
 		return ;
 	}
-	if (_members.find(&user) != _members.end()) // ERR_USERONCHANNEL
+	if (_members.find(&user) != _members.end())
 	{
 		op.pendingPush(reply(ERR_USERONCHANNEL, op.getNickname(), user.getNickname(), this->_name));
 		return ;
 	}
 	if (_modes['l'] == true && _members.size() >= _memberLimit)
-		// ERR_CHANNELISFULL
 	{
 		op.pendingPush(reply(ERR_CHANNELISFULL, op.getNickname(), this->_name));
 		return ;
@@ -216,7 +200,7 @@ void Channel::invite(User &user, User &op)
 
 static bool	isValidNb(const std::string &str)
 {
-	for (size_t i = 1; i < str.length(); i++) // commencé a 1 pour ignoré le +-
+	for (size_t i = 1; i < str.length(); i++)
 	{
 		if (!std::isdigit(str[i]))
 			return (false);
@@ -232,25 +216,24 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 	std::cout << "arrivé dans setMode" << std::endl;
 	bool	enable;
 	const std::string validMod = "itkol";
-	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
+	if (_members.find(&op) == _members.end())
 	{
 		op.pendingPush(reply(ERR_NOTONCHANNEL, op.getNickname(), this->_name));
 		return ;
 	}
-	if (_members[&op] != true) // ERR_CHANOPRIVSNEEDED
+	if (_members[&op] != true)
 	{
 		op.pendingPush(reply(ERR_CHANOPRIVSNEEDED, op.getNickname(), this->_name));
 		return ;
 	}
-	char currentSign = '\0'; // Pour garder la trace de + ou -
+	char currentSign = '\0';
 	for (size_t i = 0; i < mode.size(); ++i)
 	{
 		if (mode[i] == '+' || mode[i] == '-')
 			currentSign = mode[i];
 		else if (validMod.find(mode[i]) != std::string::npos)
 		{
-			// Mode valide
-			if (currentSign == '\0') // ERR_UNKNOWNMODE
+			if (currentSign == '\0')
 			{
 				op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 				return ;
@@ -289,13 +272,13 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 					_memberLimit = 0;
 			}
 		}
-		else // ERR_UNKNOWNMODE
+		else
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
 	this->broadcast(op, setmodeMsg(op.getNickname(), params), true);
 }
 
-void Channel::addOperator(User *user, const char addOrRemove) //TODO ajouté le fait que ca renvoie la liste des operator a tous pour que ca se mettent a jour
+void Channel::addOperator(User *user, const char addOrRemove)
 {
 	if (addOrRemove == '+')
 		this->_members[user] = true;
@@ -320,19 +303,16 @@ std::string Channel::membersList()
 void Channel::getModes(User &user)
 {
 	std::ostringstream strModes;
-	std::ostringstream strParams; // separate stream for parameters
+	std::ostringstream strParams;
 	std::string strEmpty = " ";
 
-	// Add active modes to 'strModes'
 	strModes << "+";
 	for (ItModes it = this->_modes.begin(); it != this->_modes.end(); it++)
 		if (it->second == true && it->first != 'o')
 			strModes << it->first;
-	
-	// Check if the user is a member of the channel
+
 	bool isMember = (_members.find(&user) != _members.end());
 
-	// Add password and member limit parameters only for members 
 	if (!_password.empty() && isMember)
 	{
 		strParams << " ";
@@ -344,17 +324,11 @@ void Channel::getModes(User &user)
 		strParams << _memberLimit;
 	}
 
-	// Send the reply to the user
 	std::string modesWithParams = strModes.str() + strParams.str();
-	if (modesWithParams.size() > 1) // Check if there are any active modes
+	if (modesWithParams.size() > 1)
 		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, modesWithParams));
 	else
 		user.pendingPush(reply(RPL_CHANNELMODEIS, user.getNickname(), this->_name, strEmpty));
-	
-	//fonctionne meme si la personne n'Est pas dans le channel.
-	// pour tous: creer string avec la liste des modes actifs (+tik).
-	// pour les membres seulement: apres la liste des modes actif, creer string avec les 
-	// parametres si ya des modes actifs qui en ont (ex password ou memberlimit).
 }
 
 void Channel::printMode()
@@ -369,7 +343,6 @@ const std::map<User *, bool> &Channel::getMembers(void) const
 	return (_members);
 }
 
-// a revoir car apparement il y a plusieurs reply a ne pas enlevé le sender
 void Channel::broadcast(User &sender, const std::string &message, bool include_sender)
 {
 	User	*member;
@@ -383,7 +356,6 @@ void Channel::broadcast(User &sender, const std::string &message, bool include_s
 		{
 			if (member != &sender)
 			{
-				// Skip the sender
 				member->pendingPush(message);
 			}
 		}

@@ -7,6 +7,7 @@
 # include <map>
 # include "Reply.hpp"
 # include <sstream>
+#include <cstdlib>
 
 typedef std::map<User*, bool> MapUser;
 typedef std::map<char, bool> MapMode;

@@ -1,6 +1,6 @@
 
 #include "Server.hpp"
-#include "_test_header.hpp"
+#include "utils.hpp"
 
 void	serverStatePrint(bool state)
 {
@@ -18,8 +18,6 @@ void	serverStatePrint(bool state)
 
 int	main(int argc, char *argv[])
 {
-	// test_arg_message(argc, argv);
-
 	if (argc != 3)
 		return (1);
 
