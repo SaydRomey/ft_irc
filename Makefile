@@ -3,6 +3,7 @@
 NAME		:= ircserv
 AUTHOR		:= cdumais
 TEAM		:= "namoisan, jdemers and $(AUTHOR)"
+COLLAB		:= anboisve
 REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
 # Server info

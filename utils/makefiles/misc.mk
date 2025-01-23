@@ -19,6 +19,7 @@ title: ## Print ft_irc's logo in ASCII art
 	@echo "$(BOLD)$(PURPLE)$(NAME)$(GREEN) created$(RESET)"
 	@echo "$(GREEN)$$PROJECT_TITLE$(RESET)"
 	@echo "Created by $(BOLD)$(TEAM)$(RESET)"
+	@echo "Feat $(BLUE)$(COLLAB)$(RESET)"
 	@echo "Compiled for $(ITALIC)$(BOLD)$(PURPLE)$(USER)$(RESET) \
 		\t$(CYAN)$(TIME)$(RESET)\n"
 
