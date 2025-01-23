@@ -1,6 +1,6 @@
 
 #include "Validator.hpp"
-#include "parsing_utils.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -92,7 +92,7 @@ bool	Validator::_noRpl(void) const
 Validates the syntax (structure and validity) of a command,
 tokenized in a map of string key and values
 */
-bool	Validator::validateCommand(const t_mapStrStr &command) const
+bool	Validator::validateCommand(const t_mapStrStr& command) const
 {
 	const std::string&	cmd = command.at("command");
 	
@@ -137,24 +137,6 @@ bool	Validator::_isValidNickname(const std::string& nickname) const
 	return (true);
 }
 
-bool	isValidNickname(const std::string& nickname)
-{
-	if (nickname.empty() || nickname.length() > 9)
-		return (false);
-
-	if (!std::isalpha(nickname[0]))
-		return (false);
-	
-	size_t	i = 1;
-	while (i < nickname.length())
-	{
-		if (!std::isalnum(nickname[i]) && nickname[i] != '_' && nickname[i] != '-')
-			return (false);
-		++i;
-	}
-	return (true);
-}
-
 /*
 Validates IRC channel names
 
@@ -181,9 +163,8 @@ bool	Validator::_isValidChannelName(const std::string& channel) const
 /*
 Validates "PASS" command
 */
-bool	Validator::_validatePassCommand(const t_mapStrStr &command) const
+bool	Validator::_validatePassCommand(const t_mapStrStr& command) const
 {
-	// if (command.at("prams").empty())
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, "PASS"));
 
@@ -192,13 +173,10 @@ bool	Validator::_validatePassCommand(const t_mapStrStr &command) const
 
 
 /*
-Validate "NICK" command
+Validates "NICK" command
 */
-bool	Validator::_validateNickCommand(const t_mapStrStr &command) const
+bool	Validator::_validateNickCommand(const t_mapStrStr& command) const
 {
-	// const std::string&	params = command.at("params");
-
-	// if (prams.empty())
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NONICKNAMEGIVEN));
 
@@ -209,7 +187,7 @@ bool	Validator::_validateNickCommand(const t_mapStrStr &command) const
 }
 
 /*
-Validate "USER" command
+Validates "USER" command
 
 	"params" must exist and have at least 4 tokens: username, hostname, servername, realname
 
@@ -221,15 +199,15 @@ Success Reply:
 	None specified for successful NICK changes,
 	but server behavior should update the nickname state.
 */
-bool Validator::_validateUserCommand(const t_mapStrStr &command) const
+bool	Validator::_validateUserCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return(_setRpl(ERR_NEEDMOREPARAMS, "USER"));
 
-	// tokenize parameters
+	// Tokenize parameters
 	t_vecStr params = tokenize(command.at("params"));
 
-	// append trailing if it exists
+	// Append trailing if it exists
 	if (command.find("trailing") != command.end())
 		params.push_back(command.at("trailing"));
 	
@@ -241,7 +219,7 @@ bool Validator::_validateUserCommand(const t_mapStrStr &command) const
 }
 
 /*
-Validate "JOIN" command
+Validates "JOIN" command
 
 	"params" must exist and contain a valid channel name
 
@@ -261,7 +239,7 @@ Success Reply:
 	RPL_NAMEREPLY (353)
 	RPL_ENDOFNAMES (366)
 */
-bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
+bool	Validator::_validateJoinCommand(const t_mapStrStr& command) const
 {
 	t_mapStrStr::const_iterator	prefixIt = command.find("prefix");
 	std::string	prefix = (prefixIt != command.end() && !prefixIt->second.empty()) ? prefixIt->second : "*";
@@ -271,13 +249,11 @@ bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
 	if (paramsIt == command.end() || paramsIt->second.empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, prefix, "JOIN"));
 
-	// should we ignore trailing if present, or flag the error?
-
-	// extract and tokenize "params"
+	// Extract and tokenize "params"
 	std::string	params = paramsIt->second;
 	t_vecStr	paramTokens = tokenize(params, ' ');
 	
-	// validate number of tokens in "params"
+	// Validate number of tokens in "params"
 	if (paramTokens.size() > 2)
 		return (_setRpl(ERR_UNKNOWNCOMMAND, prefix, "JOIN"));
 
@@ -296,7 +272,7 @@ bool Validator::_validateJoinCommand(const t_mapStrStr &command) const
 }
 
 /*
-Validate "PART" command
+Validates "PART" command
 
 	"params" must exist and contain a valid channel name
 
@@ -309,7 +285,7 @@ Success Reply:
 	Typically no numeric reply;
 	success is implied by a PART message broadcasted to the channel.
 */
-bool Validator::_validatePartCommand(const t_mapStrStr& command) const
+bool	Validator::_validatePartCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PART"));
@@ -331,7 +307,7 @@ bool Validator::_validatePartCommand(const t_mapStrStr& command) const
 }
 
 /*
-Validate "TOPIC" command
+Validates "TOPIC" command
 
 	"params" must exist and contain a valid channel name
 
@@ -347,18 +323,18 @@ Success Reply:
 	RPL_NOTOPIC (331)
 		Sent if there is no topic.	
 */
-bool Validator::_validateTopicCommand(const t_mapStrStr& command) const
+bool	Validator::_validateTopicCommand(const t_mapStrStr& command) const
 {
 	t_mapStrStr::const_iterator	paramsIt = command.find("params");
 	t_mapStrStr::const_iterator	prefixIt = command.find("prefix");
 
 	const std::string	&prefix = (prefixIt != command.end()) ? prefixIt->second : "*";
 
-	// check if "params" is missing or empty
+	// Check if "params" is missing or empty
 	if (paramsIt == command.end() || paramsIt->second.empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, prefix, "TOPIC"));
 	
-	// check if the "params" value is not a valid channel name
+	// Check if the "params" value is not a valid channel name
 	if (!_isValidChannelName(paramsIt->second))
 		return (_setRpl(ERR_NOSUCHCHANNEL, prefix, paramsIt->second));
 
@@ -369,9 +345,9 @@ bool Validator::_validateTopicCommand(const t_mapStrStr& command) const
 /*
 Checks the validity of mode parameters, considering:
 
-+k: Requires a key.
-+o: Requires a nickname.
-+l: Requires a numeric limit.
++k:			Requires a key.
++o and -o:	Require a nickname.
++l:			Requires a numeric limit.
 */
 bool	Validator::_isValidModeParam(char modeFlag, const std::string &param, bool isAdding) const
 {
@@ -394,7 +370,7 @@ bool	Validator::_isValidModeParam(char modeFlag, const std::string &param, bool 
 			return (!param.empty() && std::atoi(param.c_str()) > 0);
 		}
 	
-		// modes without parameters (i, t) do not need additional validation
+		// Modes without parameters (i, t) do not need additional validation
 		case 'i':
 		case 't':
 			return (true);
@@ -404,8 +380,7 @@ bool	Validator::_isValidModeParam(char modeFlag, const std::string &param, bool 
 	}
 }
 
-/*	** https://modern.ircdocs.horse//#channel-modes
-
+/*
 Validate "MODE" command
 
 Errors:
@@ -423,7 +398,7 @@ Success Reply:
 		Sent to show the current mode of the channel.
 	Broadcast mode changes to the channel as appropriate.
 */
-bool Validator::_validateModeCommand(const t_mapStrStr& command) const
+bool	Validator::_validateModeCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), command.at("command")));
@@ -448,7 +423,7 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 	{
 		char	modeFlag = modes[i];
 		
-		// toggle add/remove mode
+		// Toggle add/remove mode
 		if (modeFlag == '+')
 			isAdding = true;
 		else if (modeFlag == '-')
@@ -458,11 +433,11 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 			if (VALID_MODE_FLAGS.find(modeFlag) == std::string::npos)
 				return (_setRpl(ERR_UNKNOWNMODE, command.at("prefix"), std::string(1, modeFlag)));
 			
-			// check if the mode requires a parameter
+			// Check if the mode requires a parameter
 			if ((modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l') &&
 				(isAdding || modeFlag == 'o'))
 			{
-				// make sure a parameter exists for the mode
+				// Make sure a parameter exists for the mode
 				if (paramIndex >= paramTokens.size())
 					return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "MODE"));
 
@@ -482,24 +457,10 @@ bool Validator::_validateModeCommand(const t_mapStrStr& command) const
 		return (_setRpl(ERR_UNKNOWNERROR, command.at("prefix"), "MODE", "Too many parameterized modes"));
 	
 	return (_noRpl());
-
-	// to return only the invalid chars
-	/*
-	std::string	invalidChars;
-	size_t	i = 0;
-	while (i < modes.size())
-	{
-		if (VALID_MODE_FLAGS.find(modes[i]) == std::string::npos) // if char is not in VALID_MODE_FLAGS
-			invalidChars += modes[i];
-		++i;
-	}
-	if (!invalidChars.empty())
-		return (_setRpl(ERR_UNKNOWNMODE, invalidChars));
-	*/
 }
 
 /*
-Validate "KICK" command
+Validates "KICK" command
 
 	"params" must exist and contain the target and channel
 
@@ -515,7 +476,7 @@ Success Reply:
 	No specific numeric reply;
 	success is implied by broadcasting the KICK message to the channel.
 */
-bool Validator::_validateKickCommand(const t_mapStrStr &command) const
+bool	Validator::_validateKickCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "KICK"));
@@ -546,13 +507,13 @@ bool Validator::_validateKickCommand(const t_mapStrStr &command) const
 		++j;
 	}
 
-	// Check if the target user is in the channel (higher-level logic)
 	return (_noRpl());
 }
 
 /*
-invite
-params must exist and specify the target user and channel
+Validates "Invite" command
+
+	"params" must exist and specify the target user and channel
 
 Errors:
 	401 ERR_NOSUCHNICK: No such nick/channel
@@ -568,7 +529,7 @@ Success Reply:
 
 Optionally notify the invitee with a server message.
 */
-bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
+bool	Validator::_validateInviteCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
@@ -578,13 +539,11 @@ bool Validator::_validateInviteCommand(const t_mapStrStr& command) const
 	if (paramTokens.size() < 2)
 		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "INVITE"));
 	
-	// Validate that the user and channel exist (additional logic needed)
 	return (_noRpl());
 }
 
-/*	** TODO: fix wrong _setRpl arguments for 411 and 412...
-
-Validate "PRIVMSG" command
+/*
+Validates "PRIVMSG" command
 
 	"params" must exist and contain the recipient
 	"trailing" must exist and contain the message body
@@ -600,7 +559,7 @@ Success Reply:
 	No numeric reply;
 	success is implied by delivering the message.
 */
-bool Validator::_validatePrivmsgCommand(const t_mapStrStr &command) const
+bool	Validator::_validatePrivmsgCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
 		return (_setRpl(ERR_NORECIPIENT, command.at("prefix"), command.at("command")));
@@ -619,21 +578,36 @@ bool Validator::_validatePrivmsgCommand(const t_mapStrStr &command) const
 			return (_setRpl(ERR_NOSUCHNICK, command.at("prefix"), recipient));
 		++i;
 	}
-		
-	// Additional checks for recipient existence can be handled elsewhere
-	// same for channel existence..
-	
+
 	return (_noRpl());
 }
 
-/* ************************************************************************** */ // **TOCHECK where do we put this?
+/* ************************************************************************** */ // Non-member functions
+
+bool	isValidNickname(const std::string& nickname)
+{
+	if (nickname.empty() || nickname.length() > 9)
+		return (false);
+
+	if (!std::isalpha(nickname[0]))
+		return (false);
+	
+	size_t	i = 1;
+	while (i < nickname.length())
+	{
+		if (!std::isalnum(nickname[i]) && nickname[i] != '_' && nickname[i] != '-')
+			return (false);
+		++i;
+	}
+	return (true);
+}
 
 /*	** TOCHECK: do we prevent a username, nickname to be the same as a command ?
 
 // Check if nickname is already in use (higher-level logic) 462
 
 */
-bool	isNickAvailable(const t_mapStrInt &nickMap, const std::string &nickToCheck)
+bool	isNickAvailable(const t_mapStrInt& nickMap, const std::string& nickToCheck)
 {
 	std::string	nickname = nickToCheck;
 	

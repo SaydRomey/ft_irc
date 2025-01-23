@@ -1,6 +1,6 @@
-// irc numeric replies (included in "Reply.cpp")
 
-// initializes template strings for numeric replies
+// IRC numeric replies (included in "Reply.cpp")
+// Initializes template strings for numeric replies
 
 /* ************************************************************************** */
 
@@ -23,11 +23,6 @@ _replyTemplates[ERR_PASSWDMISMATCH] = ":" + SERVER_NAME + " 464 %s :Password inc
 // ===================
 // CHANNEL MANAGEMENT
 // ===================
-// _replyTemplates[RPL_JOIN] = ":%s JOIN :%s"; // <client_nickname> <channel>
-// _replyTemplates[RPL_PART] = ":%s PART %s"; // <client_nickname> <channel[ :parting message]>
-// _replyTemplates[RPL_KICK] = ":%s KICK %s %s"; // <kicker_nickname> <channel> <target_nickname[ :reason]>
-// _replyTemplates[RPL_INVITE] = ":%s INVITE %s :%s"; // <sender_nickname> <target_nickname> <channel>
-
 _replyTemplates[RPL_CHANNELMODEIS] = ":" + SERVER_NAME + " 324 %s %s %s"; // <client_nickname> <channel> <channel_modes [<mode_parameters>]>
 _replyTemplates[RPL_NOTOPIC] = ":" + SERVER_NAME + " 331 %s %s :No topic is set"; // <client_nickname> <channel>
 _replyTemplates[RPL_TOPIC] = ":" + SERVER_NAME + " 332 %s %s :%s"; // <client_nickname> <channel> :<topic>

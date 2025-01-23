@@ -13,6 +13,7 @@ IRC_SERVER_PSWD	:= 4242
 # Build configuration
 COMPILE		:= c++
 C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
+
 # Project info
 NAME		:= ircserv
 AUTHOR		:= cdumais
@@ -46,10 +47,10 @@ MAKE_DIR	:= ./utils/makefiles
 MAKE_DIR	:= ./utils/makefiles
 
 include $(MAKE_DIR)/utils.mk	# Utility Variables and Macros
-include $(MAKE_DIR)/docker.mk	# Docker Macros
+# include $(MAKE_DIR)/docker.mk	# Docker Macros
 include $(MAKE_DIR)/doc.mk		# Documentation Targets
-include $(MAKE_DIR)/weechat.mk	# Weechat Targets
-include $(MAKE_DIR)/limechat.mk	# Limechat Targets
+# include $(MAKE_DIR)/weechat.mk	# Weechat Targets
+# include $(MAKE_DIR)/limechat.mk	# Limechat Targets
 include $(MAKE_DIR)/tests.mk	# Testing Logic
 include $(MAKE_DIR)/class.mk	# Class Creation with Templates
 include $(MAKE_DIR)/misc.mk		# Misc, Title and Sounds (not really relevant...)
@@ -90,7 +91,6 @@ fclean: clean ## Remove executable
 ffclean: fclean ## Remove all generated files and folders
 	@$(MAKE) pdf-clean $(NPD)
 	@$(MAKE) test-clean $(NPD)
-	@$(MAKE) weechat-clean $(NPD)
 	@$(MAKE) cleanup-port $(NPD)
 
 re: fclean all ## Rebuild everything
@@ -103,12 +103,9 @@ re: fclean all ## Rebuild everything
 
 run: all ## Compile and run the executable with default arguments
 	@$(call CHECK_PORT,$(IRC_SERVER_PORT))
+	@$(call INFO,$(NAME),Starting IRC server on:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT)...)
 	@$(call INFO,$(NAME),,./$(NAME) \"$(IRC_SERVER_PORT)\" \"$(IRC_SERVER_PSWD)\")
 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD)
-
-# run-server: all ## Run only the IRC server
-# 	@$(call INFO,$(NAME),Starting IRC server on:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT)...)
-# 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD)
 
 nc: all ## Connect to the server using nc (wip)
 	@if [ ! -f "$(NAME)" ]; then \
@@ -120,39 +117,7 @@ nc: all ## Connect to the server using nc (wip)
 	@$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))
 	@nc $(NC_FLAG) $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
 
-run-nc: all ## Start the IRC server and connect to it using nc (wip)
-	@if [ ! -f "$(NAME)" ]; then \
-		$(call ERROR,Build Failed:,Executable $(NAME) not found!); \
-		exit 1; \
-	fi
-	@$(call CHECK_COMMAND,nc)
-	@$(call CHECK_PORT,$(IRC_SERVER_PORT))
-	@$(call INFO,$(NAME),Starting IRC server on:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT)...)
-	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD) & \
-	sleep 1; \
-	$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
-	@$(call SUCCESS,$(NAME),IRC server is up and running!)
-	@$(call INFO,$(NAME),Connecting to server using nc:, $(IRC_SERVER_IP):$(IRC_SERVER_PORT))
-	@nc $(NC_FLAG) $(IRC_SERVER_IP) $(IRC_SERVER_PORT)
-
-run-wee: all ## Start the IRC server and connect Weechat to it (WIP)
-	@if [ ! -f "$(NAME)" ]; then \
-		$(call ERROR,Build Failed:,Executable $(NAME) not found!); \
-		exit 1; \
-	fi
-	@$(call CHECK_COMMAND,docker)
-	@$(call CHECK_PORT,$(IRC_SERVER_PORT))
-	@$(call INFO,$(NAME),Starting IRC server on: ,$(IRC_SERVER_PORT):$(IRC_SERVER_PORT)...)
-	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD) & \
-	sleep 1; \
-	$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
-	@$(call SUCCESS,$(NAME),IRC server is up and running!)
-	@$(MAKE) weechat $(NPD)
-
-run-lime: run ## Start the IRC server and connect Limechat to it
-	@open -a LimeChat
-
-.PHONY: run nc run-nc run-wee #run-lime
+.PHONY: run nc
 
 define SPLIT_RUN_SCRIPT
 tell application "iTerm"
@@ -175,23 +140,6 @@ split-run: all ## Start the IRC server and connect to it using nc in a split ter
 	fi
 	@osascript -e "$$SPLIT_RUN_SCRIPT"
 	@$(call SUCCESS,$(NAME),Split terminal setup complete!)
-
-# split-run: all ## Start the IRC server and connect to it using nc in a split terminal
-# 	@if [ "$(OS)" != "Darwin" ]; then \
-# 		echo "This target is only supported on macOS."; \
-# 		exit 1; \
-# 	fi
-# 	@osascript -e 'tell application "iTerm"' \
-# 	-e 'create window with default profile' \
-# 	-e 'tell current session of current window' \
-# 	-e 'write text "cd $(shell pwd) && make run"' \
-# 	-e 'split vertically with default profile' \
-# 	-e 'end tell' \
-# 	-e 'tell second session of current tab of current window' \
-# 	-e 'write text "cd $(shell pwd) && make nc"' \
-# 	-e 'end tell' \
-# 	-e 'end tell'
-# 	@$(call SUCCESS,$(NAME),Split terminal setup complete!)
 
 .PHONY: split-run
 

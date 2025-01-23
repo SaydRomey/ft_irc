@@ -1,6 +1,6 @@
 
-#ifndef PARSING_UTILS_HPP
-# define PARSING_UTILS_HPP
+#ifndef UTILS_HPP
+# define UTILS_HPP
 
 # define RESET		"\033[0m"
 # define BOLD		"\033[1m"
@@ -23,14 +23,14 @@
 # include <sstream>
 # include <string>
 # include <vector>
-# include <utility>		// For std::pair (in parseChannelsAndKeys() and print)
+# include <utility>
 
 
 typedef std::vector<std::pair<std::string, std::string> >	t_vecPairStrStr;
 typedef std::map<std::string, std::string>					t_mapStrStr;
 typedef std::vector<std::string>							t_vecStr;
 
-// for the 'hasValidNumberOfParams()' function
+// Enum to use with the 'hasValidNumberOfParams()' function
 enum VerificationType
 {
 	AT_LEAST,	// >=
@@ -61,4 +61,4 @@ void		debug_param_tokens(const std::string &params, VerificationType type, int e
 // Time and Date
 std::string	formatTime(const time_t& time);
 
-#endif // PARSING_UTILS_HPP
+#endif // UTILS_HPP

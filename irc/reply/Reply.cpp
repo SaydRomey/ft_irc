@@ -1,8 +1,7 @@
 
 #include "Reply.hpp"
-#include "parsing_utils.hpp"	// makeArgs()
+#include "utils.hpp"
 #include <sstream>
-// #include <stdexcept>
 #include <string>
 
 // Initialize static constant
@@ -27,7 +26,7 @@ Generates an RPL numeric reply
 ** use helper function 'makeArgs()' to generate variadic vector for 'args' parameter
 ** 'args' number must match template
 */
-std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) const
+std::string	Reply::reply(ReplyType key, const std::vector<std::string>& args) const
 {
 	std::map<ReplyType, std::string>::const_iterator	it = _replyTemplates.find(key);
 
@@ -47,7 +46,7 @@ std::string	Reply::reply(ReplyType key, const std::vector<std::string> &args) co
 Generates an RPL numeric reply
 Overloaded to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
 */
-std::string	Reply::reply(int key, const std::vector<std::string> &args) const
+std::string	Reply::reply(int key, const std::vector<std::string>& args) const
 {
 	return (reply(static_cast<ReplyType>(key), args));
 }
@@ -56,7 +55,7 @@ std::string	Reply::reply(int key, const std::vector<std::string> &args) const
 Generates an RPL numeric reply
 Overloaded to use direct string arguments
 */
-std::string	Reply::reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+std::string	Reply::reply(ReplyType key, const std::string& arg1, const std::string& arg2, const std::string& arg3, const std::string& arg4)
 {
 	return (reply(key, makeArgs(arg1, arg2, arg3, arg4)));
 }
@@ -65,7 +64,7 @@ std::string	Reply::reply(ReplyType key, const std::string &arg1, const std::stri
 Generates an RPL numeric reply
 Overloaded to use an int instead of a ReplyType as well as direct string arguments
 */
-std::string	Reply::reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+std::string	Reply::reply(int key, const std::string& arg1, const std::string& arg2, const std::string& arg3, const std::string& arg4)
 {
 	return (reply(static_cast<ReplyType>(key), arg1, arg2, arg3, arg4));
 }
@@ -98,7 +97,7 @@ Returns:
 	A dynamically generated error reply using the ERR_UNKNOWNERROR template
 	if the number of placeholders and arguments do not match.
 */
-std::string	Reply::_formatReply(const std::string &templateStr, const std::vector<std::string> &args) const
+std::string	Reply::_formatReply(const std::string& templateStr, const std::vector<std::string>& args) const
 {
 	std::ostringstream	oss;
 	size_t				argIndex = 0;
@@ -106,7 +105,7 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 	size_t	i = 0;
 	while (i < templateStr.size())
 	{
-		// process the template string and replace placeholders
+		// Process the template string and replace placeholders
 		if (templateStr[i] == '%' && i + 1 < templateStr.size() && templateStr[i + 1] == 's')
 		{
 			if (argIndex >= args.size()) // too few arguments
@@ -141,7 +140,7 @@ std::string	Reply::_formatReply(const std::string &templateStr, const std::vecto
 /*
 Generates an RPL numeric reply
 */
-std::string	reply(ReplyType key, const std::vector<std::string> &args)
+std::string	reply(ReplyType key, const std::vector<std::string>& args)
 {
 	return (Reply::getInstance().reply(key, args));
 }
@@ -150,7 +149,7 @@ std::string	reply(ReplyType key, const std::vector<std::string> &args)
 Generates an RPL numeric reply
 Overloaded to use an int (like 001) instead of a ReplyType (like RPL_WELCOME)
 */
-std::string	reply(int key, const std::vector<std::string> &args)
+std::string	reply(int key, const std::vector<std::string>& args)
 {
 	return (Reply::getInstance().reply(key, args));
 }
@@ -159,7 +158,7 @@ std::string	reply(int key, const std::vector<std::string> &args)
 Generates an RPL numeric reply
 Overloaded to use direct string arguments
 */
-std::string	reply(ReplyType key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+std::string	reply(ReplyType key, const std::string& arg1, const std::string& arg2, const std::string& arg3, const std::string& arg4)
 {
 	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
 }
@@ -168,7 +167,7 @@ std::string	reply(ReplyType key, const std::string &arg1, const std::string &arg
 Generates an RPL numeric reply
 Overloaded to use an int instead of a ReplyType as well as direct string arguments
 */
-std::string	reply(int key, const std::string &arg1, const std::string &arg2, const std::string &arg3, const std::string &arg4)
+std::string	reply(int key, const std::string& arg1, const std::string& arg2, const std::string& arg3, const std::string& arg4)
 {
 	return (Reply::getInstance().reply(key, arg1, arg2, arg3, arg4));
 }
@@ -184,7 +183,7 @@ expected after a successful authentication
 	003 RPL_CREATED
 	004 RPL_MYINFO
 */
-std::vector<std::string>	generateWelcomeReplies(const std::string &nickname, const std::string &creationDate)
+std::vector<std::string>	generateWelcomeReplies(const std::string& nickname, const std::string& creationDate)
 {
 	Reply&						rpl = Reply::getInstance();
 	std::vector<std::string>	replies;
@@ -205,7 +204,7 @@ Generates a message when a user sends a PRIVMSG
 
 :<senderNickname> PRIVMSG <targetNickname> :<trailingMsg>
 */
-std::string	privmsgMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &trailingMsg)
+std::string	privmsgMsg(const std::string& senderNickname, const std::string& targetNickname, const std::string& trailingMsg)
 {
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
@@ -219,7 +218,7 @@ Generates a message for when a user joins a channel
 
 :<clientNickname> JOIN :<channelName>
 */
-std::string	joinMsg(const std::string &clientNickname, const std::string &channelName)
+std::string	joinMsg(const std::string& clientNickname, const std::string& channelName)
 {
 	std::ostringstream	oss;
 	// oss << ":" << clientNickname << " JOIN " << channelName;
@@ -235,7 +234,7 @@ Generates a PART message
 
 :<clientNickname> PART <channelName> [:<partingMessage>]
 */
-std::string	partMsg(const std::string &clientNickname, const std::string &channelName, const std::string &partingMessage)
+std::string	partMsg(const std::string& clientNickname, const std::string& channelName, const std::string& partingMessage)
 {
 	std::ostringstream	oss;
 	// oss << ":" << clientNickname << " PART " << channelName;
@@ -254,7 +253,7 @@ Generates a KICK message
 
 :<kickerNickname> KICK <channelName> <targetNickname> [:<reason>]
 */
-std::string kickMsg(const std::string &kickerNickname, const std::string &channelName, const std::string &targetNickname, const std::string &reason)
+std::string kickMsg(const std::string& kickerNickname, const std::string& channelName, const std::string& targetNickname, const std::string& reason)
 {
 	std::ostringstream	oss;
 	oss << ":" << kickerNickname << " KICK " << channelName << " " << targetNickname;
@@ -274,7 +273,7 @@ Generates an INVITE message
 
 :<senderNickname> INVITE <targetNickname> :<channelName>
 */
-std::string	inviteMsg(const std::string &senderNickname, const std::string &targetNickname, const std::string &channelName)
+std::string	inviteMsg(const std::string& senderNickname, const std::string& targetNickname, const std::string& channelName)
 {
 	std::ostringstream oss;
 	oss << ":" << senderNickname << " INVITE " << targetNickname << " :" << channelName;
@@ -284,9 +283,8 @@ std::string	inviteMsg(const std::string &senderNickname, const std::string &targ
 
 /*
 Generates a SETMODE message
-
 */
-std::string setmodeMsg(const std::string &userNickname, const std::string &params)
+std::string setmodeMsg(const std::string& userNickname, const std::string& params)
 {
 	std::ostringstream	oss;
 	oss << ":" << userNickname << " MODE " << params;

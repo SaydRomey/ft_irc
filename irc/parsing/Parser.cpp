@@ -1,16 +1,15 @@
 
 #include "Parser.hpp"
-#include "parsing_utils.hpp"
+#include "utils.hpp"
 #include "Reply.hpp"
-// #include <stdexcept>
-#include <utility>				// std::make_pair()
+#include <utility>
 
 Parser::Parser(void) {}
 Parser::~Parser(void) {}
 
 /*
 Extracts and organize command data
-	** (not anymore ?) ** prefix if first token starts with ':'
+	prefix if first token starts with ':' (deprecated)
 	command
 	parameters
 	trailing message if ':' is found after the command
@@ -114,25 +113,6 @@ t_vecPairStrStr	Parser::parseChannelsAndKeys(const std::string &params) const
 	}
 	return (result);
 }
-
-// t_vecStr	Parser::parseKickParams(const std::string &params) const
-// {
-// 	t_vecStr	paramTokens = tokenize(params);
-// 	std::string	channel = paramTokens[0];
-		
-// 	t_vecStr	kickParams;
-// 	kickParams.push_back(channel);
-		
-// 	if (hasMultipleEntries(paramTokens[1]))
-// 	{
-// 		t_vecStr	userTokens = tokenize(paramTokens[1], ',', true);
-// 		kickParams.insert(kickParams.end(), userTokens.begin(), userTokens.end());
-// 	}
-// 	else
-// 		kickParams.push_back(paramTokens[1]);
-
-// 	return (kickParams);
-// }
 
 /*
 Extracts a vector containing the optionnal params for the MODE command
