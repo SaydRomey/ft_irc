@@ -10,6 +10,8 @@ Fixed QUIT to not need validation
 Fixed USER for only one param
 	(still allows 4 params, need to check getter takes proper value...)
 
+in validate Kick, should we flag more than one channel ?
+
 TODO:
 
 Server name, localhost or ircserv ? (fix in templates)
@@ -24,8 +26,7 @@ else
 	..."QUIT :Obsolete message?...
 
 
-in validate Kick, should we flag more than one channel ?
-
+#### for channel name
 
 in Validate JOIN command:
 	// should we ignore trailing if present, or flag the error? **

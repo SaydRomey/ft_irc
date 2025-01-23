@@ -166,7 +166,7 @@ Validates "PASS" command
 bool	Validator::_validatePassCommand(const t_mapStrStr& command) const
 {
 	if (command.find("params") == command.end() || command.at("params").empty())
-		return (_setRpl(ERR_NEEDMOREPARAMS, "PASS"));
+		return (_setRpl(ERR_NEEDMOREPARAMS, command.at("prefix"), "PASS"));
 
 	return (_noRpl());
 }

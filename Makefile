@@ -161,10 +161,17 @@ repo: ## Open the GitHub repository
 	@$(call INFO,$(NAME),Opening $(AUTHOR)'s github repo...)
 	@open $(REPO_LINK);
 
+lime: ## Open a LimeChat instance
+	@if [ "$(OS)" != "Darwin" ]; then \
+		echo "This target is only supported on macOS."; \
+		exit 1; \
+	fi
+	@open -n /Applications/LimeChat.app
+
 check-port: ## Check if IRC_SERVER_PORT is available
 	@$(call CHECK_PORT,$(IRC_SERVER_PORT),print)
 
 cleanup-port: ## Kill any process using the IRC server port
 	@$(call KILL_PROCESS_ON_PORT,$(IRC_SERVER_PORT))
 
-.PHONY: help repo
+.PHONY: help repo lime check-port cleanup-port
