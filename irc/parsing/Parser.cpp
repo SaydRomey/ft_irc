@@ -132,33 +132,55 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	t_vecStr	result(3, ""); // Default empty values for modes requiring params
 	size_t		paramIndex = 0;
 	size_t		i = 0;
+	bool		isAdding = true;
 
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];
 
-		// only process modes that require parameters
-		if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
+		if (modeFlag == '+')
 		{
-			if (paramIndex >= modeParamTokens.size())
-				continue ; // skip if no parameter is available for the flag
-
-			const std::string &param = modeParamTokens[paramIndex];
-
-			// assign parameter to the appropriate index
-			switch (modeFlag)
+			if (isAdding)
 			{
-				case 'k':
-					result[0] = param; // key
-					break ;
-				case 'o':
-					result[1] = param; // nickname
-					break ;
-				case 'l':
-					result[2] = param; // limit
-					break ;
+				++i;
+				continue ;
 			}
-			++paramIndex;
+			isAdding = true;
+		}
+		else if (modeFlag == '-')
+		{
+			if (!isAdding)
+			{
+				++i;
+				continue ;
+			}
+			isAdding = false;
+		}
+		else
+		{
+			// only process modes that require parameters
+			if (modeFlag == 'k' || modeFlag == 'o' || modeFlag == 'l')
+			{
+				if (paramIndex >= modeParamTokens.size())
+					continue ; // skip if no parameter is available for the flag
+
+				const std::string &param = modeParamTokens[paramIndex];
+
+				// assign parameter to the appropriate index
+				switch (modeFlag)
+				{
+					case 'k':
+						result[0] = param; // key
+						break ;
+					case 'o':
+						result[1] = param; // nickname
+						break ;
+					case 'l':
+						result[2] = param; // limit
+						break ;
+				}
+				++paramIndex;
+			}
 		}
 		++i;
 	}

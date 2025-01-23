@@ -425,9 +425,23 @@ bool	Validator::_validateModeCommand(const t_mapStrStr& command) const
 		
 		// Toggle add/remove mode
 		if (modeFlag == '+')
+		{
+			if (isAdding)
+			{
+				++i;
+				continue ;
+			}
 			isAdding = true;
+		}
 		else if (modeFlag == '-')
+		{
+			if (!isAdding)
+			{
+				++i;
+				continue ;
+			}
 			isAdding = false;
+		}
 		else
 		{
 			if (VALID_MODE_FLAGS.find(modeFlag) == std::string::npos)
