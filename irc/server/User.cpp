@@ -53,7 +53,7 @@ bool User::getCloseFlag() const
 
 std::string User::formatPrefix() const
 {
-	return ":" + _nickname + "!" + _username + "@localhost";
+	return ":" + _nickname + "!" + _username + "@ircserv";
 }
 
 const std::string& User::getNickname() const
