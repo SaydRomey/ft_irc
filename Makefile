@@ -71,6 +71,7 @@ all: $(NAME) ## Buld the project
 $(NAME): $(OBJS)
 	@$(COMPILE) $(C_FLAGS) $(OBJS) $(INCLUDES) -o $@
 	@$(call SUCCESS,$@,Build complete)
+	@$(MAKE) title $(NPD)
 
 # Object compilation rules
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)

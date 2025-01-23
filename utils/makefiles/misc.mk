@@ -16,7 +16,6 @@ endef
 export PROJECT_TITLE
 
 title: ## Print ft_irc's logo in ASCII art
-	@echo "$(BOLD)$(PURPLE)$(NAME)$(GREEN) created$(RESET)"
 	@echo "$(GREEN)$$PROJECT_TITLE$(RESET)"
 	@echo "Created by $(BOLD)$(TEAM)$(RESET)"
 	@echo "Feat $(BLUE)$(COLLAB)$(RESET)"
