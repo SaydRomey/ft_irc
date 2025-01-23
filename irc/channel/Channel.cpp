@@ -229,6 +229,7 @@ static bool	isValidNb(const std::string &str)
 void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 	const std::string &limit, User *user, const std::string& params)
 {
+	std::cout << "arrivé dans setMode" << std::endl;
 	bool	enable;
 	const std::string validMod = "itkol";
 	if (_members.find(&op) == _members.end()) // ERR_NOTONCHANNEL
