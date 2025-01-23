@@ -20,7 +20,7 @@ class Channel
 		std::string 			_name;
 		std::string 			_topic;
 		std::map<User*, bool>	_members; //true if it's an operator/admin
-		std::map<char, bool>	_modes; //+ pour ajouté ou - pour enlever, peut enchainer les modes a suivre (ex: +itk)
+		std::map<char, bool>	_modes;
 		std::string 			_password;
 		size_t					_memberLimit;
 		std::set<std::string>	_invitedList;
@@ -46,7 +46,6 @@ class Channel
 		const MapUser&				getMembers(void) const;
 
 		void						broadcast(User& sender, const std::string& message, bool include_sender);
-
 };
 
 #endif

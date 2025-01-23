@@ -251,7 +251,7 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 			else if (mode[i] == 'o')
 			{
 				std::cout << "apres entrée dans o" << std::endl;
-				// if (user == NULL)
+				// if (user == NULL) >> peut fix le probleme de segfault mais est pas sensé ce rendre la si null
 				// {
 				// 	op.pendingPush(reply(ERR_NOSUCHNICK, op.getNickname(), "nickname"));
 				// 	return ;

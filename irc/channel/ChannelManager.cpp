@@ -21,7 +21,7 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 		{
 			std::cout << "not found channelname" << std::endl;
 
-			// Channel inexistant donc creation du channel
+			// channel doesnt exist, making a new one
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
 			std::cout << "apres ajout channel" << std::endl;
@@ -48,14 +48,13 @@ void ChannelManager::partManager(User &sender, const Message &msg)
 			continue;
 		}
 		_channels[channelName].removeMember(sender, reason);
-		if (_channels[channelName].getMembers().empty()) //si mon channel n'a plus de membre supprime le channel
+		if (_channels[channelName].getMembers().empty()) //if channel empty, erase channel
 			_channels.erase(channelName);
 	}
 }
 
 void ChannelManager::inviteManager(User &sender, const Message &msg)
 {
-	// Extraire les paramètres : channel et utilisateur à inviter
 	std::string inviteeNickname = msg.getParamsVec()[0];
 	std::vector<std::string> channelsVec = tokenize(msg.getParamsVec()[1], ',');
 	for (size_t i = 0; i < channelsVec.size(); ++i)
@@ -66,9 +65,8 @@ void ChannelManager::inviteManager(User &sender, const Message &msg)
 			sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 			continue;
 		}
-		// Inviter l'utilisateur
 		User* target = _server.getUserByNickname(inviteeNickname);
-		if (target == NULL) //ERR_NOSUCHNICK
+		if (target == NULL)
 		{
 			sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), inviteeNickname));
 			continue;
@@ -118,7 +116,7 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 		std::cout << "target not null" << std::endl;
 	else
 		std::cout << "target is null" << std::endl;
-	if (target == NULL && !nickname.empty()) //ERR_NOSUCHNICK
+	if (target == NULL && !nickname.empty())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));
 		return ;
@@ -159,7 +157,6 @@ void ChannelManager::quitManager(User &sender)
 
 		if (it->second.getMembers().empty())
 		{
-			// increment iterator before erasing the current element
 			std::map<std::string, Channel>::iterator toErase = it++;
 			_channels.erase(toErase);
 		}
@@ -168,7 +165,6 @@ void ChannelManager::quitManager(User &sender)
 	}
 }
 
-// sending messages to a channel
 void ChannelManager::privmsgManager(User &sender, const std::string &channelName, const std::string &message)
 {
 	if (_channels.find(channelName) == _channels.end())
