@@ -149,7 +149,7 @@ bool	Validator::_isValidChannelName(const std::string& channel) const
 	if (channel.empty() || channel.length() > MAX_CHANNEL_NAME_LENGTH)
 		return (false);
 
-	if (channel[0] != '#' || channel.length() < 2)
+	if (channel[0] != '#')
 		return (false);
 
 	if (channel.find_first_of(INVALID_CHANNEL_CHARS) != std::string::npos)
