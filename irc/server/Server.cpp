@@ -197,7 +197,7 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 		if (client.getPerms() != PERM_ALL)
 		{
 			client.pendingPush(reply(451));
-			// client.pendingPush(":@localhost 451 :You are not registered yet\r\n");
+			// client.pendingPush(":@ircserv 451 :You are not registered yet\r\n");
 			return;
 		}
 		break;
@@ -259,7 +259,7 @@ void Server::user_cmd(User &client, const Message& msg)
 	else if (perms == PERM_NICK)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@ircserv ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 	}
 	else
@@ -282,7 +282,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 	if (perms == PERM_USER)
 	{
 		client.pendingPush(reply(464, client.getNickname()));
-		client.pendingPush(":@localhost ERROR :Registration failed\r\n");
+		client.pendingPush(":@ircserv ERROR :Registration failed\r\n");
 		client.setCloseFlag();
 		return;
 	}
@@ -298,7 +298,7 @@ void Server::nick_cmd(User &client, const Message& msg)
 		_nickMap.erase(oldNick);
 		_nickMap[nick] = client.getFd();
 		client.setNickname(nick);
-		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@localhost NICK :" + nick + "\r\n";
+		std::string msg = ":" + oldNick + "!" + client.getUsername() + "@ircserv NICK :" + nick + "\r\n";
 		broadcast(msg);
 		if (perms == ~PERM_NICK)
 			client.pendingPush(reply(1, nick, nick));
