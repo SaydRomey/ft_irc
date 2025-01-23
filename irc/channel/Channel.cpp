@@ -145,7 +145,6 @@ void Channel::getTopic(User &user)
 		user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 	else
 	{
-		std::cout << "TOPIC-> " << this->_topic << std::endl;
 		user.pendingPush(reply(RPL_TOPIC, user.getNickname(), this->_name, this->_topic));
 	}
 }
@@ -213,7 +212,6 @@ static bool	isValidNb(const std::string &str)
 void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 	const std::string &limit, User *user, const std::string& params)
 {
-	std::cout << "arrivé dans setMode" << std::endl;
 	bool	enable;
 	const std::string validMod = "itkol";
 	if (_members.find(&op) == _members.end())
@@ -240,7 +238,6 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 			}
 			enable = (currentSign == '+');
 			_modes[mode[i]] = enable;
-			std::cout << "avant entrée dans o" << std::endl;
 			if (mode[i] == 'k')
 			{
 				if (enable && !pswd.empty())
@@ -250,12 +247,6 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 			}
 			else if (mode[i] == 'o')
 			{
-				std::cout << "apres entrée dans o" << std::endl;
-				// if (user == NULL) >> peut fix le probleme de segfault mais est pas sensé ce rendre la si null
-				// {
-				// 	op.pendingPush(reply(ERR_NOSUCHNICK, op.getNickname(), "nickname"));
-				// 	return ;
-				// }
 				if (_members.find(user) == _members.end())
 				{
 					op.pendingPush(reply(ERR_NOTONCHANNEL, user->getNickname(), this->_name));

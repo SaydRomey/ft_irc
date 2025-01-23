@@ -107,7 +107,6 @@ void Server::run(void)
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
-					std::cout << "Sent to " << client.getNickname() << " : " << reply << std::flush;
 					send(it->fd, reply.c_str(), reply.size(), 0);
 				}
 				it->events ^= POLLOUT;
@@ -119,8 +118,7 @@ void Server::run(void)
 			while (!msg_str.empty())
 			{
 				Message msg(msg_str, client.getNickname());
-				std::cout << msg << std::endl;
-				// 
+				// std::cout << msg << std::endl;
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")

@@ -31,7 +31,6 @@ void User::setUsername(const std::string& username)
 {
 	this->_username = username;
 	_perms |= PERM_USER;
-	std::cout << _username << std::endl;
 }
 
 void User::setFd(int fd)
@@ -78,7 +77,6 @@ short User::getPerms(void) const
 
 void User::setPass(bool valid)
 {
-	std::cout << "User::setPass : " << (valid ? "valid" : "invalid") << std::endl;
 	if (valid)
 		_perms |= PERM_PASS;
 	else

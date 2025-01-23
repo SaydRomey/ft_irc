@@ -19,18 +19,12 @@ void ChannelManager::joinManager(User &sender, const Message &msg)
 		const std::string &key = ChannelsAndKeys[i].second;
 		if (_channels.find(channelName) == _channels.end())
 		{
-			std::cout << "not found channelname" << std::endl;
-
 			// channel doesnt exist, making a new one
 			Channel newChannel(channelName, sender);
 			_channels[channelName] = newChannel;
-			std::cout << "apres ajout channel" << std::endl;
 		}
 		else
-		{
-			std::cout << "adding member!" << std::endl;
 			_channels[channelName].addMember(sender, key);
-		}
 	}
 }
 
@@ -111,11 +105,6 @@ void ChannelManager::modeManager(User &sender, const Message &msg)
 		sender.pendingPush(reply(ERR_NOSUCHCHANNEL, sender.getNickname(), channelName));
 		return ;
 	}
-	std::cout << nickname << "et ";
-	if (target)
-		std::cout << "target not null" << std::endl;
-	else
-		std::cout << "target is null" << std::endl;
 	if (target == NULL && !nickname.empty())
 	{
 		sender.pendingPush(reply(ERR_NOSUCHNICK, sender.getNickname(), nickname));
