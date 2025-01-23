@@ -111,7 +111,7 @@ std::string	Reply::_formatReply(const std::string& templateStr, const std::vecto
 			if (argIndex >= args.size()) // too few arguments
 			{
 				std::ostringstream	oss;
-				oss << "Error: Too few arguments for reply template:  " << templateStr;
+				oss << "Error: Too few arguments for reply template:  " << templateStr << std::endl; //fait par nad
 				// throw (std::runtime_error(oss.str()));
 				// std::cout << oss.str() << std::endl;
 				return (oss.str());
@@ -126,7 +126,7 @@ std::string	Reply::_formatReply(const std::string& templateStr, const std::vecto
 	if (argIndex < args.size()) // too many arguments
 	{
 		std::ostringstream	oss;
-		oss << "Error: Too many arguments for reply template:  " << templateStr;
+		oss << "Error: Too many arguments for reply template:  " << templateStr << std::endl; //fait par nad
 		// throw (std::runtime_error(oss.str()));
 		// std::cout << oss.str() << std::endl;
 		return (oss.str());
