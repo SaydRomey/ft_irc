@@ -202,7 +202,7 @@ Generates a message when a user sends a PRIVMSG
 std::string	privmsgMsg(const std::string& senderNickname, const std::string& targetNickname, const std::string& trailingMsg)
 {
 	std::ostringstream oss;
-	oss << ":" << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
+	oss << senderNickname << " PRIVMSG " << targetNickname << " :" << trailingMsg;
 
 	return (crlf(oss.str()));
 }
@@ -216,8 +216,7 @@ Generates a message for when a user joins a channel
 std::string	joinMsg(const std::string& clientNickname, const std::string& channelName)
 {
 	std::ostringstream	oss;
-	oss << ":" << clientNickname << " JOIN " << channelName;
-	// oss << ":" << clientNickname << "!" << clientNickname << "@localhost JOIN " << channelName;
+	oss << clientNickname << " JOIN " << channelName;
 
 	return (crlf(oss.str()));
 }
@@ -232,8 +231,7 @@ Generates a PART message
 std::string	partMsg(const std::string& clientNickname, const std::string& channelName, const std::string& partingMessage)
 {
 	std::ostringstream	oss;
-	oss << ":" << clientNickname << " PART " << channelName;
-	// oss << ":" << clientNickname << "!" << clientNickname << "@localhost PART " << channelName;
+	oss << clientNickname << " PART " << channelName;
 
 	if (!partingMessage.empty())
 		oss << " :" << partingMessage;
@@ -251,7 +249,7 @@ Generates a KICK message
 std::string kickMsg(const std::string& kickerNickname, const std::string& channelName, const std::string& targetNickname, const std::string& reason)
 {
 	std::ostringstream	oss;
-	oss << ":" << kickerNickname << " KICK " << channelName << " " << targetNickname;
+	oss << kickerNickname << " KICK " << channelName << " " << targetNickname;
 	
 	if (!reason.empty())
 		oss << " :" << reason;
@@ -271,7 +269,7 @@ Generates an INVITE message
 std::string	inviteMsg(const std::string& senderNickname, const std::string& targetNickname, const std::string& channelName)
 {
 	std::ostringstream oss;
-	oss << ":" << senderNickname << " INVITE " << targetNickname << " :" << channelName;
+	oss << senderNickname << " INVITE " << targetNickname << " :" << channelName;
 
 	return (crlf(oss.str()));
 }
@@ -282,7 +280,7 @@ Generates a SETMODE message
 std::string setmodeMsg(const std::string& userNickname, const std::string& params)
 {
 	std::ostringstream	oss;
-	oss << ":" << userNickname << " MODE " << params;
+	oss << userNickname << " MODE " << params;
 
 	return (crlf(oss.str()));
 }

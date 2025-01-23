@@ -15,7 +15,7 @@ Channel::Channel(const std::string &name, User &op) : _name(name), _topic(""),
 	_members[&op] = true;
 	if (_members.find(&op) != _members.end())
 	{
-		this->broadcast(op, joinMsg(op.getNickname(), this->_name), true);
+		this->broadcast(op, joinMsg(op.formatPrefix(), this->_name), true);
 		if (this->_topic.empty())
 			op.pendingPush(reply(RPL_NOTOPIC, op.getNickname(), this->_name));
 		else
@@ -75,7 +75,7 @@ void Channel::addMember(User &user, std::string pswIfNeeded)
 	_members[&user] = false;
 	if (_members.find(&user) != _members.end())
 	{
-		this->broadcast(user, joinMsg(user.getNickname(), this->_name), true);
+		this->broadcast(user, joinMsg(user.formatPrefix(), this->_name), true);
 		if (this->_topic.empty())
 			user.pendingPush(reply(RPL_NOTOPIC, user.getNickname(), this->_name));
 		else
@@ -92,7 +92,7 @@ void Channel::removeMember(User &user, const std::string &reason)
 		user.pendingPush(reply(ERR_NOTONCHANNEL, user.getNickname(), this->_name));
 		return ;
 	}
-	this->broadcast(user, partMsg(user.getNickname(), this->_name, reason), true);
+	this->broadcast(user, partMsg(user.formatPrefix(), this->_name, reason), true);
 	_members.erase(&user);
 }
 
@@ -166,7 +166,7 @@ void Channel::kick(User &user, User &op, std::string reason)
 		op.pendingPush(reply(ERR_USERNOTINCHANNEL, op.getNickname(), user.getNickname(), this->_name));
 		return ;
 	}
-	this->broadcast(op, kickMsg(op.getNickname(), this->_name, user.getNickname(), reason), true);
+	this->broadcast(op, kickMsg(op.formatPrefix(), this->_name, user.getNickname(), reason), true);
 	_members.erase(&user);
 }
 
@@ -193,7 +193,7 @@ void Channel::invite(User &user, User &op)
 		return ;
 	}
 	_invitedList.insert(user.getNickname());
-	user.pendingPush(inviteMsg(op.getNickname(), user.getNickname(), this->_name));
+	user.pendingPush(inviteMsg(op.formatPrefix(), user.getNickname(), this->_name));
 	op.pendingPush(reply(RPL_INVITING, op.getNickname(), user.getNickname(), this->_name));
 }
 
@@ -266,7 +266,7 @@ void Channel::setMode(std::string mode, User &op, const std::string &pswd,
 		else
 			op.pendingPush(reply(ERR_UNKNOWNMODE, op.getNickname(), std::string(1, mode[i])));
 	}
-	this->broadcast(op, setmodeMsg(op.getNickname(), params), true);
+	this->broadcast(op, setmodeMsg(op.formatPrefix(), params), true);
 }
 
 void Channel::addOperator(User *user, const char addOrRemove)
