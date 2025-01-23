@@ -426,21 +426,15 @@ bool	Validator::_validateModeCommand(const t_mapStrStr& command) const
 		// Toggle add/remove mode
 		if (modeFlag == '+')
 		{
-			if (isAdding)
-			{
-				++i;
-				continue ;
-			}
 			isAdding = true;
+			++i;
+			continue ;
 		}
 		else if (modeFlag == '-')
 		{
-			if (!isAdding)
-			{
-				++i;
-				continue ;
-			}
 			isAdding = false;
+			++i;
+			continue ;
 		}
 		else
 		{

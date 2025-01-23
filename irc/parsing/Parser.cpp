@@ -137,8 +137,11 @@ t_vecStr	Parser::parseModeParams(const std::string &params) const
 	while (i < modes.size())
 	{
 		char	modeFlag = modes[i];
-		// if (modeFlag == '-' || modeFlag == '+' || modeFlag != '\0')
-		// 	i++;
+		if (modeFlag == '-' || modeFlag == '+' || modeFlag != '\0')
+		{
+			++i;
+			continue ;
+		}
 		
 		// if (modeFlag == '+')
 		// {
