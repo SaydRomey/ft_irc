@@ -18,7 +18,7 @@ _replyTemplates[ERR_NICKNAMEINUSE] = ":" + SERVER_NAME + " 433 %s %s :Nickname i
 _replyTemplates[ERR_NOTREGISTERED] = ":" + SERVER_NAME + " 451 :You have not registered";
 _replyTemplates[ERR_NEEDMOREPARAMS] = ":" + SERVER_NAME + " 461 %s %s :Not enough parameters"; // <client_nickname> <command>
 _replyTemplates[ERR_ALREADYREGISTERED] = ":" + SERVER_NAME + " 462 %s :You may not reregister"; // <client_nickname>
-_replyTemplates[ERR_PASSWDMISMATCH] = ":" + SERVER_NAME + " 464 %s :Password incorect"; // <client_nickname>
+_replyTemplates[ERR_PASSWDMISMATCH] = ":" + SERVER_NAME + " 464 %s :Password incorrect"; // <client_nickname>
 
 // ===================
 // CHANNEL MANAGEMENT
