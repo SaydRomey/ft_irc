@@ -18,33 +18,33 @@ void	serverStatePrint(bool state)
 
 int	main(int argc, char *argv[])
 {
-	// test_arg_message(argc, argv);
+	test_arg_message(argc, argv);
 
-	if (argc != 3)
-		return (1);
+	// if (argc != 3)
+	// 	return (1);
 
-	Server*	serv = NULL;
+	// Server*	serv = NULL;
 	
-	try
-	{
-		serv = new Server(argv[1], argv[2]);
+	// try
+	// {
+	// 	serv = new Server(argv[1], argv[2]);
 		
-		serverStatePrint(true);
+	// 	serverStatePrint(true);
 
-		serv->run();
-		serv->stop();
+	// 	serv->run();
+	// 	serv->stop();
 		
-		serverStatePrint(false);
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << "main-catch:" << e.what() << std::endl;
-		delete serv;
-		serverStatePrint(false);
+	// 	serverStatePrint(false);
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	std::cerr << "main-catch:" << e.what() << std::endl;
+	// 	delete serv;
+	// 	serverStatePrint(false);
 
-		return (1);
-	}
-	delete serv;
+	// 	return (1);
+	// }
+	// delete serv;
 
 	return (0);
 }
