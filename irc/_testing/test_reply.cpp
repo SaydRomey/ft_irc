@@ -75,14 +75,6 @@ void	printRpl(const std::string &reply, const std::string &numeric="***", const 
 	std::cout << "  " << reply << std::endl;
 }
 
-// static void	printSectionHeader(const std::string &title, const std::string &subtitle = "")
-// {
-// 	std::cout << UNDERLINE << "** " << title << " **" << RESET;
-// 	if (!subtitle.empty())
-// 		std::cout << GRAYTALIC << " " << subtitle << RESET;
-// 	std::cout << "\n" << std::endl;
-// }
-
 static void	printInput(const std::string &input, bool prefixNewLine = false)
 {
 	std::cout << GRAYTALIC \
@@ -207,8 +199,6 @@ void	test_welcome_replies(void)
 {
 	printBox(formatBoxText("Welcome", PURPLE), '*', YELLOW);
 
-	// printSectionHeader("Testing Welcome Replies", "(On successful authentication)");
-	
 	std::string	nickname = "WelcomedGuest";
 	std::string	creationDate = getCurrentDate();
 

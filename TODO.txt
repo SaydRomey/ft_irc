@@ -1,17 +1,18 @@
 
-reply not registered : ok
+DONE:
 
-replies 2-3-4-5? : ok (time ?)
+reply not registered
+replies 2-3-4
+removed NOTICE related code
+Fixed QUIT to not need validation
+	included QUIT to the single word no comma trailing edge case
+
+Fixed USER for only one param
+	(still allows 4 params, need to check getter takes proper value...)
+
+TODO:
 
 Server name, localhost or ircserv ? (fix in templates)
-
-
-remove NOTICE related code : ok
-
-Fixed QUIT to not need validation : ok
-included QUIT to the single word no comma trailing edge case
-
-Fix USER for only one param : ok (still allows 4 params, need to check getter takes proper value...)
 
 cleanup!!
 
@@ -24,3 +25,11 @@ else
 
 
 in validate Kick, should we flag more than one channel ?
+
+
+in Validate JOIN command:
+	// should we ignore trailing if present, or flag the error? **
+
+
+Check in joinMsg and partMsg for the format of the nickname... **
+

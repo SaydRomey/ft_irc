@@ -3,6 +3,11 @@
 ##@ 🌀 Weechat (wip)
 # ==============================
 
+# Weechat settings: (wip)
+# /server add ircserv localhost/6667 -notls -password=your_password
+# /set irc.server.ircserv.capabilities ""
+
+
 WEECHAT_IMAGE	:= weechat/weechat
 WEECHAT_CONT	:= weechat
 
@@ -39,3 +44,17 @@ weechat-clean: ## Cleanup the Weechat container if it exists
 	fi
 
 .PHONY: weechat get-weechat docker-start weechat-clean
+
+# run-wee: all ## Start the IRC server and connect Weechat to it (WIP)
+# 	@if [ ! -f "$(NAME)" ]; then \
+# 		$(call ERROR,Build Failed:,Executable $(NAME) not found!); \
+# 		exit 1; \
+# 	fi
+# 	@$(call CHECK_COMMAND,docker)
+# 	@$(call CHECK_PORT,$(IRC_SERVER_PORT))
+# 	@$(call INFO,$(NAME),Starting IRC server on: ,$(IRC_SERVER_PORT):$(IRC_SERVER_PORT)...)
+# 	@./$(NAME) $(IRC_SERVER_PORT) $(IRC_SERVER_PSWD) & \
+# 	sleep 1; \
+# 	$(call WAIT_FOR_CONNECTION,$(IRC_SERVER_IP),$(IRC_SERVER_PORT))
+# 	@$(call SUCCESS,$(NAME),IRC server is up and running!)
+# 	@$(MAKE) weechat $(NPD)

@@ -1,13 +1,6 @@
 
-#include "_test_header.hpp"
 #include "Server.hpp"
-#include "Message.hpp"
-
-/*	Weechat settings:
-/server add ircserv localhost/6667 -notls -password=your_password
-/set irc.server.ircserv.capabilities ""
-
-*/
+#include "_test_header.hpp"
 
 void	serverStatePrint(bool state)
 {
@@ -23,54 +16,35 @@ void	serverStatePrint(bool state)
 	std::cout << std::endl;
 }
 
-int	test_server(int ac, char **av)
+int	main(int argc, char *argv[])
 {
-	Server* serv = NULL;
-	if (ac != 3)
-		return 1;
+	// test_arg_message(argc, argv);
+
+	if (argc != 3)
+		return (1);
+
+	Server*	serv = NULL;
+	
 	try
 	{
-		serv = new Server(av[1], av[2]);
+		serv = new Server(argv[1], argv[2]);
 		
-		// 
 		serverStatePrint(true);
-		// 
 
 		serv->run();
 		serv->stop();
 		
-		// 
 		serverStatePrint(false);
-		// 
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << "main-catch:" << e.what() << std::endl;
 		delete serv;
-		// 
 		serverStatePrint(false);
-		// 
-		return 1;
+
+		return (1);
 	}
 	delete serv;
-	return (0);
-}
-
-int	main(int argc, char *argv[])
-{
-	// test_server(argc, argv);
-	
-	// test_channel();
-
-	// test_message();
-	test_arg_message(argc, argv);
-
-	// test_reply();
-	// test_pseudo_replies();
-	// test_reply_templates();
-	// test_welcome_replies();
-	
-	// test_tokenizer(argc, argv);
 
 	return (0);
 }

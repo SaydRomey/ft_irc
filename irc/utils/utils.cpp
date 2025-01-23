@@ -1,5 +1,5 @@
 
-#include "parsing_utils.hpp"
+#include "utils.hpp"
 
 /*
 Creates a std::vector<std::string> with variadic argument
@@ -299,8 +299,9 @@ Formats a time_t variable into a human-readable time and date
 */
 std::string	formatTime(const time_t& time)
 {
-	char	buffer[80];
+	char		buffer[80];
 	std::tm*	timeinfo = std::localtime(&time);
+	
 	std::strftime(buffer, sizeof(buffer), "%c", timeinfo); // format as "Day Mon DD HH:MM:SS YYYY"
 
 	return (std::string(buffer));

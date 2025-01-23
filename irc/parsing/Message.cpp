@@ -1,6 +1,6 @@
 
 #include "Message.hpp"
-#include "parsing_utils.hpp"
+#include "utils.hpp"
 #include "ReplyTypes.hpp"
 #include <iomanip>
 
@@ -84,6 +84,7 @@ void	Message::_processInput(const std::string& input)
 				{
 					_reply = reply(ERR_NEEDMOREPARAMS, _nickname, command);
 					_valid = false;
+					return ;
 				}
 			}
 			_valid = true;
@@ -168,7 +169,7 @@ static void	handleMultiParams(std::ostream &oss, const std::string &params, int 
 	}
 }
 
-// Handle channels and keys output
+// Handle channels and keys output as pairs
 static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int labelWidth)
 {
 	if (message.getCommand() == "JOIN" && hasMultipleEntries(message.getParams()))
@@ -195,6 +196,7 @@ static void	handleChannelsAndKeys(std::ostream &oss, const Message &message, int
 	}
 }
 
+// Outputs optionnal mode params
 static void	handleModeParams(std::ostream &oss, const Message &message, int labelWidth)
 {
 	if (message.getCommand() == "MODE")
@@ -207,6 +209,7 @@ static void	handleModeParams(std::ostream &oss, const Message &message, int labe
 	}
 }
 
+// Outputs detailed information stored in a Message object
 std::ostream	&operator<<(std::ostream &oss, const Message &message)
 {
 	const int	labelWidth = 18;

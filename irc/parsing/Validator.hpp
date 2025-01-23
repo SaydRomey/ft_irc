@@ -44,44 +44,44 @@ class Validator
 		Validator(void);
 		~Validator(void);
 		
-		bool	validateCommand(const t_mapStrStr &command) const;
+		bool	validateCommand(const t_mapStrStr& command) const;
 
 		ReplyType						getRplType(void) const;
-		const t_vecStr					&getRplArgs(void) const;
-		static const t_mapStrCmdType	&getCommandMap(void);
+		const t_vecStr&					getRplArgs(void) const;
+		static const t_mapStrCmdType&	getCommandMap(void);
 	
 	private:
 		Validator(const Validator&);
 		Validator&	operator=(const Validator&);
 
-		// function pointer type for _validators
+		// Function pointer type for _validators
 		typedef bool	(Validator::*ValidatorFunc)(const t_mapStrStr&) const;
 		
-		// internal array mapping CommandType to ValidatorFunc
+		// Internal array mapping CommandType to ValidatorFunc
 		static const ValidatorFunc		_validators[];
 		static const t_mapStrCmdType	_commandMap;
 
-		// error handling
+		// Error replies handling
 		mutable ReplyType	_rplType; // store the last error code
 		mutable t_vecStr	_rplArgs; // store arguments for the error reply
 
-		bool	_setRpl(ReplyType rplType, const std::string &arg1 = "", const std::string &arg2 = "", const std::string &arg3 = "", const std::string &arg4 = "") const;
+		bool	_setRpl(ReplyType rplType, const std::string& arg1 = "", const std::string& arg2 = "", const std::string& arg3 = "", const std::string& arg4 = "") const;
 		bool	_noRpl(void) const;
 
-		bool	_isValidNickname(const std::string &nickname) const;
-		bool	_isValidChannelName(const std::string& channel) const;
-		bool	_isValidModeParam(char modeFlag, const std::string &param, bool isAdding) const;
+		bool	_isValidNickname(const std::string& nickname) const;
+		bool	_isValidChannelName(const std::string &channel) const;
+		bool	_isValidModeParam(char modeFlag, const std::string& param, bool isAdding) const;
 		
-		bool	_validatePassCommand(const t_mapStrStr &command) const;
-		bool	_validateNickCommand(const t_mapStrStr &command) const;
-		bool	_validateUserCommand(const t_mapStrStr &command) const;
-		bool	_validateJoinCommand(const t_mapStrStr &command) const;
-		bool	_validatePartCommand(const t_mapStrStr &command) const;
-		bool	_validateTopicCommand(const t_mapStrStr &command) const;
-		bool	_validateModeCommand(const t_mapStrStr &command) const;
-		bool	_validateKickCommand(const t_mapStrStr &command) const;
-		bool	_validateInviteCommand(const t_mapStrStr &command) const;
-		bool	_validatePrivmsgCommand(const t_mapStrStr &command) const;
+		bool	_validatePassCommand(const t_mapStrStr& command) const;
+		bool	_validateNickCommand(const t_mapStrStr& command) const;
+		bool	_validateUserCommand(const t_mapStrStr& command) const;
+		bool	_validateJoinCommand(const t_mapStrStr& command) const;
+		bool	_validatePartCommand(const t_mapStrStr& command) const;
+		bool	_validateTopicCommand(const t_mapStrStr& command) const;
+		bool	_validateModeCommand(const t_mapStrStr& command) const;
+		bool	_validateKickCommand(const t_mapStrStr& command) const;
+		bool	_validateInviteCommand(const t_mapStrStr& command) const;
+		bool	_validatePrivmsgCommand(const t_mapStrStr& command) const;
 
 		static const size_t			MAX_NICKNAME_LENGTH;		// 9
 		static const size_t			MAX_CHANNEL_NAME_LENGTH;	// 42
@@ -89,7 +89,7 @@ class Validator
 		static const std::string	INVALID_CHANNEL_CHARS;		// " ,\r\n"
 };
 
-bool	isValidNickname(const std::string &nickname);
-bool	isNickAvailable(const t_mapStrInt &nickMap, const std::string &nickToCheck);
+bool	isValidNickname(const std::string& nickname);
+bool	isNickAvailable(const t_mapStrInt& nickMap, const std::string& nickToCheck);
 
 #endif // VALIDATOR_HPP

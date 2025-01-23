@@ -1,5 +1,5 @@
 #include "User.hpp"
-#include "parsing_utils.hpp"
+#include "utils.hpp"
 
 User::User(void): _fd(-1), _username(), _nickname(), _perms(), _msgBuffer(), _pending()
 {}
