@@ -25,9 +25,7 @@ public:
 	void	stop();
 	static void	signalHandler(int signum);
 
-	// 
-	User*	getUserByNickname(const std::string& nickname); //
-	// 
+	User*	getUserByNickname(const std::string& nickname);
 
 	static t_strIntMap commandMap;
 
@@ -39,8 +37,6 @@ private:
 	t_pfdVect		_pollFds;
 	t_clientMap		_clientMap;
 	t_strIntMap		_nickMap;
-	// Reply			_rplGenerator;
-	// ChannelManager	_chanManager;
 	ChannelManager*	_chanManager;
 
 	int					_safePoll();

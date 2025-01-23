@@ -21,7 +21,6 @@ static const std::pair<std::string, int> cmdArr[CMD_UNKNOWN] = {
 	std::make_pair("KICK", KICK),
 	std::make_pair("INVITE", INVITE),
 	std::make_pair("PRIVMSG", PRIVMSG),
-	// std::make_pair("NOTICE", NOTICE),
 	std::make_pair("PING", PING),
 	std::make_pair("PONG", PONG),
 	std::make_pair("QUIT", QUIT)
@@ -31,9 +30,7 @@ t_strIntMap Server::commandMap(cmdArr, cmdArr + CMD_UNKNOWN);
 Server::Server(const std::string &port, const std::string &password): _time(time(NULL)),
 	_clientMap(), _nickMap()
 {
-	// 
-	_chanManager = new ChannelManager(*this); //
-	// 
+	_chanManager = new ChannelManager(*this);
 	long tmp_port = std::strtol(port.c_str(), NULL, 10);
 	if (tmp_port < 1024 || tmp_port > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
 		throw std::invalid_argument("Server::invalid_port");
@@ -107,7 +104,6 @@ void Server::run(void)
 			}
 			if (it->revents & POLLOUT)
 			{
-				// std::cout << client.pendingSize() << std::endl;
 				for (size_t n=client.pendingSize(); n > 0; n--)
 				{
 					std::string reply = client.pendingPop();
@@ -128,12 +124,11 @@ void Server::run(void)
 				if (msg.isValid() == true)
 					_messageRoundabout(client, msg);
 				else if (msg.getCommand() != "NOTICE")
-					client.pendingPush(msg.getReply()); // ***
+					client.pendingPush(msg.getReply());
 				msg_str = client.extractFromBuffer();
 			}
 		}
 	}
-	// TODO: Look up how to close server socket
 }
 
 void Server::stop()
@@ -150,7 +145,6 @@ void Server::signalHandler(int signum)
 {
 	(void)signum;
 	std::cerr << RED << "\nInterrupt signal received!" << RESET << std::endl;
-	// Server::_isRunning = false;
 }
 
 int Server::_safePoll()
@@ -163,9 +157,6 @@ int Server::_safePoll()
 
 void Server::_acceptConnection()
 {
-	// sockaddr_in	clientAddr;
-	// socklen_t	clientLen = sizeof(clientAddr);
-
 	int	clientFd = accept(_pollFds[0].fd, NULL, NULL);
 	if (clientFd < 0)
 		return ;
@@ -181,7 +172,6 @@ void Server::_acceptConnection()
 
 t_pfdVect::iterator Server::_closeConnection(t_pfdVect::iterator &it)
 {
-	// TODO: remove User from all channels
 	_nickMap.erase(_clientMap[it->fd].getNickname());
 	_clientMap.erase(it->fd);
 	close(it->fd);
@@ -237,8 +227,6 @@ void Server::_messageRoundabout(User& client, const Message& msg)
 	case PRIVMSG:
 		privmsg_cmd(client, msg);
 		break;
-	// case NOTICE:
-	// 	break;
 	case PING:
 		client.pendingPush(msg.getReply());
 		break;
@@ -258,7 +246,6 @@ void Server::broadcast(const std::string &msg, int senderFd)
 
 void Server::pass_cmd(User &client, const Message& msg)
 {
-	// std::cout << "getParams() => <" << msg.getParams() << ">" << std::endl;
 	short perms = client.getPerms();
 	if (perms == PERM_ALL)
 		client.pendingPush(reply(462, client.getNickname()));
@@ -325,18 +312,16 @@ void Server::privmsg_cmd(User &client, const Message &msg)
 	std::vector<std::string> targets(tokenize(msg.getParams(), ','));
 	for (size_t i=0; i < targets.size(); i++)
 	{
-		// std::cout << "Target: " << targets[i] << std::endl;
 		std::string reply_msg = ":" + client.getNickname() + " PRIVMSG " + targets[i] + " :" + msg.getTrailing() + "\r\n";
 		if (targets[i][0] == '#')
-			_chanManager->privmsgManager(client, targets[i], reply_msg); // ***
+			_chanManager->privmsgManager(client, targets[i], reply_msg);
 		else if (_nickMap.count(targets[i]) == 0)
 			client.pendingPush(reply(401, targets[i]));
 		else if (_nickMap[targets[i]] != client.getFd())
-			_clientMap[_nickMap[targets[i]]].pendingPush(reply_msg); // ***
+			_clientMap[_nickMap[targets[i]]].pendingPush(reply_msg);
 	}
 }
 
-// 
 User*	Server::getUserByNickname(const std::string& nickname)
 {
 	// Check if the nickname exists in the _nickMap
