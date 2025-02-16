@@ -3,22 +3,6 @@
 NAME		:= ircserv
 AUTHOR		:= cdumais
 TEAM		:= "namoisan, jdemers and $(AUTHOR)"
-COLLAB		:= anboisve
-REPO_LINK	:= https://github.com/SaydRomey/ft_irc
-
-# Server info
-IRC_SERVER_IP	:= 127.0.0.1
-IRC_SERVER_PORT	:= 6667
-IRC_SERVER_PSWD	:= 4242
-
-# Build configuration
-COMPILE		:= c++
-C_FLAGS		:= -Wall -Werror -Wextra -std=c++98 -pedantic
-
-# Project info
-NAME		:= ircserv
-AUTHOR		:= cdumais
-TEAM		:= "namoisan, jdemers and $(AUTHOR)"
 REPO_LINK	:= https://github.com/SaydRomey/ft_irc
 
 # Server info
